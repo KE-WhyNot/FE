@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
+// ✨ 1. react-router-dom에서 useNavigate를 가져옵니다.
+import { useNavigate } from 'react-router-dom';
 
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 
@@ -15,16 +17,26 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
+  // ✨ 2. useNavigate 훅을 초기화합니다.
+  const navigate = useNavigate();
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
+  // ✨ 3. 폼 제출(로그인 버튼 클릭) 시 실행될 함수를 만듭니다.
+  const handleLogin = (e) => {
+    e.preventDefault(); // 폼 제출 시 페이지가 새로고침되는 것을 방지합니다.
+    // 여기에 실제 로그인 처리 로직을 추가할 수 있습니다 (예: API 호출).
+    
+    // 로그인 성공 후 /main 경로로 이동시킵니다.
+    navigate('/main');
+  };
+
+
   return (
     <div className="login-page-container">
-      {/* ✨ 로고를 페이지 컨테이너 바로 아래로 이동 (CSS로 절대 위치 지정) */}
       <img src={youthfiLogo} alt="YOUTHFI Logo" className="main-logo" />
-
-      {/* 왼쪽 섹션: 텍스트와 이미지를 모두 포함 */}
       <div className="left-panel">
         <div className="welcome-text">
           <h1>로그인하여 시작하기</h1>
@@ -34,15 +46,14 @@ const LoginPage = () => {
           <span>계정이 없으신가요?</span>
           <a href="/signup">회원가입 하러 가기</a>
         </div>
-        {/* 이미지는 여전히 left-panel 안에 위치 */}
         <img src={loginDeskImage} alt="Desk Illustration" className="desk-illustration" />
       </div>
 
-      {/* 오른쪽 섹션 (로그인 폼) */}
       <div className="right-panel">
         <div className="login-form-container">
           <h2>로그인 하기</h2>
-          <form>
+          {/* ✨ 4. form 태그에 onSubmit 이벤트를 연결합니다. */}
+          <form onSubmit={handleLogin}>
             <div className="input-group">
               <input
                 type="text"
@@ -62,9 +73,6 @@ const LoginPage = () => {
                 {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
               </span>
             </div>
-            <a href="/forgot-password" className="forgot-password-link">
-              비밀번호를 잊으셨나요?
-            </a>
             <button type="submit" className="login-button">
               로그인 하기
             </button>

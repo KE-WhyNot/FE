@@ -4,7 +4,6 @@ import LoginPage from './components/LoginPage/LoginPage';
 import MainPage from './components/MainPage/MainPage'; // Main 페이지 컴포넌트
 import SignupPage from './components/SignupPage/SignupPage';
 import PaperTrading from './components/PaperTrading/PaperTrading';
-import Header from './components/common/Header';
 
 
 function App() {

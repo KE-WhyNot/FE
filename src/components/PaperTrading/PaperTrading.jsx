@@ -1,7 +1,6 @@
 import React from 'react';
 import './PaperTrading.css';
-import Header from '../common/Header'; // ✨ Header를 직접 import
-import userAvatar from '../../assets/images/avatar.png';
+import Header from '../common/Header'; 
 
 const PaperTrading = () => {
   return (
@@ -33,8 +32,7 @@ const PaperTrading = () => {
           <h2>내 주식</h2>
           <div className="header-actions">
             <input type="text" placeholder="주식 검색" className="stock-search" />
-            {/* ✨ userAvatar 이미지를 올바르게 렌더링 */}
-            <img src={userAvatar} alt="User Avatar" className="profile-icon" />
+
           </div>
         </div>
 

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import './LoginPage.css';
-// ✨ 1. react-router-dom에서 useNavigate를 가져옵니다.
 import { useNavigate } from 'react-router-dom';
-
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
+import axios from 'axios';
 
 // 이미지 및 로고 import
 import youthfiLogo from '../../assets/logos/youthfi.png';
@@ -16,21 +15,39 @@ const LoginPage = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  // ✨ 2. 에러 메시지를 저장할 state를 추가합니다.
+  const [error, setError] = useState('');
 
-  // ✨ 2. useNavigate 훅을 초기화합니다.
   const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
-  // ✨ 3. 폼 제출(로그인 버튼 클릭) 시 실행될 함수를 만듭니다.
-  const handleLogin = (e) => {
-    e.preventDefault(); // 폼 제출 시 페이지가 새로고침되는 것을 방지합니다.
-    // 여기에 실제 로그인 처리 로직을 추가할 수 있습니다 (예: API 호출).
-    
-    // 로그인 성공 후 /main 경로로 이동시킵니다.
-    navigate('/main');
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setError(''); // 함수 시작 시 에러 메시지 초기화
+
+    try {
+      // axios를 사용해 '/login' API에 POST 요청을 보냅니다.
+      const response = await axios.post('/login', {
+        id: id,
+        password: password,
+      });
+
+      // MSW 핸들러에서 보낸 성공 응답을 받으면
+      if (response.data.success) {
+        console.log('로그인 성공:', response.data);
+        // 예: 받은 토큰을 localStorage에 저장
+        localStorage.setItem('token', response.data.token);
+        // /main 경로로 이동
+        navigate('/main');
+      }
+    } catch (err) {
+      // MSW 핸들러에서 보낸 에러 응답을 받으면
+      console.error('로그인 실패:', err.response.data);
+      setError(err.response.data.message); // 에러 state에 메시지 저장
+    }
   };
 
 
@@ -52,7 +69,6 @@ const LoginPage = () => {
       <div className="right-panel">
         <div className="login-form-container">
           <h2>로그인 하기</h2>
-          {/* ✨ 4. form 태그에 onSubmit 이벤트를 연결합니다. */}
           <form onSubmit={handleLogin}>
             <div className="input-group">
               <input
@@ -76,6 +92,8 @@ const LoginPage = () => {
             <button type="submit" className="login-button">
               로그인 하기
             </button>
+            {/* ✨ 4. 에러 메시지를 화면에 표시합니다. */}
+            {error && <p className="error-message">{error}</p>}
           </form>
 
           <div className="signup-prompt-right">

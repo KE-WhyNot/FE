@@ -217,3 +217,11 @@
   width: 24px;
   height: 24px;
 }
+
+
+.error-message {
+  color: red;
+  font-size: 0.875rem;
+  text-align: center;
+  margin-top: 1rem;
+}

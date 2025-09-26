@@ -1,14 +1,15 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LoginPage from './components/LoginPage/LoginPage';
-import MainPage from './components/MainPage/MainPage'; // Main 페이지 컴포넌트
+import MainPage from './components/MainPage/MainPage';
 import SignupPage from './components/SignupPage/SignupPage';
 import PaperTrading from './components/PaperTrading/PaperTrading';
 import SettingLayout from './components/Setting/SettingLayout';
 import Profile from './components/Setting/Profile';
 import Notification from './components/Setting/Notification';
 import SavingsPage from './components/SavingsPage/SavingsPage';
-import PolicyPage from './components/PolicyPage/PolicyPage'; // ✨ PolicyPage import
+import PolicyPage from './components/PolicyPage/PolicyPage';
+import PortfolioPage from './components/PortfolioPage/PortfolioPage'; // ✨ PortfolioPage import 추가
 
 function App() {
   return (
@@ -24,7 +25,8 @@ function App() {
           <Route path="notification" element={<Notification />} />
         </Route>
         <Route path="/savings" element={<SavingsPage />} />
-        <Route path="/policy" element={<PolicyPage />} /> {/* ✨ 새 경로 추가 */}
+        <Route path="/policy" element={<PolicyPage />} />
+        <Route path="/portfolio" element={<PortfolioPage />} /> {/* ✨ 새 경로 추가 */}
       </Routes>
     </BrowserRouter>
   );

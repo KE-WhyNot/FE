@@ -1,0 +1,146 @@
+.portfolio-page-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.portfolio-content {
+  width: 100%;
+  max-width: 1400px;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+/* ✨ 메인 제목과 두 컬럼을 위한 새로운 스타일 추가 */
+.main-title-section h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+}
+
+.portfolio-columns {
+  display: flex;
+  gap: 2rem;
+}
+/* ----- */
+
+.portfolio-left {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+}
+
+.portfolio-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-section {
+  text-align: center; /* ✨ 제목들을 가운데 정렬합니다. */
+}
+
+.title-section h3 {
+  font-size: 1.2rem;
+  color: #555;
+  margin: 0 0 1rem 0; /* ✨ 제목과 차트 사이의 간격을 위해 margin-bottom 추가 */
+}
+
+.donut-chart-container {
+  height: 400px;
+  margin-bottom: 2rem;
+}
+
+.summary-cards {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.summary-card {
+  flex: 1;
+  background-color: #ffffff;
+  border: 1px solid #e9e9e9;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+.card-title .percentage {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.card-title span {
+  font-size: 0.9rem;
+  color: #555;
+}
+.summary-card h4 {
+  margin: 0 0 1rem 0;
+  font-size: 1rem;
+}
+.product-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.product-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #aaa;
+}
+.product-details {
+  display: flex;
+  flex-direction: column;
+}
+.product-details span {
+  font-size: 0.8rem;
+  color: #888;
+}
+.product-details strong {
+  font-size: 1rem;
+}
+.product-rates {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+.product-rates strong {
+  color: #5844d1;
+}
+.more-link {
+  text-decoration: none;
+  font-size: 0.85rem;
+  color: #888;
+  text-align: right;
+  display: block;
+}
+
+.pie-chart-container {
+  height: 500px;
+  margin-bottom: 2rem;
+}
+
+.llm-placeholder {
+  flex-grow: 1;
+  background-color: #e0e0e0;
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #888;
+}

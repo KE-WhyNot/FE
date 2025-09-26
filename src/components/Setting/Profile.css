@@ -1,0 +1,27 @@
+/* 프로필 폼 전용 스타일 */
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.form-group input[readOnly] {
+  background-color: #f7f7f7;
+  color: #888;
+}

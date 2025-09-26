@@ -1,4 +1,4 @@
-/* 헤더를 감싸는 컨테이너. 헤더가 화면 중앙에 위치하도록 패딩을 줌 */
+/* 헤더를 감싸는 컨테이너 */
 .header-container {
   grid-area: header;
   width: 100%;
@@ -6,22 +6,21 @@
   box-sizing: border-box;
 }
 
-/* app-header를 floating 스타일로 변경 */
+/* app-header floating 스타일 */
 .app-header {
   width: 100%;
-  margin: 0 ;
+  margin: 0;
   padding: 1rem 2.5rem;
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
   display: flex;
-  /* ✨ 아이템 정렬 방식을 변경하여 레이아웃 안정성 확보 */
-  justify-content: flex-start; 
+  justify-content: flex-start;
   align-items: center;
   box-sizing: border-box;
 }
 
-/* 로고 컨테이너 (너비 유지) */
+/* 로고 컨테이너 */
 .logo-container {
   display: flex;
   align-items: center;
@@ -29,19 +28,17 @@
 }
 
 .header-logo {
-  height: 100px; /* ✨ 레이아웃 안정성을 위해 크기 재조정 */
+  height: 100px; /* 로고 크기는 보기 좋게 60px로 유지 */
 }
 
-/* 네비게이션 메뉴 (간격 조정) */
+/* 네비게이션 메뉴 */
 .header-nav {
   display: flex;
   align-items: center;
-  /* ✨ margin: 0 auto로 중앙에 위치시켜 좌우 간격을 자동으로 조절 */
   margin: 0 auto;
-  gap: 4.5rem; /* 메뉴 간 간격 */
+  gap: 4.5rem;
 }
 
-/* 밑줄 효과를 위한 스타일 추가 */
 .header-nav a {
   position: relative;
   text-decoration: none;
@@ -66,33 +63,49 @@
   transition: transform 0.3s ease-in-out;
 }
 
-/* 마우스를 올렸을 때 색상 변경 및 밑줄 나타남 */
+/* ✨ 1. 마우스를 올린 메뉴는 항상 밑줄과 색상 변경 */
 .header-nav a:hover {
   color: #5844d1;
 }
-
 .header-nav a:hover::after {
   transform: scaleX(1);
 }
 
-/* 활성화된 메뉴는 항상 밑줄 표시 */
+/* ✨ 2. 활성화된(현재 페이지) 메뉴는 기본적으로 밑줄 표시 */
 .header-nav a.active {
   color: #5844d1;
 }
-
 .header-nav a.active::after {
   transform: scaleX(1);
 }
 
-/* 사용자 정보 컨테이너 (너비 유지) */
+/* ✨ 3. 하지만, 네비게이션 영역 전체에 마우스가 올라가 있다면(.is-hovered), 활성화된 메뉴의 밑줄을 숨김 */
+/* (이렇게 하면 마우스를 올린 메뉴에만 밑줄이 보이게 됩니다) */
+.header-nav.is-hovered a.active {
+  color: #333; 
+}
+
+.header-nav.is-hovered a.active::after {
+  transform: scaleX(0);
+}
+
+
+/* 사용자 정보 컨테이너 */
 .user-info-container {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
   background-color: #f4f2ff;
   padding: 0.5rem 0.6rem;
   border-radius: 30px;
   flex-shrink: 0;
+}
+
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem; /* 아바타와 이름 사이 간격 */
+  cursor: pointer; /* ✨ 마우스를 올리면 손가락 모양으로 변경 */
+  margin-right: 0.5rem; /* 알림 아이콘과의 간격 */
 }
 
 .user-avatar {
@@ -121,4 +134,73 @@
   align-items: center;
   font-size: 1.4rem;
   cursor: pointer;
+}
+
+/* --- ✨ 알림 관련 스타일 추가 --- */
+
+/* 알림 아이콘과 팝업 패널을 감싸는 컨테이너 (위치 기준점) */
+.notification-container {
+  position: relative;
+}
+
+/* 알림 아이콘 뱃지 */
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ff4d4f; /* 눈에 띄는 빨간색 */
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+/* 알림 팝업 패널 */
+.notification-panel {
+  position: absolute;
+  top: 120%; /* 아이콘 아래에 위치 */
+  right: 0;
+  width: 320px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #eee;
+  z-index: 100;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* 개별 알림 아이템 */
+.notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+/* 안 읽은 알림 스타일 */
+.notification-item.unread {
+  background-color: #f0efff; /* A7A3FF 보다 연한 색으로 가독성 확보 */
+  font-weight: 500;
+}
+
+/* 읽은 알림 스타일 (기본값) */
+.notification-item.read {
+  background-color: #ffffff;
+  color: #888;
+}
+
+.notification-item:hover {
+  background-color: #e9e7ff; /* 마우스 올렸을 때 색상 */
 }

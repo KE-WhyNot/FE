@@ -1,7 +1,5 @@
-/* LoginPage.css의 스타일을 대부분 재활용합니다 */
-
 /* 전체 페이지 컨테이너 스타일 */
-.signup-page-container { /* ✨ 클래스명 변경 */
+.signup-page-container {
   display: flex;
   width: 100%;
   max-width: 1280px;
@@ -15,8 +13,7 @@
   box-sizing: border-box;
   position: relative;
 }
-
-/* 좌측 상단 로고 (LoginPage와 동일) */
+/* 좌측 상단 로고 */
 .main-logo {
   position: absolute;
   top: 2rem;
@@ -24,8 +21,7 @@
   width: 110px;
   z-index: 10;
 }
-
-/* 왼쪽 영역 (LoginPage와 동일) */
+/* 왼쪽 영역 */
 .left-panel {
   flex: 1;
   display: flex;
@@ -37,42 +33,24 @@
   position: relative;
   min-height: calc(100vh - 4rem);
 }
-
-.welcome-text {
-  text-align: left;
-  margin-bottom: 2rem;
-}
-
 .welcome-text h1 {
   font-size: 2.8rem;
   font-weight: 700;
   margin: 0 0 1rem 0;
   color: #222;
 }
-
 .welcome-text p {
   font-size: 1.25rem;
   color: #555;
-  margin: 0;
+  margin: 0 0 2rem 0;
 }
-
-.signup-prompt-left {
-  font-size: 1rem;
-  margin-top: 2rem;
-}
-
-.signup-prompt-left span {
-  color: #555;
-}
-
 .signup-prompt-left a {
   margin-left: 0.5rem;
   color: #6d55ff;
   font-weight: 600;
   text-decoration: none;
 }
-
-/* 책상 일러스트 (LoginPage와 동일) */
+/* 책상 일러스트 */
 .desk-illustration {
   position: absolute;
   bottom: 400px;
@@ -81,7 +59,6 @@
   max-width: 240px;
   z-index: 5;
 }
-
 /* 오른쪽 영역 */
 .right-panel {
   flex: 0.8;
@@ -91,8 +68,11 @@
   padding-top: 2rem;
   z-index: 10;
 }
+<<<<<<< HEAD
+=======
 
 /* ✨ 회원가입 폼 컨테이너 스타일 (LoginPage의 login-form-container와 유사) */
+>>>>>>> origin/dahyun/FE
 .signup-form-container {
   background-color: #ffffff;
   padding: 3rem;
@@ -101,7 +81,6 @@
   width: 100%;
   max-width: 420px;
 }
-
 .signup-form-container h2 {
   font-size: 1.8rem;
   font-weight: 700;
@@ -109,12 +88,21 @@
   margin-bottom: 2rem;
   color: #333;
 }
-
+/* --- 입력 그룹 스타일 --- */
 .input-group {
   position: relative;
-  margin-bottom: 1.2rem; /* 입력 필드 간 간격 유지 */
+  margin-bottom: 1.2rem;
 }
-
+/* 버튼이 있는 입력 그룹 */
+.input-group.with-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.input-group.with-button input,
+.input-group.with-button .inline-button {
+  height: 48px; /* 인풋/버튼 높이 통일 */
+}
 .input-group input {
   width: 100%;
   padding: 1rem;
@@ -124,23 +112,35 @@
   font-size: 1rem;
   box-sizing: border-box;
 }
+.input-group input:disabled {
+  background-color: #ebebeb;
+  color: #999;
+}
 
-.input-group input::placeholder {
+/* ✨ [수정] 입력창 옆 인라인 버튼 */
+.inline-button {
+  flex-shrink: 0;
+  width: 120px; /* ✨ 너비를 고정값으로 지정 */
+  padding: 0; /* ✨ 기존 padding은 제거 */
+  border: 1px solid #6d55ff;
+  background-color: #fff;
+  color: #6d55ff;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inline-button:disabled {
+  background-color: #f0f0f0;
+  border-color: #ccc;
   color: #aaa;
+  cursor: not-allowed;
 }
-
-/* ✨ 아이디 입력 옆 체크 아이콘 (임시) */
-.input-group .input-icon {
-  position: absolute;
-  top: 50%;
-  right: 1rem;
-  transform: translateY(-50%);
-  color: #6d55ff; /* 체크 아이콘 색상 */
-  font-size: 1rem;
-  font-weight: bold;
-}
-
-/* 비밀번호 보이기/숨기기 아이콘 (LoginPage와 동일) */
+/* 비밀번호 토글 아이콘 */
 .password-toggle-icon {
   position: absolute;
   top: 50%;
@@ -150,21 +150,7 @@
   color: #888;
   font-size: 1.2rem;
 }
-
-/* ✨ 생년월일 input 스타일 조정 */
-.date-input {
-  color: #333; /* 기본 텍스트 색상 */
-}
-/* 사용자가 값을 선택하지 않았을 때 placeholder 색상 유지 (선택 사항) */
-.date-input:invalid { 
-  color: #aaa; 
-}
-.date-input:focus {
-  color: #333;
-}
-
-
-/* ✨ 등록하기 버튼 스타일 (LoginPage의 login-button과 유사) */
+/* 등록하기 버튼 */
 .signup-button {
   width: 100%;
   padding: 1rem;
@@ -175,9 +161,13 @@
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
-  margin-top: 2rem; /* 버튼 위 여백 추가 */
+  margin-top: 2rem;
+  transition: background-color 0.2s;
 }
-
-.signup-button:hover {
+.signup-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.signup-button:hover:not(:disabled) {
   background-color: #5a45e0;
 }

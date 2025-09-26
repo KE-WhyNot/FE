@@ -7,7 +7,8 @@ import PaperTrading from './components/PaperTrading/PaperTrading';
 import SettingLayout from './components/Setting/SettingLayout';
 import Profile from './components/Setting/Profile';
 import Notification from './components/Setting/Notification';
-
+import SavingsPage from './components/SavingsPage/SavingsPage';
+import PolicyPage from './components/PolicyPage/PolicyPage'; // ✨ PolicyPage import
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="notification" element={<Notification />} />
         </Route>
+        <Route path="/savings" element={<SavingsPage />} />
+        <Route path="/policy" element={<PolicyPage />} /> {/* ✨ 새 경로 추가 */}
       </Routes>
     </BrowserRouter>
   );

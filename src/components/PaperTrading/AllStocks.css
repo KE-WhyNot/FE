@@ -1,0 +1,178 @@
+.all-stocks-container {
+  padding: 2rem;
+  background-color: #f9fafb;
+}
+
+.stock-page-header {
+  margin-bottom: 2rem;
+}
+
+.global-stock-search {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.stock-detail-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* 2:1 비율로 좌우 분할 */
+  gap: 1.5rem;
+  align-items: flex-start;
+}
+
+.chart-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.widget {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.widget-header h3 {
+  margin: 0;
+}
+
+.chart-tabs button {
+  background: none;
+  border: none;
+  padding: 0.3rem 0.7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+.chart-tabs button.active {
+  background-color: #f0efff;
+  color: #6e55ff;
+}
+
+.line-chart-container {
+  height: 350px;
+}
+.bar-chart-container {
+  height: 150px;
+}
+
+/* --- 오른쪽 주문 패널 --- */
+.order-panel .widget {
+  position: sticky; /* 스크롤 시 상단에 고정 */
+  top: 2rem;
+}
+
+.order-title {
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+.stock-id {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+.stock-logo-small {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+}
+
+.order-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 1rem;
+}
+.order-tabs button {
+  padding: 0.8rem;
+  border: none;
+  background-color: #f7f7f7;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.order-tabs button.active {
+  background-color: #fff;
+  border-bottom: 3px solid #6e55ff;
+}
+
+.order-book {
+  font-size: 0.9rem;
+}
+.order-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-radius: 4px;
+}
+.order-row.sell {
+  background-color: #e3f2fd;
+} /* 매도: 파란색 계열 */
+.order-row.buy {
+  background-color: #ffebee;
+} /* 매수: 붉은색 계열 */
+.order-book .divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 0.5rem 0;
+}
+
+.order-form {
+  margin-top: 1.5rem;
+}
+.order-form .form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+.order-form input {
+  width: 60%;
+  text-align: right;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.order-summary {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+.total-amount {
+  color: #d32f2f;
+}
+
+.order-button {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+  cursor: pointer;
+  margin-top: 1rem;
+}
+.order-button.buy {
+  background-color: #d32f2f;
+}
+.order-button.sell {
+  background-color: #1976d2;
+}

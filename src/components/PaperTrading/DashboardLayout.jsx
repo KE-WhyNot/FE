@@ -1,51 +1,49 @@
-import React, { useState } from 'react';
-import './DashboardLayout.css';
-import Header from '../common/Header';
-import Chatbot from '../Chatbot/Chatbot';
-import { Outlet, NavLink } from 'react-router-dom';
-import { BsChatDots } from 'react-icons/bs'; // ✨ 챗봇 아이콘 import
+import React, { useState } from "react";
+import "./DashboardLayout.css";
+import Header from "../common/Header";
+import Chatbot from "../Chatbot/Chatbot";
+import { Outlet, NavLink } from "react-router-dom";
+import { BsChatDots } from "react-icons/bs";
 
 const DashboardLayout = () => {
+  // 챗봇 팝업의 표시 여부를 관리하는 state는 그대로 사용합니다.
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
     <div className="layout-grid">
       <Header />
 
+      {/* ✨ 사이드바는 원래의 순수한 메뉴 기능으로 되돌립니다. */}
       <aside className="app-sidebar">
-        {/* ✨ isChatOpen 상태에 따라 사이드바 내용물을 교체합니다. */}
-        {isChatOpen ? (
-          // --- 챗봇이 열렸을 때 ---
-          <Chatbot onClose={() => setIsChatOpen(false)} />
-        ) : (
-          // --- 기본 상태 (네비게이션 메뉴) ---
-          <>
-            <div className="sidebar-content">
-              <h3 className="sidebar-title">사용자 패널</h3>
-              <nav className="sidebar-nav">
-                <ul>
-                  <li><NavLink to="/papertrading">대시보드</NavLink></li>
-                  <li><NavLink to="/all-stocks">전체종목</NavLink></li>
-                  <li><NavLink to="/tutorial">튜토리얼</NavLink></li>
-                  <li><NavLink to="/quiz">퀴즈</NavLink></li>
-                </ul>
-              </nav>
-            </div>
-            
-            {/* ✨ 사이드바 하단에 위치할 챗봇 실행 버튼 */}
-            <div className="sidebar-footer">
-              <button className="chatbot-trigger" onClick={() => setIsChatOpen(true)}>
-                <BsChatDots />
-                <span>유스파이 챗봇</span>
-              </button>
-            </div>
-          </>
-        )}
+        <h3 className="sidebar-title">사용자 패널</h3>
+        <nav className="sidebar-nav">
+          <ul>
+            <li>
+              <NavLink to="/papertrading">대시보드</NavLink>
+            </li>
+            <li>
+              <NavLink to="/all-stocks">전체종목</NavLink>
+            </li>
+            <li>
+              <NavLink to="/tutorial">튜토리얼</NavLink>
+            </li>
+            <li>
+              <NavLink to="/quiz">퀴즈</NavLink>
+            </li>
+          </ul>
+        </nav>
       </aside>
 
       <main className="main-content">
         <Outlet />
       </main>
+
+      {/* ✨ 챗봇 실행 버튼과 챗봇 팝업을 레이아웃 최상위에 배치합니다. */}
+      <div className="chatbot-fab" onClick={() => setIsChatOpen(true)}>
+        <BsChatDots />
+      </div>
+
+      {isChatOpen && <Chatbot onClose={() => setIsChatOpen(false)} />}
     </div>
   );
 };

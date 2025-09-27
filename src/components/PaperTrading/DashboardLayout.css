@@ -39,7 +39,8 @@
   margin: 0;
 }
 
-.sidebar-nav li a, .sidebar-nav .sidebar-button {
+.sidebar-nav li a,
+.sidebar-nav .sidebar-button {
   display: block;
   width: 100%;
   padding: 0.8rem 1rem;
@@ -55,7 +56,8 @@
   cursor: pointer;
 }
 
-.sidebar-nav li a:hover, .sidebar-nav .sidebar-button:hover {
+.sidebar-nav li a:hover,
+.sidebar-nav .sidebar-button:hover {
   background-color: #f4f2ff;
 }
 
@@ -102,4 +104,28 @@
 .chatbot-trigger:hover {
   background-color: #e9e7ff;
   border-color: #5844d1;
+}
+
+/* --- ✨ 챗봇 플로팅 버튼(FAB) 스타일 --- */
+.chatbot-fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 60px;
+  height: 60px;
+  background-color: #5844d1;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 999;
+  transition: transform 0.2s ease-in-out;
+}
+
+.chatbot-fab:hover {
+  transform: scale(1.1);
 }

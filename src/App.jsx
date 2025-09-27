@@ -8,7 +8,8 @@ import SettingLayout from './components/Setting/SettingLayout';
 import Profile from './components/Setting/Profile';
 import Notification from './components/Setting/Notification';
 import SavingsPage from './components/SavingsPage/SavingsPage';
-import PolicyPage from './components/PolicyPage/PolicyPage'; // ✨ PolicyPage import
+import PolicyPage from './components/PolicyPage/PolicyPage';
+import DashboardLayout from './components/PaperTrading/DashboardLayout';
 
 function App() {
   return (
@@ -17,14 +18,17 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/main" element={<MainPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/papertrading" element={<PaperTrading />} />
         <Route path="/setting" element={<SettingLayout />}>
           <Route index element={<Profile />} />
           <Route path="profile" element={<Profile />} />
           <Route path="notification" element={<Notification />} />
         </Route>
         <Route path="/savings" element={<SavingsPage />} />
-        <Route path="/policy" element={<PolicyPage />} /> {/* ✨ 새 경로 추가 */}
+        <Route path="/policy" element={<PolicyPage />} /> 
+        <Route element={<DashboardLayout />}>
+          <Route path="/papertrading" element={<PaperTrading />} />
+          {/* <Route path="/all-stocks" element={<AllStocks />} /> */}
+        </Route>
       </Routes>
     </BrowserRouter>
   );

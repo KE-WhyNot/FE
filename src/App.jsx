@@ -9,7 +9,8 @@ import Profile from './components/Setting/Profile';
 import Notification from './components/Setting/Notification';
 import SavingsPage from './components/SavingsPage/SavingsPage';
 import PolicyPage from './components/PolicyPage/PolicyPage';
-import PortfolioPage from './components/PortfolioPage/PortfolioPage'; // ✨ PortfolioPage import 추가
+import PortfolioPage from './components/PortfolioPage/PortfolioPage';
+import StockRecommendationPage from './components/StockRecommendationPage/StockRecommendationPage'; // ✨ 1. import 추가
 
 function App() {
   return (
@@ -26,7 +27,8 @@ function App() {
         </Route>
         <Route path="/savings" element={<SavingsPage />} />
         <Route path="/policy" element={<PolicyPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} /> {/* ✨ 새 경로 추가 */}
+        <Route path="/portfolio" element={<PortfolioPage />} />
+        <Route path="/portfolio/recommendations" element={<StockRecommendationPage />} /> {/* ✨ 2. 새 경로 추가 */}
       </Routes>
     </BrowserRouter>
   );

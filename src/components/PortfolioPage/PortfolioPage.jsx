@@ -3,6 +3,7 @@ import './PortfolioPage.css';
 import Header from '../common/Header';
 import { ResponsivePie } from '@nivo/pie';
 import { FaLandmark, FaMicrochip } from 'react-icons/fa';
+import { Link } from 'react-router-dom';
 
 // 종합 추천 데이터
 const portfolioDetails = [
@@ -143,9 +144,9 @@ const PortfolioPage = () => {
                       layers={['arcs', 'arcLinkLabels', CenteredMetric]}
                     />
                 </div>
-                <div className="summary-cards">
-                    {portfolioDetails.map((card) => (
-                    <div className="summary-card" key={card.id}>
+                    <div className="summary-cards">
+                        {portfolioDetails.map((card) => (
+                        <div className="summary-card" key={card.id}>
                         <div className="card-title">
                         <span className="percentage" style={{ color: card.color }}>
                             {card.percentage}%
@@ -170,7 +171,11 @@ const PortfolioPage = () => {
                             <span>기본 {card.rates.base}</span>
                         </div>
                         )}
-                        <a href="#" className="more-link">{card.linkText}</a>
+                        {card.id === '주식' ? (
+                            <Link to="/portfolio/recommendations" className="more-link">{card.linkText}</Link>
+                        ) : (
+                            <a href="#" className="more-link">{card.linkText}</a>
+                        )}
                     </div>
                     ))}
                 </div>

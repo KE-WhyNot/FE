@@ -60,9 +60,8 @@ const pieChartData = [
     { id: '화학', value: 156.37 }, { id: '금융', value: 160.14 },
 ];
 
-// ✨ 두 차트에서 공통으로 사용할 커스텀 라벨 컴포넌트
+// 종합 추천 차트를 위한 커스텀 라벨 컴포넌트
 const CustomArcLinkLabel = ({ datum, style }) => {
-  // 숫자에 쉼표를 추가하거나 그대로 사용
   const displayValue = typeof datum.value === 'number' ? datum.value.toLocaleString() : datum.value;
   return (
     <g transform={style.transform} style={{ pointerEvents: 'none' }}>
@@ -70,7 +69,7 @@ const CustomArcLinkLabel = ({ datum, style }) => {
         textAnchor="middle"
         dominantBaseline="central"
         style={{
-          fill: style.textColor,
+          fill: '#555', // ✨ 글자색을 회색으로 고정
           fontSize: 13,
           fontWeight: 600,
         }}
@@ -80,10 +79,11 @@ const CustomArcLinkLabel = ({ datum, style }) => {
       <text
         textAnchor="middle"
         dominantBaseline="central"
-        dy="1.2em"
+        dy="18"
         style={{
-          fill: '#777',
-          fontSize: 12,
+          fill: '#555', // ✨ 글자색을 회색으로 고정
+          fontSize: 14,
+          fontWeight: 'bold',
         }}
       >
         {displayValue}
@@ -91,7 +91,6 @@ const CustomArcLinkLabel = ({ datum, style }) => {
     </g>
   );
 };
-
 
 const PortfolioPage = () => {
   const totalAmount = portfolioDetails.reduce((sum, item) => sum + item.value, 0);
@@ -136,10 +135,10 @@ const PortfolioPage = () => {
                       margin={{ top: 40, right: 120, bottom: 40, left: 120 }} 
                       colors={{ datum: 'data.color' }}
                       enableArcLabels={false}
-                      enableArcLinkLabels={true}
+                      enableArcLinkLabels={true} 
                       arcLinkLabelsSkipAngle={10}
-                      arcLinkLabelsTextColor="#333"
-                      arcLinkLabelsColor={{ from: 'color' }} // ✨ 지시선 색상을 차트 조각 색상과 통일합니다.
+                      arcLinkLabelsTextColor="#555" // ✨ 지시선 옆 텍스트 색상을 회색으로 고정
+                      arcLinkLabelsColor={{ from: 'color' }}
                       arcLinkLabelsComponent={CustomArcLinkLabel}
                       layers={['arcs', 'arcLinkLabels', CenteredMetric]}
                     />
@@ -193,15 +192,14 @@ const PortfolioPage = () => {
                       borderColor={'#f9fafb'}
                       colors={{ scheme: 'spectral' }}
                       arcLinkLabelsSkipAngle={10}
-                      arcLinkLabelsTextColor="#333333"
+                      arcLinkLabelsTextColor="#555" // ✨ 지시선 옆 텍스트 색상을 회색으로 고정
                       arcLinkLabelsOffset={-2}
                       arcLinkLabelsThickness={2}
                       arcLinkLabelsColor={{ from: 'color' }}
                       enableArcLabels={false}
-                      // ✨ 추천 종목 차트의 라벨이 숫자까지 포함하도록 다시 확인합니다.
-                      arcLinkLabelsComponent={CustomArcLinkLabel}
                     />
                 </div>
+                
                 <div className="llm-placeholder">
                     LLM 들어갈 자리
                 </div>
@@ -213,4 +211,3 @@ const PortfolioPage = () => {
 };
 
 export default PortfolioPage;
-

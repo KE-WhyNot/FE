@@ -129,7 +129,7 @@ const MainPage = () => {
           <div className="info-card">
             <div className="card-header">
               <h3>포트폴리오</h3>
-              <a href="#">자세히보기 &gt;</a>
+              <Link to="/portfolio">자세히보기 &gt;</Link>
             </div>
             <div className="card-content chart-container">
               <ResponsivePie

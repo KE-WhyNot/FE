@@ -92,25 +92,19 @@ const policyData = [
 ];
 
 const PolicyPage = () => {
-  // ✨ 드롭다운 메뉴가 열려있는지 관리하는 상태
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  // ✨ 선택된 정렬 기준을 관리하는 상태
   const [sortOrder, setSortOrder] = useState('관련도순');
-  // ✨ 드롭다운 DOM 요소를 참조하기 위한 ref
   const dropdownRef = useRef(null);
   
   const [itemsPerPage, setItemsPerPage] = useState(12);
 
-  // ✨ 드롭다운 외부를 클릭했을 때 메뉴가 닫히도록 하는 로직
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsDropdownOpen(false);
       }
     };
-    // 이벤트 리스너 등록
     document.addEventListener('mousedown', handleClickOutside);
-    // 컴포넌트가 사라질 때 이벤트 리스너 제거
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -164,13 +158,14 @@ const PolicyPage = () => {
               </div>
               <h3 className="policy-title">{policy.title}</h3>
               <p className="policy-description">{policy.description}</p>
+              {/* --- ✨ 수정된 부분 시작 --- */}
               <div className="card-footer">
                 <div className="period-info">
-                  <strong>신청기간</strong>
-                  <span>{policy.period}</span>
+                  <span className="period-label">신청기간</span>
+                  <span className="period-date">{policy.period}</span>
                 </div>
-                <button className="details-button">자세히보기</button>
               </div>
+              {/* --- 수정된 부분 끝 --- */}
             </div>
           ))}
         </div>

@@ -88,7 +88,7 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0 0 0.75rem 0;
-  flex-grow: 1; /* 제목 길이에 따라 카드 높이가 맞춰지도록 */
+  flex-grow: 1; 
 }
 
 .policy-description {
@@ -101,27 +101,31 @@
 
 .card-footer {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   border-top: 1px solid #f0f0f0;
   padding-top: 1rem;
+  margin-top: auto;
 }
 
+/* --- ✨ 수정된 부분 시작 --- */
 .period-info {
+  display: flex;
+  justify-content: space-between; /* '신청기간'과 날짜를 양쪽 끝으로 보냅니다. */
+  align-items: center;
+  width: 100%; /* 부모 요소의 전체 너비를 차지하도록 설정합니다. */
   font-size: 0.85rem;
 }
-.period-info strong {
-  margin-right: 0.5rem;
+/* --- 수정된 부분 끝 --- */
+
+.period-label {
+  color: #888;
+  font-weight: 500;
 }
 
-.details-button {
-  background-color: #ffffff;
-  border: 1px solid #d0d0d0;
-  /* color: #555; */
-  padding: 0.5rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
+.period-date {
+  color: #333;
+  font-weight: 600;
 }
 
 /* pagination 스타일은 SavingsPage.css와 동일하게 사용합니다. */
@@ -147,9 +151,8 @@
   color: white;
 }
 
-/* ✨ 정렬 기준 드롭다운 스타일 */
 .sort-dropdown-container {
-  position: relative; /* 팝업 메뉴의 기준점이 됩니다 */
+  position: relative; 
   display: inline-block;
 }
 
@@ -167,7 +170,7 @@
 
 .sort-dropdown-menu {
   position: absolute;
-  top: 100%; /* 버튼 바로 아래에 위치 */
+  top: 100%; 
   right: 0;
   background-color: white;
   border: 1px solid #e0e0e0;
@@ -189,3 +192,4 @@
 .sort-dropdown-menu li:hover {
   background-color: #f4f2ff;
 }
+

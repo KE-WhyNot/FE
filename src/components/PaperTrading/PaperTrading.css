@@ -1,14 +1,19 @@
 /* --- 메인 대시보드 스타일 --- */
 .paper-trading-container {
-  padding: 1.5rem; /* ✨ 전체적인 상하좌우 여백 축소 */
   background-color: #f9fafb;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.2rem; /* ✨ 하단 여백 축소 */
+  margin-bottom: 1.2rem;
+  flex-shrink: 0;
 }
 
 .dashboard-header h2 {
@@ -30,36 +35,44 @@
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  grid-auto-rows: minmax(260px, auto); /* ✨ 위젯의 최소 높이 축소 */
-  gap: 1.2rem; /* ✨ 위젯 간의 간격 축소 */
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+  flex-grow: 1;
+  overflow: hidden;
 }
 
 .widget {
   background-color: #ffffff;
-  padding: 1.2rem; /* ✨ 위젯 내부 여백 축소 */
+  padding: 1.2rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .widget-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.8rem; /* ✨ 위젯 제목 하단 여백 축소 */
+  margin-bottom: 0.8rem;
+  flex-shrink: 0;
 }
 
 .widget-header h3 {
   margin: 0;
-  font-size: 1.1rem; /* ✨ 제목 폰트 약간 축소 */
+  font-size: 1.1rem;
+  /* ✨ 아이콘과 텍스트를 수직 중앙 정렬하기 위한 스타일 */
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
 }
 
 .add-button {
   background-color: #f0efff;
   color: #6e55ff;
   border: none;
-  width: 28px; /* ✨ 버튼 크기 약간 축소 */
+  width: 28px;
   height: 28px;
   border-radius: 50%;
   font-size: 1.4rem;
@@ -67,166 +80,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.positive {
-  color: #4caf50;
-}
-.negative {
-  color: #f44336;
-}
-
-/* 1. 차트 위젯 */
-.chart-tabs {
-  display: flex;
-  gap: 0.5rem;
-}
-.chart-tabs button {
-  background: none;
-  border: none;
-  padding: 0.2rem 0.6rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: 500;
-  font-size: 0.85rem;
-}
-.chart-tabs button.active {
-  background-color: #f0efff;
-  color: #6e55ff;
-}
-
-.line-chart-container {
-  height: 200px; /* ✨ 라인 차트 높이 축소 */
-}
-.chart-summary {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
-  font-size: 0.85rem;
-  color: #555;
-  margin-top: 0.8rem;
-}
-.chart-summary span {
-  font-weight: 600;
-  margin-right: 0.5rem;
-}
-
-/* 2. 관심 종목 위젯 */
-.watchlist-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem; /* ✨ 목록 아이템 간격 축소 */
-  overflow-y: auto;
-}
-.stock-item {
-  display: flex;
-  align-items: center;
-  gap: 0.8rem;
-}
-.stock-logo {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
   flex-shrink: 0;
 }
-.stock-info {
-  flex-grow: 1;
-}
-.stock-info span,
-.stock-price span {
-  display: block;
-  font-weight: 600;
-  font-size: 0.9rem;
-}
-.stock-info small,
-.stock-price small {
-  color: #888;
-  font-size: 0.8rem;
-}
-.stock-price {
-  text-align: right;
-}
 
-/* 3. 내 종목 위젯 */
-.total-assets {
-  margin-bottom: 1rem; /* ✨ 하단 여백 축소 */
-}
-.total-assets h2 {
-  margin: 0;
-  font-size: 1.8rem;
-}
-.holdings-section {
-  margin-top: 0.8rem;
-}
-.holdings-section h4 {
-  margin: 0 0 0.5rem 0;
-  font-size: 0.95rem;
-}
-.stock-holding-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem;
-  padding: 0.2rem 0;
-}
+.positive { color: #4caf50; }
+.negative { color: #f44336; }
 
-/* 4. 거래내역 & 포트폴리오 */
-.widget-group {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.2rem; /* ✨ 위젯 간 간격 축소 */
-}
-.transaction-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem; /* ✨ 목록 아이템 간격 축소 */
-  overflow-y: auto;
-}
-.transaction-item {
-  display: flex;
-  align-items: center;
-  font-size: 0.85rem;
-}
-.transaction-item .date {
-  font-weight: 600;
-  margin-right: 0.8rem;
-}
-.transaction-item .info {
-  flex-grow: 1;
-}
-.transaction-item .info span {
-  display: block;
-}
-.transaction-item .info small {
-  color: #888;
-}
-.transaction-item .amount {
-  text-align: right;
-}
-.transaction-item .amount span,
-.transaction-item .amount small {
-  display: block;
-}
-.pie-chart-container {
-  flex-grow: 1;
-  min-height: 150px; /* ✨ 파이 차트 최소 높이 확보 */
-}
-
-/* ✨ 1. 시장 선택 버튼이 있는 위젯 헤더 스타일 */
+/* --- ✨ [수정] 누락된 시장 선택 버튼 스타일 추가 --- */
 .widget-header.market-selector {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 0.8rem;
-  margin-bottom: 1rem;
 }
 
-/* ✨ 2. KOSPI, KOSDAQ 등 시장 선택 버튼 그룹 */
 .market-buttons {
   display: flex;
   gap: 0.5rem;
@@ -246,3 +111,46 @@
 .market-buttons button.active {
   color: #333;
 }
+/* --- ✨ 수정 끝 --- */
+
+
+/* 1. 차트 위젯 */
+.chart-tabs { display: flex; gap: 0.5rem; }
+.chart-tabs button { background: none; border: none; padding: 0.2rem 0.6rem; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.85rem;}
+.chart-tabs button.active { background-color: #f0efff; color: #6e55ff; }
+
+.line-chart-container {
+  height: auto;
+  flex-grow: 1;
+  min-height: 150px;
+}
+.chart-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.85rem; color: #555; margin-top: 0.8rem; flex-shrink: 0; }
+.chart-summary span { font-weight: 600; margin-right: 0.5rem; }
+
+/* 2. 관심 종목 위젯 */
+.watchlist-list { flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
+.stock-item { display: flex; align-items: center; gap: 0.8rem; }
+.stock-logo { width: 36px; height: 36px; border-radius: 50%; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; font-weight: bold; flex-shrink: 0; }
+.stock-info { flex-grow: 1; min-width: 0; }
+.stock-info span, .stock-price span { display: block; font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stock-info small, .stock-price small { color: #888; font-size: 0.8rem; }
+.stock-price { text-align: right; }
+
+/* 3. 내 종목 위젯 */
+.total-assets { margin-bottom: 1rem; flex-shrink: 0;}
+.total-assets h2 { margin: 0; font-size: 1.8rem; }
+.holdings-section { margin-top: 0.8rem; }
+.holdings-section h4 { margin: 0 0 0.5rem 0; font-size: 0.95rem; }
+.stock-holding-item { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.2rem 0; }
+
+/* 4. 거래내역 & 포트폴리오 */
+.widget-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; overflow: hidden; }
+.transaction-list { flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
+.transaction-item { display: flex; align-items: center; font-size: 0.85rem; }
+.transaction-item .date { font-weight: 600; margin-right: 0.8rem; }
+.transaction-item .info { flex-grow: 1; min-width: 0; }
+.transaction-item .info span { display: block; }
+.transaction-item .info small { color: #888; }
+.transaction-item .amount { text-align: right; }
+.transaction-item .amount span, .transaction-item .amount small { display: block; }
+.pie-chart-container { flex-grow: 1; min-height: 150px; }

@@ -11,6 +11,7 @@ import SavingsPage from "./components/SavingsPage/SavingsPage";
 import PolicyPage from "./components/PolicyPage/PolicyPage";
 import DashboardLayout from "./components/PaperTrading/DashboardLayout";
 import AllStocks from "./components/PaperTrading/AllStocks";
+import QuizPage from "./components/PaperTrading/Quiz";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route element={<DashboardLayout />}>
           <Route path="/papertrading" element={<PaperTrading />} />
           <Route path="/all-stocks" element={<AllStocks />} />
+          <Route path="/quiz" element={<QuizPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

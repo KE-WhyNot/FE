@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import "./Chatbot.css";
-import { IoSend } from "react-icons/io5"; // ✨ 전송 아이콘
+import { IoSend } from "react-icons/io5";
+import chatbotAvatar from "../../assets/images/chatbot.png";
 
 const Chatbot = ({ onClose }) => {
   const [messages, setMessages] = useState([
@@ -23,7 +24,6 @@ const Chatbot = ({ onClose }) => {
     setMessages(newMessages);
     setInput("");
 
-    // 간단한 봇 답변 로직 (임시)
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
@@ -33,13 +33,15 @@ const Chatbot = ({ onClose }) => {
   };
 
   return (
-    // ✨ 뒷배경을 어둡게 하는 오버레이를 다시 추가합니다.
     <div className="chatbot-overlay" onClick={onClose}>
-      {/* ✨ 이벤트 버블링을 막아, 챗봇 창 클릭 시 닫히지 않게 합니다. */}
       <div className="chatbot-container" onClick={(e) => e.stopPropagation()}>
         <div className="chatbot-header">
           <div className="header-info">
-            <div className="bot-avatar">🤖</div>
+            <img
+              src={chatbotAvatar}
+              alt="Chatbot Avatar"
+              className="bot-avatar-img"
+            />
             <div>
               <h3>유스파이</h3>
               <span>온라인</span>

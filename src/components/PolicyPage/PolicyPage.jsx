@@ -20,7 +20,8 @@ const personalInfoFilters = {
     '학력': ['제한없음', '고졸 미만', '고교 재학', '고졸 예정', '고졸', '대학 재학', '대학 졸업', '석·박사', '기타'],
     '전공요건': ['제한없음', '인문계열', '사회계열', '상경계열', '이학계열', '공학계열', '예체능계열', '농산계열', '기타'],
     '취업상태': ['제한없음', '재직자', '자영업자', '미취업자', '프리랜서', '일용근로자', '(예비)창업자', '단기근로자', '영농종사자', '기타'],
-    '특화분야': ['제한없음', '중소기업', '여성', '기초생활수급자', '한부모가정', '장애인', '농업인', '군인', '지역인재', '기타']
+    '특화분야': ['제한없음', '중소기업', '여성', '기초생활수급자', '한부모가정', '장애인', '농업인', '군인', '지역인재', '기타'],
+    '혼인여부': ['전체', '미혼', '기혼'],
 };
 
 const policyData = [
@@ -43,7 +44,7 @@ const PolicyPage = () => {
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const sortDropdownRef = useRef(null);
 
-  const [activeFilter, setActiveFilter] = useState(null); 
+  const [activeFilter, setActiveFilter] = useState(null);
   const [selectedFilters, setSelectedFilters] = useState({
     agency: '전체',
     categories: {},
@@ -56,9 +57,9 @@ const PolicyPage = () => {
     const agencyMatch = selectedFilters.agency === '전체' || policy.agency === selectedFilters.agency;
     const selectedCategories = Object.values(selectedFilters.categories).flat();
     const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(policy.category);
-    
+
     const personalMatch = Object.entries(selectedFilters.personal).every(([key, value]) => {
-      if (value === '제한없음') return true;
+      if (value === '제한없음' || value === '전체') return true;
       const policyValue = policy.personal_filters?.[key];
       if (!policyValue) return true; // 정책에 해당 조건 없으면 통과
       if(Array.isArray(policyValue)) {
@@ -96,7 +97,7 @@ const PolicyPage = () => {
     } else {
       updatedCategories[category] = [...currentSubcategories, subcategory];
     }
-    
+
     if (updatedCategories[category].length === 0) {
       delete updatedCategories[category];
     }
@@ -115,7 +116,7 @@ const PolicyPage = () => {
 
     setSelectedFilters({ ...selectedFilters, categories: updatedCategories });
   };
-  
+
   const handlePersonalFilterChange = (filterType, value) => {
       const newPersonalFilters = { ...selectedFilters.personal };
       if (newPersonalFilters[filterType] === value) {
@@ -127,11 +128,11 @@ const PolicyPage = () => {
   }
 
   const handleSearch = () => setActiveFilter(null);
-  
+
   const handleReset = () => {
     setSelectedFilters({ agency: '전체', categories: {}, personal: {} });
   };
-  
+
   const categoryIcons = {
     '일자리': <FaBriefcase />, '주거': <FaHome />, '교육': <FaGraduationCap />,
     '복지문화': <FaHeartbeat />, '참여권리': <FaUsers />,
@@ -142,7 +143,7 @@ const PolicyPage = () => {
       <Header />
       <main className="policy-content">
         <h1 className="page-title">청년정책 검색</h1>
-        
+
         <div className="policy-filter-container" ref={filterRef}>
           <div className="policy-filter-bar">
             <div className="search-box">
@@ -168,7 +169,7 @@ const PolicyPage = () => {
               퍼스널 정보 {activeFilter === 'personal' ? <FaMinus /> : <FaPlus />}
             </button>
           </div>
-          
+
           {activeFilter === 'category' && (
             <div className="policy-filter-panel">
               <div className="panel-grid">
@@ -212,7 +213,7 @@ const PolicyPage = () => {
               </div>
             </div>
           )}
-          
+
           {activeFilter === 'personal' && (
             <div className="policy-filter-panel personal-info-panel">
                 <div className="personal-info-grid">
@@ -224,7 +225,17 @@ const PolicyPage = () => {
                         </div>
                         <div className="filter-group">
                             <label>혼인여부</label>
-                            <select><option>선택하세요.</option></select>
+                            <div className="tag-group">
+                              {personalInfoFilters['혼인여부'].map(option => (
+                                <button
+                                  key={option}
+                                  className={`tag-button ${selectedFilters.personal['혼인여부'] === option ? 'active' : ''}`}
+                                  onClick={() => handlePersonalFilterChange('혼인여부', option)}
+                                >
+                                  {option}
+                                </button>
+                              ))}
+                            </div>
                         </div>
                     </div>
                     <div className="filter-row">
@@ -240,22 +251,25 @@ const PolicyPage = () => {
                             <input type="number" placeholder="이하" />
                         </div>
                     </div>
-                    {Object.entries(personalInfoFilters).map(([title, options]) => (
-                        <div className="filter-row" key={title}>
-                             <label className="row-label">{title}</label>
-                             <div className="tag-group">
-                                {options.map(option => (
-                                    <button
-                                        key={option}
-                                        className={`tag-button ${selectedFilters.personal[title] === option ? 'active' : ''}`}
-                                        onClick={() => handlePersonalFilterChange(title, option)}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                             </div>
-                        </div>
-                    ))}
+                    {Object.entries(personalInfoFilters).map(([title, options]) => {
+                        if (title === '혼인여부') return null;
+                        return (
+                            <div className="filter-row" key={title}>
+                                 <label className="row-label">{title}</label>
+                                 <div className="tag-group">
+                                    {options.map(option => (
+                                        <button
+                                            key={option}
+                                            className={`tag-button ${selectedFilters.personal[title] === option ? 'active' : ''}`}
+                                            onClick={() => handlePersonalFilterChange(title, option)}
+                                        >
+                                            {option}
+                                        </button>
+                                    ))}
+                                 </div>
+                            </div>
+                        )
+                    })}
                 </div>
               <div className="panel-actions">
                 <button className="search-button" onClick={handleSearch}><FaSearch /> 검색</button>
@@ -264,12 +278,12 @@ const PolicyPage = () => {
             </div>
           )}
         </div>
-        
+
         <div className="policy-list-info-bar">
           <span>총 <strong>{filteredPolicies.length}</strong>건의 정책정보가 있습니다.</span>
           <div className="sort-dropdown-container" ref={sortDropdownRef}>
-              <button 
-                className="sort-dropdown-button" 
+              <button
+                className="sort-dropdown-button"
                 onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
               >
                 {sortOrder} <FaChevronDown size="0.8em" />

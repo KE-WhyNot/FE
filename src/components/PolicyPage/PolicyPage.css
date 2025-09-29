@@ -273,3 +273,87 @@
 }
 .filter-dropdown-menu li:hover, .sort-dropdown-menu li:hover { background-color: #f4f2ff; }
 
+.personal-info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.personal-info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.filter-row {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    border-bottom: 1px solid #f0f0f0;
+    padding-bottom: 1.5rem;
+}
+.filter-row:last-child {
+    border-bottom: none;
+}
+
+.row-label {
+    font-weight: 600;
+    color: #333;
+    width: 80px; /* 라벨 너비 고정 */
+    flex-shrink: 0;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-group label {
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+.filter-group input[type="number"],
+.filter-group select {
+    width: 120px;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.income-group input {
+    width: 150px;
+}
+
+.select-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #555;
+    background-color: #555;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.tag-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.tag-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    background-color: #f7f7f9;
+    color: #555;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.tag-button.active {
+    background-color: #e0dfff;
+    border-color: #5844d1;
+    color: #5844d1;
+    font-weight: 600;
+}

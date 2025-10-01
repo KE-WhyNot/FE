@@ -20,16 +20,16 @@
   justify-content: space-between;
   align-items: center;
   border-radius: 20px;
-  padding: 3rem 4rem;
+  padding: 6rem 4rem;
   margin-top: 1rem;
   margin-bottom: 2rem;
   gap: 2rem;
   overflow: hidden; /* border-radius가 ::before에도 적용되도록 */
   
   /* ✨ 1. 배경 이미지 설정 */
-  background-image: url('../../assets/images/login_desk.png');
+  background-image: url('../../assets/images/6240060.jpg'); /* 이 부분을 수정했습니다. */
   background-size: cover;
-  background-position: center 33%
+  background-position: center 25%
 }
 
 /* ✨ 2. 배경 위 텍스트 가독성을 위한 오버레이 추가 */

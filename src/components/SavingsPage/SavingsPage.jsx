@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './SavingsPage.css';
-import Header from '../common/Header'; 
+import Header from '../common/Header';
 import { FaSearch, FaPlus, FaChevronDown, FaLandmark } from 'react-icons/fa';
 
 // 예시 데이터 (실제로는 API를 통해 받아옵니다)
@@ -79,6 +79,31 @@ const savingsData = [
 
 
 const SavingsPage = () => {
+    // --- State 추가 ---
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [sortOrder, setSortOrder] = useState('최고금리순');
+    const dropdownRef = useRef(null);
+
+    // --- 드롭다운 외부 클릭 감지를 위한 useEffect ---
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    // --- 정렬 로직 추가 ---
+    const sortedData = [...savingsData].sort((a, b) => {
+        const rateA = parseFloat(sortOrder === '최고금리순' ? a.maxRate : a.baseRate);
+        const rateB = parseFloat(sortOrder === '최고금리순' ? b.maxRate : b.baseRate);
+        return rateB - rateA;
+    });
+
   return (
     <div className="savings-page-layout">
       <Header />
@@ -108,14 +133,27 @@ const SavingsPage = () => {
           <span className="total-count">
             총 <strong>4,137</strong>건의 예·적금 정보가 있습니다.
           </span>
-          <div className="sort-dropdown">
-            최고금리순 <FaChevronDown />
+          {/* --- 기존 정렬 텍스트를 드롭다운 메뉴로 교체 --- */}
+          <div className="sort-dropdown-container" ref={dropdownRef}>
+              <button
+                  className="sort-dropdown-button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                  {sortOrder} <FaChevronDown size="0.8em" />
+              </button>
+              {isDropdownOpen && (
+                  <ul className="sort-dropdown-menu">
+                      <li onClick={() => { setSortOrder('최고금리순'); setIsDropdownOpen(false); }}>최고금리순</li>
+                      <li onClick={() => { setSortOrder('기본금리순'); setIsDropdownOpen(false); }}>기본금리순</li>
+                  </ul>
+              )}
           </div>
         </div>
 
         {/* --- 예적금 목록 --- */}
         <div className="savings-list-container">
-          {savingsData.map((item, index) => (
+          {/* --- 기존 savingsData 대신 sortedData를 사용 --- */}
+          {sortedData.map((item, index) => (
             <div className="savings-item" key={index}>
               <div className="item-left">
                 <div className="bank-logo">

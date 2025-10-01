@@ -68,11 +68,8 @@
   padding-top: 2rem;
   z-index: 10;
 }
-<<<<<<< HEAD
-=======
 
 /* ✨ 회원가입 폼 컨테이너 스타일 (LoginPage의 login-form-container와 유사) */
->>>>>>> origin/dahyun/FE
 .signup-form-container {
   background-color: #ffffff;
   padding: 3rem;

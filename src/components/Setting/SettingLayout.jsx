@@ -11,19 +11,19 @@ const SettingLayout = () => {
       <div className="setting-content-wrapper">
         <aside className="setting-sidebar">
           <div className="sidebar-header">
-            <h2>환경설정</h2>
+            <h2>마이페이지</h2>
           </div>
           <nav className="setting-nav">
             <ul>
-              <li><NavLink to="/setting/profile"><FiUser /> 프로필 설정</NavLink></li>
-              <li><NavLink to="/setting/notification"><FiBell /> 알림</NavLink></li>
+              <li><NavLink to="/setting/profile"><FiUser /> 프로필</NavLink></li>
+              <li><NavLink to="/setting/notification"><FiBell /> 알림함</NavLink></li>
               <li><NavLink to="/setting/investment"><FiLock /> 투자</NavLink></li>
-              <li><NavLink to="/setting/test"><FiSettings /> 테스트</NavLink></li>
+              <li><NavLink to="/setting/settings"><FiSettings /> 설정</NavLink></li>
             </ul>
           </nav>
         </aside>
         <main className="setting-main-content">
-          <Outlet /> {/* 이 자리에 Profile, Notification 컴포넌트가 표시됩니다. */}
+          <Outlet />
         </main>
       </div>
     </div>

@@ -1,0 +1,58 @@
+.tutorial-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 2000;
+}
+
+.highlight-box {
+  position: absolute;
+  background-color: transparent;
+  border-radius: 8px;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.6);
+  z-index: 2001;
+  transition: all 0.3s ease-in-out;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  width: 300px;
+  max-width: 90vw;
+  z-index: 2002;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(0);
+  transition: all 0.3s ease-in-out;
+}
+
+.tooltip p {
+  margin: 0 0 1rem 0;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.tooltip-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.tooltip-footer span {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.tooltip-footer button {
+  background-color: #5844d1;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}

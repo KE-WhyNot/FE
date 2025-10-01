@@ -15,7 +15,6 @@ const LoginPage = () => {
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  // ✨ 2. 에러 메시지를 저장할 state를 추가합니다.
   const [error, setError] = useState('');
 
   const navigate = useNavigate();
@@ -26,30 +25,53 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(''); // 함수 시작 시 에러 메시지 초기화
+    setError('');
 
     try {
-      // axios를 사용해 '/login' API에 POST 요청을 보냅니다.
       const response = await axios.post('/login', {
         id: id,
         password: password,
       });
 
-      // MSW 핸들러에서 보낸 성공 응답을 받으면
       if (response.data.success) {
         console.log('로그인 성공:', response.data);
-        // 예: 받은 토큰을 localStorage에 저장
         localStorage.setItem('token', response.data.token);
-        // /main 경로로 이동
         navigate('/main');
       }
     } catch (err) {
-      // MSW 핸들러에서 보낸 에러 응답을 받으면
       console.error('로그인 실패:', err.response.data);
-      setError(err.response.data.message); // 에러 state에 메시지 저장
+      setError(err.response.data.message);
     }
   };
+  
+  // --- ✨ 소셜 로그인 관련 코드 추가 ---
+  
+  // 1. 각 소셜 플랫폼의 인증 URL을 상수로 정의합니다.
+  const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=618174215491-u3rdo188811ifrti3uvrs0f2an5fdoam.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fgoogle&scope=openid%20profile%20email&state=test123';
+  const NAVER_AUTH_URL = 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=F2t5MnE8W6DBr7PfaG94&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fnaver&scope=name%20email%20profile_image&state=xyz123';
+  const KAKAO_AUTH_URL = 'https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=78e3b0999e39cf40232bdd8c78edd504&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fkakao&scope=account_email%20profile_nickname%20profile_image&state=xyz123';
 
+  // 2. 각 버튼 클릭 시 실행될 핸들러 함수를 만듭니다.
+  const handleSocialLogin = (provider) => {
+    let url;
+    switch (provider) {
+      case 'google':
+        url = GOOGLE_AUTH_URL;
+        break;
+      case 'naver':
+        url = NAVER_AUTH_URL;
+        break;
+      case 'kakao':
+        url = KAKAO_AUTH_URL;
+        break;
+      default:
+        return;
+    }
+    // 해당 URL로 페이지를 이동시킵니다.
+    window.location.href = url;
+  };
+  
+  // ------------------------------------
 
   return (
     <div className="login-page-container">
@@ -92,7 +114,6 @@ const LoginPage = () => {
             <button type="submit" className="login-button">
               로그인 하기
             </button>
-            {/* ✨ 4. 에러 메시지를 화면에 표시합니다. */}
             {error && <p className="error-message">{error}</p>}
           </form>
 
@@ -103,14 +124,16 @@ const LoginPage = () => {
           <div className="divider">
             <span>또는</span>
           </div>
+          
+          {/* ✨ 3. 각 버튼에 onClick 이벤트를 연결합니다. */}
           <div className="social-login-buttons">
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialLogin('naver')}>
               <img src={naverLogo} alt="Naver Login" />
             </button>
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialLogin('google')}>
               <img src={googleLogo} alt="Google Login" />
             </button>
-            <button className="social-button">
+            <button className="social-button" onClick={() => handleSocialLogin('kakao')}>
               <img src={kakaoLogo} alt="Kakao Login" />
             </button>
           </div>

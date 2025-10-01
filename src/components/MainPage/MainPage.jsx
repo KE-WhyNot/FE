@@ -110,7 +110,7 @@ const MainPage = () => {
                 <li>
                   <div className="item-icon bank-icon"><FaLandmark /></div>
                   <div className="item-details">
-                    <span className="item-title">Sh천만모아우대예금</span>
+                    <span className="item-title">Sh첫만남우대예금</span>
                     <span className="item-source">SH수협은행</span>
                   </div>
                   <div className="item-interest">

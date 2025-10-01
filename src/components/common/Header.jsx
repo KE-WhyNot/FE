@@ -5,7 +5,6 @@ import youthfiLogo from '../../assets/logos/youthfi.png';
 import userAvatar from '../../assets/images/avatar.png';
 import { IoMdNotifications } from 'react-icons/io';
 
-// ✨ 1. 백엔드 연결 전 사용할 임의의 알림 데이터
 const mockNotifications = [
   { id: 1, message: '새로운 튜토리얼이 추가되었습니다.', read: false },
   { id: 2, message: 'Nvidia 주식 관련 퀴즈가 업데이트되었습니다.', read: false },
@@ -16,28 +15,27 @@ const mockNotifications = [
 const Header = () => {
   const [isNavHovered, setIsNavHovered] = useState(false);
   const navigate = useNavigate();
-
-  // ✨ 2. 알림 데이터와 패널 열림 상태를 위한 state 추가
   const [notifications, setNotifications] = useState(mockNotifications);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
-  // ✨ 3. 안 읽은 알림 개수를 계산 (뱃지에 표시용)
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  // ✨ 4. 알림 아이콘 클릭 시 패널 열고 닫는 함수
   const toggleNotificationPanel = () => {
     setIsPanelOpen(!isPanelOpen);
   };
 
-  // ✨ 5. 특정 알림을 클릭했을 때 '읽음'으로 처리하는 함수
   const handleNotificationClick = (id) => {
     setNotifications(
       notifications.map(notification =>
         notification.id === id ? { ...notification, read: true } : notification
       )
     );
-    // 선택적으로, 알림 클릭 시 관련 페이지로 이동하는 로직도 추가 가능
-    // navigate('/some-path');
+  };
+
+  // ✨ '전체 알림 보기' 버튼 클릭 핸들러
+  const handleViewAllNotifications = () => {
+    navigate('/setting/notification'); // 알림함 페이지로 이동
+    setIsPanelOpen(false); // 패널 닫기
   };
 
   return (
@@ -52,13 +50,12 @@ const Header = () => {
           onMouseEnter={() => setIsNavHovered(true)}
           onMouseLeave={() => setIsNavHovered(false)}
         >
-          {/* ... (네비게이션 링크는 동일) ... */}
           <NavLink to="/main">홈</NavLink>
           <NavLink to="/policy">정책</NavLink>
           <NavLink to="/savings">예적금</NavLink>
           <NavLink to="/papertrading">모의투자</NavLink>
           <NavLink to="/portfolio">포트폴리오</NavLink>
-          <NavLink to="/mypage">마이페이지</NavLink>
+          <NavLink to="/setting/profile">마이페이지</NavLink>
         </nav>
         
         <div className="user-info-container">
@@ -67,32 +64,38 @@ const Header = () => {
             <span className="user-name">Honglidong123</span>
           </div>
           
-          {/* ✨ 6. 알림 아이콘 영역 수정 */}
           <div className="notification-container">
             <div className="notification-bell" onClick={toggleNotificationPanel}>
               <IoMdNotifications />
-              {/* 안 읽은 알림이 있을 때만 뱃지 표시 */}
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount}</span>
               )}
             </div>
 
-            {/* 패널이 열려있을 때만 알림 목록 표시 */}
             {isPanelOpen && (
               <div className="notification-panel">
-                {notifications.length > 0 ? (
-                  notifications.map(notification => (
-                    <div
-                      key={notification.id}
-                      className={`notification-item ${notification.read ? 'read' : 'unread'}`}
-                      onClick={() => handleNotificationClick(notification.id)}
-                    >
-                      {notification.message}
-                    </div>
-                  ))
-                ) : (
-                  <div className="notification-item">새로운 알림이 없습니다.</div>
-                )}
+                {/* ✨ 알림 목록을 감싸는 div 추가 */}
+                <div className="notification-list-popup">
+                  {notifications.length > 0 ? (
+                    notifications.map(notification => (
+                      <div
+                        key={notification.id}
+                        className={`notification-item ${notification.read ? 'read' : 'unread'}`}
+                        onClick={() => handleNotificationClick(notification.id)}
+                      >
+                        {notification.message}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="notification-item">새로운 알림이 없습니다.</div>
+                  )}
+                </div>
+                {/* ✨ '전체 알림 보기' 버튼을 위한 footer 추가 */}
+                <div className="notification-footer">
+                  <button onClick={handleViewAllNotifications} className="view-all-btn">
+                    전체 알림 보기
+                  </button>
+                </div>
               </div>
             )}
           </div>

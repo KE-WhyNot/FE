@@ -155,7 +155,7 @@ const PaperTrading = () => {
           </div>
           <div className="widget portfolio-widget">
             <div className="widget-header">
-              <h3>포트폴리오</h3>
+              <h3>투자 현황</h3>
               <button className="add-button" onClick={() => navigate('/portfolio')}>+</button>
             </div>
             <div className="pie-chart-container">

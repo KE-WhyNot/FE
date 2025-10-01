@@ -83,10 +83,10 @@
   flex-shrink: 0;
 }
 
-.positive { color: #4caf50; }
-.negative { color: #f44336; }
+.positive { color: #f44336; }
+.negative { color: #1976d2; }
 
-/* --- ✨ [수정] 누락된 시장 선택 버튼 스타일 추가 --- */
+
 .widget-header.market-selector {
   border-bottom: 1px solid #f0f0f0;
   padding-bottom: 0.8rem;

@@ -28,7 +28,7 @@
 }
 
 .header-logo {
-  height: 100px; /* 로고 크기는 보기 좋게 60px로 유지 */
+  height: 60px;
 }
 
 /* 네비게이션 메뉴 */
@@ -203,4 +203,80 @@
 
 .notification-item:hover {
   background-color: #e9e7ff; /* 마우스 올렸을 때 색상 */
+}
+
+@media (max-width: 1200px) {
+  .app-header {
+    padding: 1rem 1.5rem; /* 헤더의 좌우 여백을 줄여 공간 확보 */
+  }
+
+  .header-nav {
+    gap: 2.5rem; /* 메뉴 사이의 간격을 줄임 */
+  }
+}
+
+/* 화면 너비가 992px 이하일 때 적용 */
+@media (max-width: 992px) {
+  .header-logo {
+    height: 50px; /* 로고 크기를 약간 줄임 */
+  }
+
+  .header-nav {
+    gap: 1.5rem; /* 메뉴 사이의 간격을 더 줄임 */
+  }
+
+  .header-nav a {
+    font-size: 1.1rem; /* 메뉴 글자 크기를 줄임 */
+  }
+
+  /* 사용자 이름 숨기기 (선택 사항) */
+  .user-name {
+    display: none;
+  }
+}
+
+/* 화면 너비가 768px 이하일 때 적용 (모바일 환경 등) */
+@media (max-width: 768px) {
+  /* 로고만 보이도록 메뉴 숨기기 (햄버거 메뉴 등으로 대체 필요) */
+  .header-nav {
+    display: none;
+  }
+
+  .user-info-container {
+    /* 필요하다면 사용자 정보 영역도 숨기거나 디자인 변경 */
+  }
+}
+
+.notification-panel {
+  /* ✨ 패널 내부 스크롤을 위해 flex 구조로 변경 */
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+}
+
+.notification-list-popup {
+  overflow-y: auto; /* ✨ 알림 목록만 스크롤되도록 설정 */
+}
+
+.notification-footer {
+  padding: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+}
+
+.view-all-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #5844d1;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.view-all-btn:hover {
+  background-color: #e9e7ff;
 }

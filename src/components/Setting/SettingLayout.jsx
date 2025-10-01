@@ -17,13 +17,14 @@ const SettingLayout = () => {
             <ul>
               <li><NavLink to="/setting/profile"><FiUser /> 프로필 설정</NavLink></li>
               <li><NavLink to="/setting/notification"><FiBell /> 알림</NavLink></li>
+              {/* ✨ "투자 성향 분석" 링크 제거 */}
               <li><NavLink to="/setting/investment"><FiLock /> 투자</NavLink></li>
               <li><NavLink to="/setting/test"><FiSettings /> 테스트</NavLink></li>
             </ul>
           </nav>
         </aside>
         <main className="setting-main-content">
-          <Outlet /> {/* 이 자리에 Profile, Notification 컴포넌트가 표시됩니다. */}
+          <Outlet />
         </main>
       </div>
     </div>

@@ -10,7 +10,8 @@ import Notification from './components/Setting/Notification';
 import SavingsPage from './components/SavingsPage/SavingsPage';
 import PolicyPage from './components/PolicyPage/PolicyPage';
 import PortfolioPage from './components/PortfolioPage/PortfolioPage';
-import StockRecommendationPage from './components/StockRecommendationPage/StockRecommendationPage'; // ✨ 1. import 추가
+import StockRecommendationPage from './components/StockRecommendationPage/StockRecommendationPage';
+import InvestmentPropensityPage from './components/InvestmentPropensityPage/InvestmentPropensityPage';
 
 function App() {
   return (
@@ -27,8 +28,11 @@ function App() {
         </Route>
         <Route path="/savings" element={<SavingsPage />} />
         <Route path="/policy" element={<PolicyPage />} />
-        <Route path="/portfolio" element={<PortfolioPage />} />
-        <Route path="/portfolio/recommendations" element={<StockRecommendationPage />} /> {/* ✨ 2. 새 경로 추가 */}
+        {/* ✨ 1. /portfolio 경로를 투자 성향 분석 페이지로 변경 */}
+        <Route path="/portfolio" element={<InvestmentPropensityPage />} /> 
+        {/* ✨ 2. 실제 포트폴리오 페이지를 위한 새 경로 추가 */}
+        <Route path="/portfolio-main" element={<PortfolioPage />} /> 
+        <Route path="/portfolio/recommendations" element={<StockRecommendationPage />} />
       </Routes>
     </BrowserRouter>
   );

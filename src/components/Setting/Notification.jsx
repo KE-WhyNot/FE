@@ -21,7 +21,7 @@ const getIconForType = (type) => {
   }
 };
 
-const NotificationsPage = () => {
+const Notification = () => {
   const [notifications, setNotifications] = useState(mockNotifications);
 
   // 알림 클릭 시 '읽음'으로 처리하는 함수
@@ -56,4 +56,4 @@ const NotificationsPage = () => {
   );
 };
 
-export default NotificationsPage;
+export default Notification;

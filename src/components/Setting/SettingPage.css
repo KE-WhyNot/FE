@@ -65,3 +65,70 @@ input:checked + .slider {
 input:checked + .slider:before {
   transform: translateX(22px);
 }
+
+/* --- 계정 설정 관련 스타일 --- */
+.account-settings {
+  margin-top: 4rem;
+  max-width: 500px;
+}
+
+.account-settings h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.action-button {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-button:hover {
+  background-color: #f1f3f5;
+}
+
+.action-button.delete {
+  border-color: #f44336;
+  background-color: #ffebee;
+  color: #f44336;
+}
+
+.action-button.delete:hover {
+  background-color: #ffcdd2;
+}
+
+/* --- ✨ 확인 모달 내부 스타일 추가 --- */
+.confirmation-modal-content p {
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 1rem 0 2rem 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+}
+
+.modal-actions .cancel-button,
+.modal-actions .confirm-button {
+  padding: 0.7rem 1.5rem;
+}
+
+.confirm-button {
+  background-color: #5844d1;
+  color: white;
+  border: none;
+}
+
+.confirm-button.delete {
+  background-color: #f44336;
+}

@@ -59,10 +59,13 @@
   flex-shrink: 0;
 }
 
+.widget-header.clickable {
+  cursor: pointer;
+}
+
 .widget-header h3 {
   margin: 0;
   font-size: 1.1rem;
-  /* ✨ 아이콘과 텍스트를 수직 중앙 정렬하기 위한 스타일 */
   display: flex;
   align-items: center;
   gap: 0.2rem;
@@ -85,7 +88,7 @@
 
 .positive { color: #f44336; }
 .negative { color: #1976d2; }
-
+.neutral { color: #888; }
 
 .widget-header.market-selector {
   border-bottom: 1px solid #f0f0f0;
@@ -111,8 +114,6 @@
 .market-buttons button.active {
   color: #333;
 }
-/* --- ✨ 수정 끝 --- */
-
 
 /* 1. 차트 위젯 */
 .chart-tabs { display: flex; gap: 0.5rem; }
@@ -134,7 +135,7 @@
 .stock-info { flex-grow: 1; min-width: 0; }
 .stock-info span, .stock-price span { display: block; font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .stock-info small, .stock-price small { color: #888; font-size: 0.8rem; }
-.stock-price { text-align: right; }
+.stock-price { text-align: right; min-width: 80px; flex-shrink: 0; }
 
 /* 3. 내 종목 위젯 */
 .total-assets { margin-bottom: 1rem; flex-shrink: 0;}
@@ -142,9 +143,19 @@
 .holdings-section { margin-top: 0.8rem; }
 .holdings-section h4 { margin: 0 0 0.5rem 0; font-size: 0.95rem; }
 .stock-holding-item { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.2rem 0; }
+.holding-price { text-align: right; }
+.holding-price span { display: block; }
+.holding-price small { font-size: 0.8rem; }
 
 /* 4. 거래내역 & 포트폴리오 */
-.widget-group { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; overflow: hidden; }
+.widget-group { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 1.2rem; 
+  overflow: hidden;
+  align-items: start;
+}
+
 .transaction-list { flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
 .transaction-item { display: flex; align-items: center; font-size: 0.85rem; }
 .transaction-item .date { font-weight: 600; margin-right: 0.8rem; }
@@ -153,4 +164,25 @@
 .transaction-item .info small { color: #888; }
 .transaction-item .amount { text-align: right; }
 .transaction-item .amount span, .transaction-item .amount small { display: block; }
-.pie-chart-container { flex-grow: 1; min-height: 150px; }
+
+.pie-chart-container {
+  min-height: 150px;
+}
+
+.custom-tooltip {
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.custom-tooltip strong {
+  font-weight: 700;
+}
+
+.chart-widget {
+  overflow: visible;
+}

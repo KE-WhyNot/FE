@@ -1,6 +1,6 @@
-@import url('http://fonts.googleapis.com/earlyaccess/nanumgothic.css');
+@import url('https://cdn.rawgit.com/moonspam/NanumSquare/master/nanumsquare.css');
 
 /* 전역 기본 폰트 설정 */
 html, body {
-  font-family: 'Nanum Gothic', sans-serif;
+  font-family: 'NanumSquare', sans-serif ;
 }

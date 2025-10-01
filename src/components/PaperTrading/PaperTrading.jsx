@@ -4,11 +4,10 @@ import { ResponsiveLine } from "@nivo/line";
 import { ResponsivePie } from "@nivo/pie";
 import { useNavigate } from "react-router-dom";
 import { IoIosArrowForward } from "react-icons/io";
-import Modal from "../../components/common/Modal"; // Modal 컴포넌트 import
+import Modal from "../../components/common/Modal";
 
 // --- Mock Data ---
 
-// 시장별 차트 데이터
 const marketData = {
   KOSPI: {
     name: "KOSPI",
@@ -21,38 +20,72 @@ const marketData = {
     summary: { high: "871.20", close: "862.50", low: "848.10", start: "850.30" }
   },
 };
-// 포트폴리오 파이 차트 데이터
+
 const pieChartData = [
   { "id": "삼성전자", "value": 35, "color": "#81C784" }, { "id": "SK하이닉스", "value": 25, "color": "#64B5F6" },
   { "id": "현대차", "value": 15, "color": "#FFB74D" }, { "id": "LG", "value": 15, "color": "#E57373" },
   { "id": "코오롱인더", "value": 10, "color": "#FFF176" }
 ];
-// 대시보드 미리보기용 관심 종목 데이터
+
 const watchlistData = [
-    { logo: "AMZN", name: "Amazon.com, Inc", ticker: "AMZN", price: "$102.24", change: "+3.02", isUp: true },
-    { logo: "KO", name: "Coca-Cola Co", ticker: "KO", price: "$60.49", change: "-0.32", isUp: false },
-    { logo: "BMW", name: "Bayerische Motoren Werke AG", ticker: "BMW", price: "$92.94", change: "+0.59", isUp: true },
-    { logo: "MSFT", name: "Microsoft Corp", ticker: "MSFT", price: "$248.16", change: "+0.16", isUp: true },
+    { logo: "AMZN", name: "Amazon.com, Inc", ticker: "AMZN", price: "$102.24", changePercent: "+1.56%", changeValue: 1.56 },
+    { logo: "KO", name: "Coca-Cola Co", ticker: "KO", price: "$60.49", changePercent: "-0.53%", changeValue: -0.53 },
+    { logo: "BMW", name: "Bayerische Motoren Werke AG", ticker: "BMW", price: "$92.94", changePercent: "0.00%", changeValue: 0 },
+    { logo: "MSFT", name: "Microsoft Corp", ticker: "MSFT", price: "$248.16", changePercent: "+0.06%", changeValue: 0.06 },
 ];
-// 모달에 표시될 전체 관심 종목 데이터 (예시)
-const fullWatchlistData = [ ...watchlistData, { logo: "TSLA", name: "Tesla, Inc.", ticker: "TSLA", price: "$180.01", change: "-2.52", isUp: false }, { logo: "AAPL", name: "Apple Inc.", ticker: "AAPL", price: "$172.28", change: "+1.48", isUp: true } ];
-// 대시보드 미리보기용 거래 내역 데이터
+
+const fullWatchlistData = [ ...watchlistData, { logo: "TSLA", name: "Tesla, Inc.", ticker: "TSLA", price: "$180.01", changePercent: "-2.52%", changeValue: -2.52 }, { logo: "AAPL", name: "Apple Inc.", ticker: "AAPL", price: "$172.28", changePercent: "+1.48%", changeValue: 1.48 } ];
+
 const transactionsData = [
     { date: "8.20", name: "SK하이닉스 2주", type: "구매", amount: "+140,000원", price: "283,610원" },
     { date: "8.19", name: "삼성전자 1주", type: "판매", amount: "-63,000원", price: "40,610원" },
     { date: "8.16", name: "삼성전자 1주", type: "구매", amount: "+3,610원", price: "103,610원" },
 ];
-// 모달에 표시될 전체 거래 내역 데이터 (예시)
+
 const fullTransactionsData = [ ...transactionsData, { date: "8.15", name: "코카콜라 5주", type: "구매", amount: "+450,000원", price: "450,000원" }, { date: "8.14", name: "아마존 1주", type: "판매", amount: "-130,000원", price: "130,000원" } ];
+
+const holdingsData = {
+  total: { value: 162856, changeValue: 3631, changePercent: 2.2 },
+  domestic: [
+    { name: "LG디스플레이", value: 149300, changePercent: "+2.6%", isUp: true },
+    { name: "삼성전자", value: 85300, changePercent: "+1.2%", isUp: true },
+  ],
+  overseas: [
+    { name: "애플", value: 13874, changePercent: "+0.3%", isUp: true },
+  ]
+};
+
+// 커스텀 툴팁 컴포넌트 정의
+const CustomTooltip = ({ point }) => {
+  const formatTime = (timeStr) => {
+    const hour = parseInt(timeStr.split(':')[0], 10);
+    if (hour < 12) return `오전 ${timeStr}`;
+    if (hour === 12) return `오후 ${timeStr}`;
+    const pmHour = hour - 12;
+    return `오후 ${pmHour}:${timeStr.split(':')[1]}`;
+  };
+
+  return (
+    <div className="custom-tooltip">
+      <strong>{point.data.y.toLocaleString()}</strong> {formatTime(point.data.xFormatted)}
+    </div>
+  );
+};
 
 const PaperTrading = () => {
   const [activeMarket, setActiveMarket] = useState("KOSPI");
   const currentMarket = marketData[activeMarket];
   const navigate = useNavigate();
 
-  // 각 모달의 열림 상태를 관리하는 state
   const [isWatchlistModalOpen, setWatchlistModalOpen] = useState(false);
   const [isTransactionsModalOpen, setTransactionsModalOpen] = useState(false);
+  const [isHoldingsModalOpen, setHoldingsModalOpen] = useState(false);
+
+  const getChangeColorClass = (value) => {
+    if (value > 0) return 'positive';
+    if (value < 0) return 'negative';
+    return 'neutral';
+  };
 
   return (
     <div className="paper-trading-container">
@@ -78,7 +111,26 @@ const PaperTrading = () => {
             </div>
           </div>
           <div className="line-chart-container">
-            <ResponsiveLine data={currentMarket.data} margin={{ top: 20, right: 20, bottom: 40, left: 60 }} xScale={{ type: "point" }} yScale={{ type: "linear", min: "auto", max: "auto" }} axisBottom={{ tickSize: 5, tickPadding: 5 }} axisLeft={{ tickSize: 5, tickPadding: 5 }} enableGridX={false} colors={["#6e55ff"]} lineWidth={3} pointSize={8} pointColor="white" pointBorderWidth={2} pointBorderColor={{ from: "serieColor" }} useMesh={true} legends={[]}/>
+            <ResponsiveLine
+              data={currentMarket.data}
+              margin={{ top: 20, right: 20, bottom: 40, left: 60 }}
+              xScale={{ type: "point" }}
+              yScale={{ type: "linear", min: "auto", max: "auto" }}
+              axisBottom={{ tickSize: 5, tickPadding: 5 }}
+              axisLeft={{ tickSize: 5, tickPadding: 5 }}
+              enableGridX={false}
+              colors={["#6e55ff"]}
+              lineWidth={3}
+              pointSize={8}
+              pointColor="white"
+              pointBorderWidth={2}
+              pointBorderColor={{ from: "serieColor" }}
+              useMesh={true}
+              legends={[]}
+              tooltip={CustomTooltip}
+              enableCrosshair={true}
+              crosshairType="x"
+            />
           </div>
           <div className="chart-summary">
             <div><span>최고가</span> {currentMarket.summary.high}</div>
@@ -101,34 +153,46 @@ const PaperTrading = () => {
                   <small>{stock.ticker}</small>
                 </div>
                 <div className="stock-price">
-                  <span>{stock.price}</span>
-                  <small className={stock.isUp ? "positive" : "negative"}>{stock.change}</small>
+                  <span className={getChangeColorClass(stock.changeValue)}>{stock.price}</span>
+                  <small className={getChangeColorClass(stock.changeValue)}>{stock.changePercent}</small>
                 </div>
               </div>
             ))}
           </div>
         </div>
         <div className="widget holdings-widget">
-          <div className="widget-header">
+          <div className="widget-header clickable" onClick={() => setHoldingsModalOpen(true)}>
             <h3>내 종목 보기 <IoIosArrowForward /></h3>
           </div>
           <div className="total-assets">
-            <h2>162,856원</h2>
-            <span className="positive">+3,631원(2.2%)</span>
+            <h2>{holdingsData.total.value.toLocaleString()}원</h2>
+            <span className={getChangeColorClass(holdingsData.total.changeValue)}>
+              +{holdingsData.total.changeValue.toLocaleString()}원 ({holdingsData.total.changePercent}%)
+            </span>
           </div>
           <div className="holdings-section">
             <h4>국내주식</h4>
-            <div className="stock-holding-item">
-              <span>LG디스플레이</span>
-              <span>149,300원</span>
-            </div>
+            {holdingsData.domestic.slice(0, 1).map(stock => (
+              <div className="stock-holding-item" key={stock.name}>
+                <span>{stock.name}</span>
+                <div className="holding-price">
+                  <span>{stock.value.toLocaleString()}원</span>
+                  <small className={stock.isUp ? 'positive' : 'negative'}>{stock.changePercent}</small>
+                </div>
+              </div>
+            ))}
           </div>
           <div className="holdings-section">
             <h4>해외주식</h4>
-            <div className="stock-holding-item">
-              <span>애플</span>
-              <span>13,874원</span>
-            </div>
+            {holdingsData.overseas.slice(0, 1).map(stock => (
+               <div className="stock-holding-item" key={stock.name}>
+                <span>{stock.name}</span>
+                <div className="holding-price">
+                  <span>{stock.value.toLocaleString()}원</span>
+                  <small className={stock.isUp ? 'positive' : 'negative'}>{stock.changePercent}</small>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
         <div className="widget-group">
@@ -159,18 +223,14 @@ const PaperTrading = () => {
               <button className="add-button" onClick={() => navigate('/portfolio')}>+</button>
             </div>
             <div className="pie-chart-container">
-              <ResponsivePie data={pieChartData} margin={{ top: 10, right: 10, bottom: 10, left: 10 }} innerRadius={0.6} padAngle={2} cornerRadius={3} activeOuterRadiusOffset={8} borderWidth={1} borderColor={{ from: "color", modifiers: [["darker", 0.2]] }} enableArcLinkLabels={false} enableArcLabels={false} colors={{ datum: "data.color" }} legends={[]}/>
+              <ResponsivePie data={pieChartData} margin={{ top: -150, right: 10, bottom: 10, left: 10 }} innerRadius={0.6} padAngle={2} cornerRadius={3} activeOuterRadiusOffset={8} borderWidth={1} borderColor={{ from: "color", modifiers: [["darker", 0.2]] }} enableArcLinkLabels={false} enableArcLabels={false} colors={{ datum: "data.color" }} legends={[]}/>
             </div>
+            <div className="flex-spacer"></div>
           </div>
         </div>
       </div>
 
-      {/* --- 모달 컴포넌트 렌더링 --- */}
-      <Modal 
-        isOpen={isWatchlistModalOpen} 
-        onClose={() => setWatchlistModalOpen(false)}
-        title="전체 관심 종목"
-      >
+      <Modal isOpen={isWatchlistModalOpen} onClose={() => setWatchlistModalOpen(false)} title="전체 관심 종목">
         <div className="watchlist-list">
             {fullWatchlistData.map((stock) => (
               <div className="stock-item" key={stock.ticker}>
@@ -180,19 +240,15 @@ const PaperTrading = () => {
                   <small>{stock.ticker}</small>
                 </div>
                 <div className="stock-price">
-                  <span>{stock.price}</span>
-                  <small className={stock.isUp ? "positive" : "negative"}>{stock.change}</small>
+                  <span className={getChangeColorClass(stock.changeValue)}>{stock.price}</span>
+                  <small className={getChangeColorClass(stock.changeValue)}>{stock.changePercent}</small>
                 </div>
               </div>
             ))}
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={isTransactionsModalOpen} 
-        onClose={() => setTransactionsModalOpen(false)}
-        title="전체 거래 내역"
-      >
+      <Modal isOpen={isTransactionsModalOpen} onClose={() => setTransactionsModalOpen(false)} title="전체 거래 내역">
         <div className="transaction-list">
             {fullTransactionsData.map((t, i) => (
               <div className="transaction-item" key={i}>
@@ -207,6 +263,39 @@ const PaperTrading = () => {
                 </div>
               </div>
             ))}
+        </div>
+      </Modal>
+
+      <Modal 
+        isOpen={isHoldingsModalOpen} 
+        onClose={() => setHoldingsModalOpen(false)}
+        title="전체 보유 종목"
+      >
+        <div className="holdings-list-modal">
+          <div className="holdings-section">
+              <h4>국내주식</h4>
+              {holdingsData.domestic.map(stock => (
+                <div className="stock-holding-item" key={stock.name}>
+                  <span>{stock.name}</span>
+                  <div className="holding-price">
+                    <span>{stock.value.toLocaleString()}원</span>
+                    <small className={stock.isUp ? 'positive' : 'negative'}>{stock.changePercent}</small>
+                  </div>
+                </div>
+              ))}
+          </div>
+          <div className="holdings-section">
+              <h4>해외주식</h4>
+              {holdingsData.overseas.map(stock => (
+                 <div className="stock-holding-item" key={stock.name}>
+                  <span>{stock.name}</span>
+                  <div className="holding-price">
+                    <span>{stock.value.toLocaleString()}원</span>
+                    <small className={stock.isUp ? 'positive' : 'negative'}>{stock.changePercent}</small>
+                  </div>
+                </div>
+              ))}
+          </div>
         </div>
       </Modal>
     </div>

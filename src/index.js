@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { worker } from './mocks/browser';
 
 if (process.env.NODE_ENV === 'development') {
-  // 개발 환경에서만 MSW 워커를 시작합니다.
+  // 개발 환경에서만 MSW 워커를 시작합니다
   worker.start();
 }
 

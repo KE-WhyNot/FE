@@ -24,7 +24,7 @@ const InvestmentPropensityPage = () => {
     },
     {
       id: 'sectors',
-      question: '2. 관심 섹터 (최소 3개 선택)',
+      question: '2. 관심 종목 (최소 3개 선택)',
       options: [
         '전기전자', '자동차', '철강금속', '화학', '서비스업', '통신업', 
         '금융업', '증권', '보험', '건설업', '기계', '전기가스업', 

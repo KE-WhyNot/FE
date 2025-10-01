@@ -73,16 +73,8 @@
 }
 
 .total-count {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #555;
-}
-
-.sort-dropdown {
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
 }
 
 .savings-list-container {
@@ -206,8 +198,50 @@
 }
 
 
+/* ✨ 이 부분을 수정했습니다. */
 .content-wrapper {
-  transform: scale(0.8);
-  transform-origin: top left;
-  width: 125%; 
+  /* transform 속성들을 제거하여 내부 요소 크기가 그대로 유지되도록 합니다. */
+}
+
+/* 드롭다운 스타일 */
+.sort-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.sort-dropdown-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem; /* ✨ 이제 이 값이 직접적으로 크기를 조절합니다. */
+  font-weight: 600;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.sort-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  list-style: none;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0 0 0;
+  z-index: 10;
+  width: 120px;
+}
+
+.sort-dropdown-menu li {
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.sort-dropdown-menu li:hover {
+  background-color: #f4f2ff;
 }

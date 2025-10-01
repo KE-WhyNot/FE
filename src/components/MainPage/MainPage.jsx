@@ -9,14 +9,63 @@ import { Link } from 'react-router-dom'; // ✨ react-router-dom에서 Link를 i
 import mainBannerImage from '../../assets/images/login_desk.png';
 
 const MainPage = () => {
-  // 포트폴리오 차트 데이터 (캡처 화면 기준)
-  const portfolioData = [
-    { id: '예금', label: '예금', value: 26, color: '#4CAF50' },
-    { id: '적금', label: '적금', value: 24, color: '#8BC34A' },
-    { id: '국내주식', label: '국내주식', value: 19, color: '#CDDC39' },
-    { id: '해외주식', label: '해외주식', value: 16, color: '#FFEB3B' },
-    { id: '기타', label: '기타', value: 15, color: '#FFC107' },
+  // 포트폴리오 데이터 (PortfolioPage와 동기화)
+  const portfolioDetails = [
+    { id: '예금', value: 16805120, color: '#66DA26' },
+    { id: '적금', value: 19205850, color: '#826AF9' },
+    { id: '주식', value: 18005430, color: '#FF6B6B' },
   ];
+
+  const donutChartData = portfolioDetails.map(item => ({
+    id: item.id,
+    label: item.id,
+    value: item.value,
+    color: item.color,
+  }));
+
+  // ✨ 1. 총금액 계산
+  const totalAmount = portfolioDetails.reduce((sum, item) => sum + item.value, 0);
+  const formattedTotal = `${totalAmount.toLocaleString()}원`;
+
+  // ✨ 2. 차트 중앙에 총금액을 표시하는 커스텀 컴포넌트
+  const CenteredMetric = ({ centerX, centerY }) => {
+    return (
+      <text
+        x={centerX}
+        y={centerY}
+        textAnchor="middle"
+        dominantBaseline="central"
+        style={{
+          fontSize: '16px', // 폰트 크기 조정
+          fontWeight: 700,
+          fill: '#555',
+        }}
+      >
+        {formattedTotal}
+      </text>
+    );
+  };
+  
+  // ✨ 3. 포트폴리오 차트의 지시선(링크 라벨) 커스텀 컴포넌트
+  const CustomArcLinkLabel = ({ datum, style }) => {
+    return (
+      <g transform={style.transform} style={{ pointerEvents: 'none' }}>
+        <text
+          textAnchor="middle"
+          dominantBaseline="central"
+          style={{
+            fill: '#555',
+            fontSize: 12, // 폰트 크기 조정
+            fontWeight: 600,
+          }}
+        >
+          {datum.id}
+        </text>
+      </g>
+    );
+  };
+
+
 
   return (
     <div className="main-page-container">
@@ -80,7 +129,6 @@ const MainPage = () => {
           <div className="info-card">
             <div className="card-header">
               <h3>예·적금</h3>
-              {/* ✨ a 태그를 Link 컴포넌트로 수정했습니다. */}
               <Link to="/savings">자세히보기 &gt;</Link>
             </div>
             <div className="card-content">
@@ -129,22 +177,27 @@ const MainPage = () => {
           <div className="info-card">
             <div className="card-header">
               <h3>포트폴리오</h3>
-              <a href="#">자세히보기 &gt;</a>
+              <Link to="/portfolio">자세히보기 &gt;</Link>
             </div>
             <div className="card-content chart-container">
+              {/* ✨ 4. 차트 옵션 수정 */}
               <ResponsivePie
-                data={portfolioData}
-                margin={{ top: 10, right: 80, bottom: 10, left: 80 }}
-                innerRadius={0.5}
+                data={donutChartData}
+                margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+                innerRadius={0.6}
                 padAngle={0.7}
                 cornerRadius={3}
                 activeOuterRadiusOffset={8}
                 colors={{ datum: 'data.color' }}
                 borderWidth={1}
                 borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-                enableArcLinkLabels={false}
-                arcLabelsSkipAngle={10}
-                arcLabelsTextColor="#333333"
+                enableArcLabels={false}
+                enableArcLinkLabels={true}
+                arcLinkLabelsSkipAngle={10}
+                arcLinkLabelsTextColor="#555"
+                arcLinkLabelsColor={{ from: 'color' }}
+                arcLinkLabelsComponent={CustomArcLinkLabel}
+                layers={['arcs', 'arcLinkLabels', CenteredMetric]}
               />
             </div>
           </div>

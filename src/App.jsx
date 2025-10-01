@@ -1,18 +1,24 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
 import LoginPage from "./components/LoginPage/LoginPage";
 import MainPage from "./components/MainPage/MainPage"; 
 import SignupPage from "./components/SignupPage/SignupPage";
 import PaperTrading from "./components/PaperTrading/PaperTrading";
 import SettingLayout from "./components/Setting/SettingLayout";
 import Profile from "./components/Setting/Profile";
-import Notification from "./components/Setting/Notification";
 import Settings from "./components/Setting/SettingPage";
+import Notification from "./components/Setting/Notification";
 import SavingsPage from "./components/SavingsPage/SavingsPage";
 import PolicyPage from "./components/PolicyPage/PolicyPage";
+
 import DashboardLayout from "./components/PaperTrading/DashboardLayout";
 import AllStocks from "./components/PaperTrading/AllStocks";
 import QuizPage from "./components/PaperTrading/Quiz";
+
+import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
+import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
+import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
 
 function App() {
   return (
@@ -34,6 +40,9 @@ function App() {
           <Route path="/all-stocks" element={<AllStocks />} />
           <Route path="/quiz" element={<QuizPage />} />
         </Route>
+        <Route path="/portfolio" element={<InvestmentPropensityPage />} /> 
+        <Route path="/portfolio-main" element={<PortfolioPage />} /> 
+        <Route path="/portfolio/recommendations" element={<StockRecommendationPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -23,7 +23,7 @@ const SettingLayout = () => {
           </nav>
         </aside>
         <main className="setting-main-content">
-          <Outlet /> {/* 이 자리에 Profile, Notification 컴포넌트가 표시됩니다. */}
+          <Outlet />
         </main>
       </div>
     </div>

@@ -1,23 +1,31 @@
 import React, { useState } from "react";
 import "./AllStocks.css";
-import { ResponsiveLine } from "@nivo/line";
-import { ResponsiveBar } from "@nivo/bar";
+import { ChartCanvas, Chart } from "react-financial-charts";
+import { XAxis, YAxis } from "react-financial-charts";
+import { discontinuousTimeScaleProvider } from "react-financial-charts";
+import { OHLCTooltip } from "react-financial-charts";
+import { BarSeries, CandlestickSeries } from "react-financial-charts";
+import { last } from "react-financial-charts";
 
-// --- Mock Data 수정 ---
-const stockPriceData = [
-  {
-    id: "price",
-    // ✨ 완만한 곡선을 위해 sin 함수를 사용하고 데이터 포인트를 늘립니다.
-    data: Array.from({ length: 25 }, (_, i) => ({
-      x: i,
-      y: 55000 + Math.sin(i / 3) * 2000 + Math.random() * 1500,
-    })),
-  },
-];
-const stockVolumeData = Array.from({ length: 25 }, (_, i) => ({
-  time: i,
-  volume: 100000 + Math.random() * 150000,
-}));
+// --- Mock Data 생성 ---
+const generateMockData = (count) => {
+  const data = [];
+  let date = new Date(2025, 8, 1);
+  let close = 55000;
+  for (let i = 0; i < count; i++) {
+    date.setDate(date.getDate() + 1);
+    const open = close + (Math.random() - 0.5) * 1000;
+    const high = Math.max(open, close) + Math.random() * 500;
+    const low = Math.min(open, close) - Math.random() * 500;
+    close = low + Math.random() * (high - low);
+    const volume = 100000 + Math.random() * 200000;
+    data.push({ date: new Date(date), open, high, low, close, volume });
+  }
+  return data;
+};
+
+const initialData = generateMockData(50);
+
 const orderBookData = {
   sell: [
     { price: 68900, volume: 162526 }, { price: 68800, volume: 91322 },
@@ -30,9 +38,15 @@ const orderBookData = {
 };
 
 const AllStocks = () => {
+  // ✨ 1. 주문 패널을 위한 state들을 다시 추가합니다.
   const [orderType, setOrderType] = useState("buy");
   const [price, setPrice] = useState(68500);
   const [quantity, setQuantity] = useState(0);
+
+  // --- react-financial-charts를 위한 데이터 설정 ---
+  const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(d => d.date);
+  const { data, xScale, xAccessor, displayXAccessor } = xScaleProvider(initialData);
+  const xExtents = [xAccessor(last(data)), xAccessor(data[data.length - 25])];
 
   return (
     <div className="all-stocks-container">
@@ -40,60 +54,38 @@ const AllStocks = () => {
         <input type="text" placeholder="종목명 또는 코드를 검색하세요." className="global-stock-search"/>
       </div>
       <div className="stock-detail-grid">
-        <div className="chart-section">
-          <div className="widget main-chart-widget">
-            <div className="widget-header">
-              <h3>삼성전자</h3>
-              <div className="chart-tabs">
-                <button className="active">1일</button><button>1주</button><button>1달</button>
-                <button>3달</button><button>1년</button><button>5년</button>
-              </div>
-            </div>
-            <div className="line-chart-container">
-              {/* ✨ 라인 차트 속성 대폭 수정 */}
-              <ResponsiveLine
-                data={stockPriceData}
-                margin={{ top: 20, right: 20, bottom: 20, left: 30 }}
-                xScale={{ type: 'point' }}
-                yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: true, reverse: false }}
-                curve="monotoneX" // ✨ 곡선을 부드럽게
-                axisTop={null}
-                axisRight={null}
-                axisBottom={null} // ✨ x축 숨김
-                axisLeft={null} // ✨ y축 숨김
-                enableGridX={false} // ✨ 세로 그리드 숨김
-                enableGridY={true} // 가로 그리드 표시
-                gridYValues={5} // 그리드 라인 갯수
-                colors={['#E57373']} // ✨ 라인 색상 변경
-                lineWidth={2}
-                enablePoints={false} // ✨ 데이터 포인트 숨김
-                enableArea={true} // ✨ 라인 아래 영역 채우기
-                areaOpacity={0.1} // 영역 투명도
-                useMesh={true}
-                enableCrosshair={false} // ✨ 십자선 숨김
-                legends={[]}
-              />
+        <div className="chart-section widget">
+          <div className="widget-header">
+            <h3>삼성전자</h3>
+            <div className="chart-tabs">
+              <button className="active">1일</button><button>1주</button><button>1달</button>
             </div>
           </div>
-          <div className="widget volume-chart-widget">
-            <div className="bar-chart-container">
-              <ResponsiveBar
-                data={stockVolumeData}
-                keys={["volume"]}
-                indexBy="time"
-                margin={{ top: 10, right: 0, bottom: 20, left: 0 }}
-                padding={0.4}
-                colors={["#E0E0E0"]} // ✨ 바 색상 변경
-                enableLabel={false}
-                axisTop={null}
-                axisRight={null}
-                axisBottom={null}
-                axisLeft={null}
-                enableGridY={false}
-              />
-            </div>
-          </div>
+          <ChartCanvas
+            height={400}
+            ratio={window.devicePixelRatio}
+            width={700}
+            margin={{ left: 10, right: 50, top: 10, bottom: 30 }}
+            data={data}
+            seriesName="MSFT"
+            xScale={xScale}
+            xAccessor={xAccessor}
+            displayXAccessor={displayXAccessor}
+            xExtents={xExtents}
+          >
+            <Chart id={1} yExtents={d => [d.high, d.low]}>
+              <YAxis axisAt="right" orient="right" ticks={5} tickStroke="#E0E0E0" stroke="#E0E0E0" />
+              <XAxis axisAt="bottom" orient="bottom" ticks={6} tickStroke="#E0E0E0" stroke="#E0E0E0" />
+              <CandlestickSeries />
+              <OHLCTooltip origin={[0, 0]} />
+            </Chart>
+            <Chart id={2} height={100} yExtents={d => d.volume} origin={(w, h) => [0, h - 100]}>
+              <BarSeries yAccessor={d => d.volume} fill={d => (d.close > d.open ? "#d32f2f" : "#1976d2")} />
+            </Chart>
+          </ChartCanvas>
         </div>
+        
+        {/* ✨ 2. 누락되었던 오른쪽 주문 패널 코드를 다시 추가합니다. */}
         <aside className="order-panel">
           <div className="widget">
             <h3 className="order-title">주식 주문</h3>

@@ -3,13 +3,12 @@ import './MainPage.css'; // MainPage를 위한 CSS 파일을 import합니다.
 import Header from '../common/Header'; // Header 컴포넌트를 import합니다.
 import { ResponsivePie } from '@nivo/pie'; // 포트폴리오 차트를 위한 Nivo Pie 차트
 import { FaGraduationCap, FaSchool, FaChild, FaLandmark } from 'react-icons/fa'; // 아이콘 import
-import { Link } from 'react-router-dom'; // ✨ react-router-dom에서 Link를 import 합니다.
+import { Link } from 'react-router-dom';
 
-// 메인 배너의 이미지 (임시 플레이스홀더)
-import mainBannerImage from '../../assets/images/login_desk.png';
+// ✨ 메인 배너 이미지는 이제 CSS에서 처리하므로 여기서 import할 필요가 없습니다.
 
 const MainPage = () => {
-  // 포트폴리오 데이터 (PortfolioPage와 동기화)
+  // (나머지 코드는 이전과 동일)
   const portfolioDetails = [
     { id: '예금', value: 16805120, color: '#66DA26' },
     { id: '적금', value: 19205850, color: '#826AF9' },
@@ -23,49 +22,26 @@ const MainPage = () => {
     color: item.color,
   }));
 
-  // ✨ 1. 총금액 계산
   const totalAmount = portfolioDetails.reduce((sum, item) => sum + item.value, 0);
   const formattedTotal = `${totalAmount.toLocaleString()}원`;
 
-  // ✨ 2. 차트 중앙에 총금액을 표시하는 커스텀 컴포넌트
   const CenteredMetric = ({ centerX, centerY }) => {
     return (
-      <text
-        x={centerX}
-        y={centerY}
-        textAnchor="middle"
-        dominantBaseline="central"
-        style={{
-          fontSize: '16px', // 폰트 크기 조정
-          fontWeight: 700,
-          fill: '#555',
-        }}
-      >
+      <text x={centerX} y={centerY} textAnchor="middle" dominantBaseline="central" style={{ fontSize: '16px', fontWeight: 700, fill: '#555' }}>
         {formattedTotal}
       </text>
     );
   };
   
-  // ✨ 3. 포트폴리오 차트의 지시선(링크 라벨) 커스텀 컴포넌트
   const CustomArcLinkLabel = ({ datum, style }) => {
     return (
       <g transform={style.transform} style={{ pointerEvents: 'none' }}>
-        <text
-          textAnchor="middle"
-          dominantBaseline="central"
-          style={{
-            fill: '#555',
-            fontSize: 12, // 폰트 크기 조정
-            fontWeight: 600,
-          }}
-        >
+        <text textAnchor="middle" dominantBaseline="central" style={{ fill: '#555', fontSize: 12, fontWeight: 600 }}>
           {datum.id}
         </text>
       </g>
     );
   };
-
-
 
   return (
     <div className="main-page-container">
@@ -78,16 +54,14 @@ const MainPage = () => {
             <p>
               실제 같은 투자 환경에서 위험 부담 없이 안전하게 배우고 경험하세요.
               <br />
-              이곳에서의 연습이 당신을 자신감 있는 투자자로 만들어줄거에요.
+              이곳에서의 연습이 당신을 자신감 있는 투자자로 만들어줍니다.
             </p>
             <button>지금 바로 시작하세요!</button>
           </div>
-          <div className="banner-image">
-            <img src={mainBannerImage} alt="Financial Planning" />
-          </div>
+          {/* ✨ 이 부분을 삭제했습니다. */}
         </section>
 
-        {/* --- 하단 3단 카드 섹션 --- */}
+        {/* --- 하단 3단 카드 섹션 (이하 동일) --- */}
         <section className="card-section">
           {/* 청년정책 카드 */}
           <div className="info-card">
@@ -180,7 +154,6 @@ const MainPage = () => {
               <Link to="/portfolio">자세히보기 &gt;</Link>
             </div>
             <div className="card-content chart-container">
-              {/* ✨ 4. 차트 옵션 수정 */}
               <ResponsivePie
                 data={donutChartData}
                 margin={{ top: 20, right: 80, bottom: 20, left: 80 }}

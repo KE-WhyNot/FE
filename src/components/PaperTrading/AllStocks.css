@@ -18,22 +18,17 @@
 
 .stock-detail-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr; /* 2:1 비율로 좌우 분할 */
+  grid-template-columns: 2fr 1fr;
   gap: 1.5rem;
   align-items: flex-start;
 }
 
-.chart-section {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.widget {
+.chart-section.widget {
   background-color: #ffffff;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  height: auto;
 }
 
 .widget-header {
@@ -60,17 +55,61 @@
   color: #6e55ff;
 }
 
-.line-chart-container {
-  height: 350px;
+.chart-info-header.detailed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  line-height: 1.5;
 }
-.bar-chart-container {
-  height: 150px;
+
+.chart-info-header .positive {
+  color: #d32f2f;
 }
+
+.chart-info-header .negative {
+  color: #1976d2;
+}
+
+.chart-info-header .neutral {
+  color: #333;
+}
+
+.stock-tooltip {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  font-size: 0.85rem;
+  width: 220px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  line-height: 1.8;
+}
+
+.tooltip-row .label {
+  color: #555;
+}
+
+.tooltip-row .positive { color: #d32f2f; }
+.tooltip-row .negative { color: #1976d2; }
+.tooltip-row .neutral { color: #333; }
+
 
 /* --- 오른쪽 주문 패널 --- */
 .order-panel .widget {
-  position: sticky; /* 스크롤 시 상단에 고정 */
+  position: sticky;
   top: 2rem;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .order-title {
@@ -120,10 +159,10 @@
 }
 .order-row.sell {
   background-color: #e3f2fd;
-} /* 매도: 파란색 계열 */
+}
 .order-row.buy {
   background-color: #ffebee;
-} /* 매수: 붉은색 계열 */
+}
 .order-book .divider {
   height: 1px;
   background-color: #eee;

@@ -171,8 +171,11 @@ const PortfolioPage = () => {
                             <span>기본 {card.rates.base}</span>
                         </div>
                         )}
+                        {/* ✨ 이 부분을 수정했습니다. */}
                         {card.id === '주식' ? (
                             <Link to="/portfolio/recommendations" className="more-link">{card.linkText}</Link>
+                        ) : card.id === '예금' || card.id === '적금' ? (
+                            <Link to="/savings" className="more-link">{card.linkText}</Link>
                         ) : (
                             <a href="#" className="more-link">{card.linkText}</a>
                         )}

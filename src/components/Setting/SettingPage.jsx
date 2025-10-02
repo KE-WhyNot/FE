@@ -1,20 +1,44 @@
 import React, { useState } from 'react';
-import './SettingPage.css'; 
+import './SettingPage.css'; // CSS 파일 import
+import { useNavigate } from 'react-router-dom';
+import Modal from '../../components/common/Modal'; // Modal 컴포넌트 import
 
-const Notification = () => {
+const SettingPage = () => {
+  // 알림 설정 State
   const [dividendAlert, setDividendAlert] = useState(true);
   const [tradeAlert, setTradeAlert] = useState(true);
   const [rankingAlert, setRankingAlert] = useState(false);
+  
+  // 모달 열림 상태를 관리하는 state
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-  const handleSave = (e) => {
+  const navigate = useNavigate();
+
+  const handleSaveSettings = (e) => {
     e.preventDefault();
     alert('알림 설정이 저장되었습니다.');
   };
 
+  const confirmLogout = () => {
+    localStorage.removeItem('token');
+    alert('로그아웃 되었습니다.');
+    setIsLogoutModalOpen(false);
+    navigate('/');
+  };
+
+  const confirmDeleteAccount = () => {
+    localStorage.removeItem('token');
+    alert('계정이 삭제되었습니다.');
+    setIsDeleteModalOpen(false);
+    navigate('/');
+  };
+
   return (
     <>
-      <h1>알림 설정</h1>
-      <form onSubmit={handleSave}>
+      {/* --- 알림 설정 섹션 --- */}
+      <form onSubmit={handleSaveSettings}>
+        <h2 className="section-title">알림 설정</h2>
         <div className="setting-list">
           <div className="setting-item">
             <span>배당금 지급</span>
@@ -43,8 +67,50 @@ const Notification = () => {
           <button type="submit" className="save-button">저장</button>
         </div>
       </form>
+
+      {/* --- 계정 설정 섹션 --- */}
+      <div className="account-settings">
+        <h2 className="section-title">계정 설정</h2>
+        <div className="setting-item">
+          <span>로그아웃</span>
+          <button type="button" className="action-button" onClick={() => setIsLogoutModalOpen(true)}>로그아웃</button>
+        </div>
+        <div className="setting-item">
+          <span>계정 삭제</span>
+          <button type="button" className="action-button delete" onClick={() => setIsDeleteModalOpen(true)}>계정 삭제하기</button>
+        </div>
+      </div>
+
+      {/* --- 팝업 모달들 --- */}
+      <Modal 
+        isOpen={isLogoutModalOpen} 
+        onClose={() => setIsLogoutModalOpen(false)}
+        title="로그아웃"
+      >
+        <div className="confirmation-modal-content">
+          <p>정말 로그아웃 하시겠습니까?</p>
+          <div className="modal-actions">
+            <button className="cancel-button" onClick={() => setIsLogoutModalOpen(false)}>취소</button>
+            <button className="confirm-button" onClick={confirmLogout}>확인</button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title="계정 삭제"
+      >
+        <div className="confirmation-modal-content">
+          <p>정말로 계정을 삭제하시겠습니까?<br/>이 작업은 되돌릴 수 없습니다.</p>
+          <div className="modal-actions">
+            <button className="cancel-button" onClick={() => setIsDeleteModalOpen(false)}>취소</button>
+            <button className="confirm-button delete" onClick={confirmDeleteAccount}>삭제</button>
+          </div>
+        </div>
+      </Modal>
     </>
   );
 };
 
-export default Notification;
+export default SettingPage;

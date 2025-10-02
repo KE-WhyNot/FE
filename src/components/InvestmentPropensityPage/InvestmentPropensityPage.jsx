@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // ✨ Link, useNavigate 추가
+import { useNavigate, useLocation } from 'react-router-dom';
 import './InvestmentPropensityPage.css';
 import Header from '../common/Header';
 
@@ -13,7 +13,9 @@ const InvestmentPropensityPage = () => {
     profit: '',
   });
   const [result, setResult] = useState('');
-  const navigate = useNavigate(); // ✨ navigate 함수 사용
+  const navigate = useNavigate();
+  const location = useLocation();
+  const showHeader = !location.pathname.startsWith('/setting');
 
   const questions = [
     {
@@ -73,11 +75,25 @@ const InvestmentPropensityPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // ✨ 1. 관심 종목 갯수 먼저 확인
     if (answers.sectors.length < 3) {
-      alert('관심 섹터는 최소 3개 이상 선택해야 합니다.');
+      alert('관심 종목은 최소 3개 이상 선택해야 합니다.');
       return;
     }
 
+    const isFormValid = 
+      answers.budget &&
+      answers.goal &&
+      answers.knowledge &&
+      answers.loss &&
+      answers.profit;
+
+    // ✨ 2. 나머지 항목 확인
+    if (!isFormValid) {
+      alert('모든 질문에 답변해주세요.');
+      return;
+    }
+    
     let score = 0;
     score += ['천원', '만원', '십만원', '백만원', '천만원'].indexOf(answers.budget);
     score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(answers.knowledge);
@@ -90,12 +106,12 @@ const InvestmentPropensityPage = () => {
     else if (score <= 16) setResult('적극투자형');
     else setResult('공격투자형');
   };
-
-  // ✨ 3. 결과 화면 렌더링 로직
+  
+  // (이하 JSX 코드는 이전과 동일)
   if (result) {
     return (
       <div className="propensity-page-layout">
-        <Header />
+        {showHeader && <Header />}
         <main className="propensity-content">
           <div className="result-container">
             <h1>분석 결과</h1>
@@ -112,10 +128,9 @@ const InvestmentPropensityPage = () => {
     );
   }
 
-  // ✨ 4. 설문지 화면 렌더링 로직
   return (
     <div className="propensity-page-layout">
-      <Header />
+      {showHeader && <Header />}
       <main className="propensity-content">
         <h1>투자 성향 분석</h1>
         <p className="description">
@@ -142,7 +157,9 @@ const InvestmentPropensityPage = () => {
               </div>
             </div>
           ))}
-          <button type="submit" className="submit-button">결과 보기</button>
+          <button type="submit" className="submit-button">
+            결과 보기
+          </button>
         </form>
       </main>
     </div>

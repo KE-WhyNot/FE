@@ -32,6 +32,8 @@ function App() {
           <Route path="profile" element={<Profile />} />
           <Route path="notification" element={<Notification />} />
           <Route path="settings" element={<Settings />} />
+          {/* ✨ '투자' 메뉴에 대한 경로를 추가했습니다. */}
+          <Route path="investment" element={<InvestmentPropensityPage />} />
         </Route>
         <Route path="/savings" element={<SavingsPage />} />
         <Route path="/policy" element={<PolicyPage />} />

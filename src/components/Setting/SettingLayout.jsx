@@ -1,13 +1,15 @@
 import React from 'react';
 import './SettingLayout.css'; // 레이아웃 전용 CSS
 import Header from '../../components/common/Header';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink } from 'react-router-dom'; // ✨ useLocation 제거
 import { FiUser, FiBell, FiLock, FiSettings } from 'react-icons/fi';
 
 const SettingLayout = () => {
   return (
     <div className="setting-page-layout">
+      {/* ✨ Header가 항상 렌더링되도록 복원 */}
       <Header />
+      
       <div className="setting-content-wrapper">
         <aside className="setting-sidebar">
           <div className="sidebar-header">

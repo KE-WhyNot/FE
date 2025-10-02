@@ -6,7 +6,7 @@ import {
   FaGraduationCap, FaHeartbeat, FaUsers, FaSyncAlt
 } from 'react-icons/fa';
 
-// --- 필터링을 위한 상세 데이터 (분야, 세부항목) ---
+// --- 데이터 부분 (이전과 동일) ---
 const policyCategories = {
   '일자리': ['취업', '재직자', '창업'],
   '주거': ['주택 및 거주지', '기숙사', '전월세 및 주거급여 지원'],
@@ -15,7 +15,6 @@ const policyCategories = {
   '참여권리': ['청년참여', '정책인프라구축', '청년국제교류', '권익보호'],
 };
 
-// --- 퍼스널 정보 필터 데이터 ---
 const personalInfoFilters = {
     '학력': ['제한없음', '고졸 미만', '고교 재학', '고졸 예정', '고졸', '대학 재학', '대학 졸업', '석·박사', '기타'],
     '전공요건': ['제한없음', '인문계열', '사회계열', '상경계열', '이학계열', '공학계열', '예체능계열', '농산계열', '기타'],
@@ -24,7 +23,6 @@ const personalInfoFilters = {
     '혼인여부': ['전체', '미혼', '기혼'],
 };
 
-// ✨ 1. 지역 선택 모달을 위한 데이터
 const regionData = {
   '전국': [],
   '서울특별시': ['강남구', '강동구', '강북구', '강서구', '관악구', '광진구', '구로구', '금천구', '노원구', '도봉구', '동대문구', '동작구', '마포구', '서대문구', '서초구', '성동구', '성북구', '송파구', '양천구', '영등포구', '용산구', '은평구', '종로구', '중구', '중랑구'],
@@ -45,7 +43,6 @@ const regionData = {
   '경상남도': ['거제시', '거창군', '고성군', '김해시', '남해군', '밀양시', '사천시', '산청군', '양산시', '의령군', '진주시', '창녕군', '창원시', '통영시', '하동군', '함안군', '함양군', '합천군'],
   '제주특별자치도': ['서귀포시', '제주시'],
 };
-
 
 const policyData = [
   { id: 1, status: '상시', tags: ['일자리', '인천'], title: '청년도전 지원사업', description: '구직단념청년 등의 노동시장 참여 및 취업 촉진 지원', period: '~2025.09.30', agency: '중앙부처', category: '취업', personal_filters: { '취업상태': ['미취업자'] } },
@@ -68,36 +65,34 @@ const PolicyPage = () => {
   const sortDropdownRef = useRef(null);
 
   const [activeFilter, setActiveFilter] = useState(null);
+  // ✨ 1. agency 필터 상태 제거
   const [selectedFilters, setSelectedFilters] = useState({
-    agency: '전체',
     categories: {},
     personal: {}
   });
   
-  // ✨ 2. 지역 모달 관련 state 추가
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState('서울특별시');
   const [selectedSubRegions, setSelectedSubRegions] = useState([]);
 
-
   const filterRef = useRef(null);
 
   const filteredPolicies = policyData.filter(policy => {
-    const agencyMatch = selectedFilters.agency === '전체' || policy.agency === selectedFilters.agency;
+    // ✨ 2. agencyMatch 로직 제거
     const selectedCategories = Object.values(selectedFilters.categories).flat();
     const categoryMatch = selectedCategories.length === 0 || selectedCategories.includes(policy.category);
 
     const personalMatch = Object.entries(selectedFilters.personal).every(([key, value]) => {
       if (value === '제한없음' || value === '전체' || !value) return true;
       const policyValue = policy.personal_filters?.[key];
-      if (!policyValue) return true; // 정책에 해당 조건 없으면 통과
+      if (!policyValue) return true;
       if(Array.isArray(policyValue)) {
         return policyValue.includes(value);
       }
       return false;
     });
 
-    return agencyMatch && categoryMatch && personalMatch;
+    return categoryMatch && personalMatch;
   });
 
   useEffect(() => {
@@ -159,10 +154,10 @@ const PolicyPage = () => {
   const handleSearch = () => setActiveFilter(null);
 
   const handleReset = () => {
-    setSelectedFilters({ agency: '전체', categories: {}, personal: {} });
+    // ✨ 3. 초기화 상태에서 agency 제거
+    setSelectedFilters({ categories: {}, personal: {} });
   };
   
-  // ✨ 3. 지역 모달 열기/닫기 함수
   const handleOpenRegionModal = () => setIsRegionModalOpen(true);
   const handleCloseRegionModal = () => setIsRegionModalOpen(false);
   
@@ -174,7 +169,6 @@ const PolicyPage = () => {
     );
   };
   
-  // ✨ 4. 지역 선택 적용 함수 (선택된 지역을 상태에 반영)
   const handleApplyRegions = () => {
     const newPersonalFilters = { ...selectedFilters.personal };
     newPersonalFilters['지역'] = [selectedRegion, ...selectedSubRegions].join(', ');
@@ -186,7 +180,6 @@ const PolicyPage = () => {
     setSelectedRegion('서울특별시');
     setSelectedSubRegions([]);
   };
-
 
   const categoryIcons = {
     '일자리': <FaBriefcase />, '주거': <FaHome />, '교육': <FaGraduationCap />,
@@ -205,18 +198,7 @@ const PolicyPage = () => {
               <FaSearch className="search-icon" />
               <input type="text" placeholder="검색어 입력" />
             </div>
-            <div className="filter-item">
-                <button className={`filter-button ${activeFilter === 'agency' ? 'active' : ''}`} onClick={() => toggleFilter('agency')}>
-                    담당기관 {activeFilter === 'agency' ? <FaMinus /> : <FaPlus />}
-                </button>
-                {activeFilter === 'agency' && (
-                    <ul className="filter-dropdown-menu">
-                        <li onClick={() => { setSelectedFilters(f => ({...f, agency: '전체'})); setActiveFilter(null); }}>전체</li>
-                        <li onClick={() => { setSelectedFilters(f => ({...f, agency: '중앙부처'})); setActiveFilter(null); }}>중앙부처 정책</li>
-                        <li onClick={() => { setSelectedFilters(f => ({...f, agency: '지자체'})); setActiveFilter(null); }}>지자체 정책</li>
-                    </ul>
-                )}
-            </div>
+            {/* ✨ 4. 담당기관 필터 버튼 및 관련 JSX 전체 삭제 */}
             <button className={`filter-button ${activeFilter === 'category' ? 'active' : ''}`} onClick={() => toggleFilter('category')}>
               정책분야 {activeFilter === 'category' ? <FaMinus /> : <FaPlus />}
             </button>
@@ -275,7 +257,6 @@ const PolicyPage = () => {
                     <div className="filter-row">
                         <div className="filter-group">
                             <label>지역</label>
-                            {/* ✨ 5. 지역 선택 버튼에 모달 열기 함수 연결 */}
                             <button className="select-button" onClick={handleOpenRegionModal}>선택</button>
                         </div>
                         <div className="filter-group">
@@ -334,7 +315,6 @@ const PolicyPage = () => {
           )}
         </div>
 
-        {/* ✨ 6. 지역 선택 모달 JSX */}
         {isRegionModalOpen && (
           <div className="modal-overlay">
             <div className="modal-container">

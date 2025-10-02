@@ -153,7 +153,6 @@
   grid-template-columns: 1fr 1fr; 
   gap: 1.2rem; 
   overflow: hidden;
-  align-items: start;
 }
 
 .transaction-list { flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
@@ -164,10 +163,6 @@
 .transaction-item .info small { color: #888; }
 .transaction-item .amount { text-align: right; }
 .transaction-item .amount span, .transaction-item .amount small { display: block; }
-
-.pie-chart-container {
-  min-height: 150px;
-}
 
 .custom-tooltip {
   background-color: #333;
@@ -185,4 +180,92 @@
 
 .chart-widget {
   overflow: visible;
+}
+
+/* --- ✨ 투자 현황(원형 차트) 위젯 스타일 --- */
+
+.portfolio-widget .pie-chart-container {
+  position: relative; /* 중앙 라벨 배치를 위함 */
+  flex-grow: 1;
+  min-height: 150px;
+}
+
+/* ✨ 중앙 요약 정보 스타일 */
+.chart-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none; /* 마우스 이벤트가 차트에 전달되도록 */
+}
+
+.chart-center-label span {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.chart-center-label strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+}
+
+/* ✨ 호버 애니메이션 및 그림자 효과 */
+.portfolio-widget .pie-chart-container svg path {
+  transition: transform 0.2s ease-in-out;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));
+}
+
+.portfolio-widget .pie-chart-container svg path:hover {
+  transform: scale(1.05);
+}
+
+/* ✨ 커스텀 툴팁 스타일 */
+.custom-pie-tooltip {
+  background-color: #222;
+  color: white;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  min-width: 100px;
+}
+.custom-pie-tooltip strong {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.custom-pie-tooltip span {
+  font-size: 0.85rem;
+  color: #ddd;
+}
+
+/* ✨ 커스텀 범례 스타일 */
+.pie-chart-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.legend-label {
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

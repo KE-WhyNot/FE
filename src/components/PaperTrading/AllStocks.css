@@ -23,15 +23,12 @@
   align-items: flex-start;
 }
 
-/* ✨ 차트 섹션을 하나의 위젯으로 변경 */
 .chart-section.widget {
   background-color: #ffffff;
   padding: 1.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  /* ChartCanvas가 부모 너비에 맞게 조절되도록 설정 */
-  position: relative;
-  height: 550px; /* 차트 전체 높이 지정 */
+  height: auto;
 }
 
 .widget-header {
@@ -58,10 +55,61 @@
   color: #6e55ff;
 }
 
+.chart-info-header.detailed {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+  line-height: 1.5;
+}
+
+.chart-info-header .positive {
+  color: #d32f2f;
+}
+
+.chart-info-header .negative {
+  color: #1976d2;
+}
+
+.chart-info-header .neutral {
+  color: #333;
+}
+
+.stock-tooltip {
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.8rem 1rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  font-size: 0.85rem;
+  width: 220px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  line-height: 1.8;
+}
+
+.tooltip-row .label {
+  color: #555;
+}
+
+.tooltip-row .positive { color: #d32f2f; }
+.tooltip-row .negative { color: #1976d2; }
+.tooltip-row .neutral { color: #333; }
+
+
 /* --- 오른쪽 주문 패널 --- */
 .order-panel .widget {
   position: sticky;
   top: 2rem;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .order-title {

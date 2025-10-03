@@ -380,3 +380,11 @@
   color: #999;
   text-align: center;
 }
+
+/* SavingsPage.css 파일 하단에 아래 내용을 추가해주세요. */
+
+.savings-item-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}

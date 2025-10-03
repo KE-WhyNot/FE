@@ -19,6 +19,8 @@ import QuizPage from "./components/PaperTrading/Quiz";
 import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
 import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
 import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
+import SavingsDetailPage from "./components/SavingsDetailPage/SavingsDetailPage"; // ✨ 1. 상세 페이지 import
+
 
 function App() {
   return (
@@ -36,6 +38,7 @@ function App() {
           <Route path="investment" element={<InvestmentPropensityPage />} />
         </Route>
         <Route path="/savings" element={<SavingsPage />} />
+        <Route path="/savings/:productId" element={<SavingsDetailPage />} /> {/* ✨ 2. 상세 페이지 경로 추가 */}
         <Route path="/policy" element={<PolicyPage />} />
         <Route element={<DashboardLayout />}>
           <Route path="/papertrading" element={<PaperTrading />} />

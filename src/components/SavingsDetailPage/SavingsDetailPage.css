@@ -1,0 +1,156 @@
+.savings-detail-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.savings-detail-content {
+  width: 100%;
+  max-width: 800px;
+  padding: 2rem;
+  box-sizing: border-box;
+}
+
+.back-button {
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.product-summary-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.summary-header .bank-logo {
+  width: 60px;
+  height: 60px;
+  font-size: 2rem;
+}
+
+.summary-header .bank-name {
+  font-size: 1rem;
+  color: #888;
+}
+
+.summary-header .product-name {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.summary-body .rate-info-main {
+  text-align: center;
+}
+
+.rate-info-main .rate-label {
+  font-size: 1rem;
+  color: #555;
+}
+
+.rate-info-main .rate-value {
+  display: block;
+  font-size: 3rem;
+  font-weight: 700;
+  color: #5844d1;
+  margin-top: 0.5rem;
+}
+
+.summary-body .tags {
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.product-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.9rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+}
+
+.detail-value {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.product-description-card {
+  background-color: #ffffff;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+}
+
+.product-description-card h2 {
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+
+.product-description-card p,
+.product-description-card ul {
+  line-height: 1.8;
+  color: #333;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.action-buttons button {
+  flex: 1;
+  padding: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 1px solid;
+  cursor: pointer;
+}
+
+.share-button {
+  background-color: #fff;
+  border-color: #ccc;
+  color: #333;
+}
+
+.signup-button {
+  background-color: #5844d1;
+  border-color: #5844d1;
+  color: white;
+}

@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./SignupPage.css";
-import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import youthfiLogo from "../../assets/logos/youthfi.png";
 import loginDeskImage from "../../assets/images/login_desk.png";
 import axiosInstance from "../../api/axiosInstance";
 
 const SignupPage = () => {
-  // --- 입력 값 State ---
+  // --- 상태 ---
   const [id, setId] = useState("");
   const [email, setEmail] = useState("");
   const [authCode, setAuthCode] = useState("");
@@ -15,20 +15,24 @@ const SignupPage = () => {
   const [birthdate, setBirthdate] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-  // --- 절차 진행 상태 State ---
   const [isAuthCodeSent, setIsAuthCodeSent] = useState(false);
   const [isVerified, setIsVerified] = useState(false);
-
-  // --- UI/UX를 위한 State ---
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // --- ✨ 핸들러 함수 (API 연동) ---
+  // --- 구글 로그인에서 넘어온 이메일 자동 반영 ---
+  useEffect(() => {
+    if (location.state?.email) {
+      setEmail(location.state.email);
+      setIsVerified(location.state.verified || false);
+      setIsAuthCodeSent(location.state.verified || false);
+    }
+  }, [location.state]);
 
-  // 1. 이메일 인증번호 발송 핸들러
+  // --- 이메일 인증 및 회원가입 핸들러 (기존 코드 동일) ---
   const handleRequestAuthCode = async () => {
     if (!email) {
       alert("이메일을 먼저 입력해주세요.");
@@ -44,7 +48,6 @@ const SignupPage = () => {
     }
   };
 
-  // 2. 이메일 인증번호 검증 핸들러
   const handleVerifyAuthCode = async () => {
     if (!authCode) {
       alert("인증번호를 입력해주세요.");
@@ -64,12 +67,10 @@ const SignupPage = () => {
     }
   };
 
-  // 3. 최종 회원가입 핸들러
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
 
-    // --- 프론트엔드 자체 유효성 검사 ---
     if (!id.trim() || !name.trim() || !birthdate.trim()) {
       setError("아이디, 이름, 생년월일을 모두 입력해주세요.");
       return;
@@ -93,7 +94,6 @@ const SignupPage = () => {
       return;
     }
 
-    // --- 모든 검증 통과 후 최종 회원가입 API 요청 ---
     try {
       await axiosInstance.post("/api/auth/signup", {
         email: email,
@@ -107,7 +107,6 @@ const SignupPage = () => {
       navigate("/");
     } catch (err) {
       console.error("회원가입 실패:", err);
-      // 서버에서 오는 에러 메시지(예: 아이디 중복)를 표시
       setError(
         err.response?.data?.message || "회원가입 중 오류가 발생했습니다."
       );
@@ -136,7 +135,6 @@ const SignupPage = () => {
         <div className="signup-form-container">
           <h2>회원가입</h2>
           <form onSubmit={handleSignup}>
-            {/* 아이디 */}
             <div className="input-group">
               <input
                 type="text"
@@ -145,52 +143,56 @@ const SignupPage = () => {
                 onChange={(e) => setId(e.target.value)}
               />
             </div>
-            {/* 이메일 */}
+
             <div className="input-group with-button">
               <input
                 type="email"
                 placeholder="이메일을 입력하세요"
                 value={email}
+                disabled={isVerified} // ✅ 구글 로그인 시 수정 불가
                 onChange={(e) => setEmail(e.target.value)}
-                disabled={isAuthCodeSent}
               />
-              <button
-                type="button"
-                className="inline-button"
-                onClick={handleRequestAuthCode}
-                disabled={isAuthCodeSent}
-              >
-                인증번호 받기
-              </button>
+              {!isVerified && (
+                <button
+                  type="button"
+                  className="inline-button"
+                  onClick={handleRequestAuthCode}
+                  disabled={isAuthCodeSent}
+                >
+                  인증번호 받기
+                </button>
+              )}
             </div>
-            {/* 인증번호 */}
-            <div className="input-group with-button">
-              <input
-                type="text"
-                placeholder="인증번호를 입력하세요"
-                value={authCode}
-                onChange={(e) => setAuthCode(e.target.value)}
-                disabled={!isAuthCodeSent || isVerified}
-              />
-              <button
-                type="button"
-                className="inline-button"
-                onClick={handleVerifyAuthCode}
-                disabled={!isAuthCodeSent || isVerified}
-              >
-                {isVerified ? "인증완료" : "인증번호 확인"}
-              </button>
-            </div>
-            {/* 생년월일 */}
+
+            {!isVerified && (
+              <div className="input-group with-button">
+                <input
+                  type="text"
+                  placeholder="인증번호를 입력하세요"
+                  value={authCode}
+                  onChange={(e) => setAuthCode(e.target.value)}
+                  disabled={!isAuthCodeSent}
+                />
+                <button
+                  type="button"
+                  className="inline-button"
+                  onClick={handleVerifyAuthCode}
+                  disabled={!isAuthCodeSent}
+                >
+                  인증번호 확인
+                </button>
+              </div>
+            )}
+
             <div className="input-group">
               <input
                 type="text"
-                placeholder="생년월일을 입력하세요 (예시: 1990-01-01)"
+                placeholder="생년월일을 입력하세요 (예: 1990-01-01)"
                 value={birthdate}
                 onChange={(e) => setBirthdate(e.target.value)}
               />
             </div>
-            {/* 이름 */}
+
             <div className="input-group">
               <input
                 type="text"
@@ -199,7 +201,7 @@ const SignupPage = () => {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            {/* 비밀번호 */}
+
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -214,7 +216,7 @@ const SignupPage = () => {
                 {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
               </span>
             </div>
-            {/* 비밀번호 확인 */}
+
             <div className="input-group">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -236,7 +238,6 @@ const SignupPage = () => {
 
             {error && <p className="error-message">{error}</p>}
 
-            {/* 등록하기 버튼: isVerified가 true일 때만 활성화 */}
             <button
               type="submit"
               className="signup-button"

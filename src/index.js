@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import { worker } from "./mocks/browser";
+// import { worker } from "./mocks/browser";
 
 // if (process.env.NODE_ENV === 'development') {
 //   // 개발 환경에서만 MSW 워커를 시작합니다

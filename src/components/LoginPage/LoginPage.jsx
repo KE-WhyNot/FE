@@ -3,6 +3,7 @@ import "./LoginPage.css";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axiosInstance from "../../api/axiosInstance";
+import useAuthStore from "../../store/useAuthStore"; // ✅ Zustand 전역 상태 import
 
 import youthfiLogo from "../../assets/logos/youthfi.png";
 import loginDeskImage from "../../assets/images/login_desk.png";
@@ -17,6 +18,7 @@ const LoginPage = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { setUser, fetchProfile } = useAuthStore(); // ✅ Zustand 함수 사용
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -34,16 +36,20 @@ const LoginPage = () => {
 
       console.log("로그인 응답:", response.data);
 
-      // ✅ 서버 응답 구조에 맞게 수정
+      // ✅ 서버 응답 구조에 맞게 처리
       if (response.data.code === "COMMON200") {
         const { accessToken, refreshToken } = response.data.result;
 
         if (accessToken && refreshToken) {
+          // ✅ 토큰을 localStorage에 저장
           localStorage.setItem("accessToken", accessToken);
           localStorage.setItem("refreshToken", refreshToken);
 
+          // ✅ 로그인 직후 프로필 정보 불러오기 (Zustand 전역 상태 업데이트)
+          await fetchProfile();
+
           alert("로그인 성공!");
-          navigate("/main"); // ✅ 로그인 성공 시 이동
+          navigate("/main"); // ✅ 로그인 성공 시 메인으로 이동
         } else {
           setError("토큰 정보를 불러올 수 없습니다.");
         }
@@ -53,10 +59,17 @@ const LoginPage = () => {
       }
     } catch (err) {
       console.error("로그인 실패:", err);
-      setError(
-        err.response?.data?.message ||
-          "아이디 또는 비밀번호가 올바르지 않습니다."
-      );
+
+      let message = err.response?.data?.message;
+
+      // ✅ 백엔드 메시지를 사용자 친화적으로 바꾸기
+      if (message === "요청한 정보를 찾을 수 없습니다.") {
+        message = "아이디 또는 비밀번호를 다시 확인해주세요.";
+      } else if (message === "Validation Error입니다.") {
+        message = "아이디와 비밀번호를 모두 입력해주세요.";
+      }
+
+      setError(message || "로그인에 실패했습니다. 다시 시도해주세요.");
     }
   };
 

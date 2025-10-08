@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Header.css";
 import youthfiLogo from "../../assets/logos/youthfi.png";
 import userAvatar from "../../assets/images/avatar.png";
 import { IoMdNotifications } from "react-icons/io";
-import axiosInstance from "../../api/axiosInstance";
+import useAuthStore from "../../store/useAuthStore"; // ✅ Zustand 스토어 import
 
 const mockNotifications = [
   { id: 1, message: "새로운 튜토리얼이 추가되었습니다.", read: false },
@@ -21,9 +21,11 @@ const Header = () => {
   const [isNavHovered, setIsNavHovered] = useState(false);
   const [notifications, setNotifications] = useState(mockNotifications);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [userProfile, setUserProfile] = useState({}); // ✅ null → {} 로 변경
-  const navigate = useNavigate();
 
+  // ✅ Zustand에서 전역 로그인 정보 가져오기
+  const { user, isAuthenticated } = useAuthStore();
+
+  const navigate = useNavigate();
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const toggleNotificationPanel = () => {
@@ -43,29 +45,15 @@ const Header = () => {
     setIsPanelOpen(false);
   };
 
-  // ✅ 프로필 정보 가져오기
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const res = await axiosInstance.get("/api/auth/profile");
-        console.log("📄 받은 프로필 데이터:", res.data);
-        setUserProfile(res.data.result);
-      } catch (err) {
-        console.error("프로필 조회 실패:", err);
-        setUserProfile({ userId: "게스트" });
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
-
   return (
     <div className="header-container">
       <header className="app-header">
+        {/* --- 로고 --- */}
         <div className="logo-container">
           <img src={youthfiLogo} alt="YOUTHFI Logo" className="header-logo" />
         </div>
 
+        {/* --- 네비게이션 메뉴 --- */}
         <nav
           className={`header-nav ${isNavHovered ? "is-hovered" : ""}`}
           onMouseEnter={() => setIsNavHovered(true)}
@@ -79,20 +67,23 @@ const Header = () => {
           <NavLink to="/setting/profile">마이페이지</NavLink>
         </nav>
 
+        {/* --- 사용자 정보 + 알림 --- */}
         <div className="user-info-container">
           <div
             className="user-profile-link"
             onClick={() => navigate("/setting/profile")}
           >
             <img src={userAvatar} alt="User Avatar" className="user-avatar" />
-            {/* ✅ 이름이 있을 때만 span 렌더링 */}
-            {userProfile?.name || userProfile?.userId ? (
-              <span className="user-name">
-                {userProfile.name || userProfile.userId}
-              </span>
-            ) : null}
+
+            {/* ✅ Zustand 상태에서 바로 이름 표시 */}
+            {isAuthenticated && (user?.name || user?.userId) ? (
+              <span className="user-name">{user.name || user.userId}</span>
+            ) : (
+              <span className="user-name">로그인 필요</span>
+            )}
           </div>
 
+          {/* --- 알림 아이콘 --- */}
           <div className="notification-container">
             <div
               className="notification-bell"
@@ -104,6 +95,7 @@ const Header = () => {
               )}
             </div>
 
+            {/* --- 알림 패널 --- */}
             {isPanelOpen && (
               <div className="notification-panel">
                 <div className="notification-list-popup">

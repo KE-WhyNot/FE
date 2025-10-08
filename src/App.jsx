@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useEffect } from "react"; // ✅ useEffect 추가!
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import useAuthStore from "./store/useAuthStore";
 
 import LoginPage from "./components/LoginPage/LoginPage";
 import MainPage from "./components/MainPage/MainPage";
@@ -20,6 +21,15 @@ import InvestmentPropensityPage from "./components/InvestmentPropensityPage/Inve
 import PrivateRoute from "./api/PrivateRoute";
 
 function App() {
+  const { fetchProfile } = useAuthStore();
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      fetchProfile();
+    }
+  }, [fetchProfile]);
+
   return (
     <BrowserRouter>
       <Routes>

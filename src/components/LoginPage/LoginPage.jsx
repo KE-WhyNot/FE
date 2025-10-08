@@ -1,21 +1,22 @@
-import React, { useState } from 'react';
-import './LoginPage.css';
-import { useNavigate } from 'react-router-dom';
-import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import axios from 'axios';
+import { useState } from "react";
+import "./LoginPage.css";
+import { useNavigate } from "react-router-dom";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+// --- ⬇️ 1. axios 대신 axiosInstance를 import 합니다. ⬇️ ---
+import axiosInstance from "../../api/axiosInstance";
 
 // 이미지 및 로고 import
-import youthfiLogo from '../../assets/logos/youthfi.png';
-import loginDeskImage from '../../assets/images/login_desk.png';
-import googleLogo from '../../assets/logos/google.png';
-import naverLogo from '../../assets/logos/naver.png';
-import kakaoLogo from '../../assets/logos/kakao.png';
+import youthfiLogo from "../../assets/logos/youthfi.png";
+import loginDeskImage from "../../assets/images/login_desk.png";
+import googleLogo from "../../assets/logos/google.png";
+import naverLogo from "../../assets/logos/naver.png";
+import kakaoLogo from "../../assets/logos/kakao.png";
 
 const LoginPage = () => {
-  const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
+  const [id, setId] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const navigate = useNavigate();
 
@@ -25,52 +26,53 @@ const LoginPage = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
-      const response = await axios.post('/login', {
+      // --- ⬇️ 2. axios.post를 axiosInstance.post로 변경하고, URL을 수정합니다. ⬇️ ---
+      const response = await axiosInstance.post("/api/auth/login", {
         id: id,
         password: password,
       });
 
       if (response.data.success) {
-        console.log('로그인 성공:', response.data);
-        localStorage.setItem('token', response.data.token);
-        navigate('/main');
+        console.log("로그인 성공:", response.data);
+        localStorage.setItem("token", response.data.token);
+        navigate("/main");
       }
     } catch (err) {
-      console.error('로그인 실패:', err.response.data);
+      console.error("로그인 실패:", err.response.data);
       setError(err.response.data.message);
     }
   };
-  
-  // --- ✨ 소셜 로그인 관련 코드 추가 ---
-  
-  // 1. 각 소셜 플랫폼의 인증 URL을 상수로 정의합니다.
-  const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=618174215491-u3rdo188811ifrti3uvrs0f2an5fdoam.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fgoogle&scope=openid%20profile%20email&state=test123';
-  const NAVER_AUTH_URL = 'https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=F2t5MnE8W6DBr7PfaG94&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fnaver&scope=name%20email%20profile_image&state=xyz123';
-  const KAKAO_AUTH_URL = 'https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=78e3b0999e39cf40232bdd8c78edd504&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fkakao&scope=account_email%20profile_nickname%20profile_image&state=xyz123';
 
-  // 2. 각 버튼 클릭 시 실행될 핸들러 함수를 만듭니다.
+  // --- ✨ 소셜 로그인 관련 코드 ---
+
+  const GOOGLE_AUTH_URL =
+    "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=618174215491-u3rdo188811ifrti3uvrs0f2an5fdoam.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fgoogle&scope=openid%20profile%20email&state=test123";
+  const NAVER_AUTH_URL =
+    "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=F2t5MnE8W6DBr7PfaG94&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fnaver&scope=name%20email%20profile_image&state=xyz123";
+  const KAKAO_AUTH_URL =
+    "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=78e3b0999e39cf40232bdd8c78edd504&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fkakao&scope=account_email%20profile_nickname%20profile_image&state=xyz123";
+
   const handleSocialLogin = (provider) => {
     let url;
     switch (provider) {
-      case 'google':
+      case "google":
         url = GOOGLE_AUTH_URL;
         break;
-      case 'naver':
+      case "naver":
         url = NAVER_AUTH_URL;
         break;
-      case 'kakao':
+      case "kakao":
         url = KAKAO_AUTH_URL;
         break;
       default:
         return;
     }
-    // 해당 URL로 페이지를 이동시킵니다.
     window.location.href = url;
   };
-  
+
   // ------------------------------------
 
   return (
@@ -85,7 +87,11 @@ const LoginPage = () => {
           <span>계정이 없으신가요?</span>
           <a href="/signup">회원가입 하러 가기</a>
         </div>
-        <img src={loginDeskImage} alt="Desk Illustration" className="desk-illustration" />
+        <img
+          src={loginDeskImage}
+          alt="Desk Illustration"
+          className="desk-illustration"
+        />
       </div>
 
       <div className="right-panel">
@@ -102,12 +108,15 @@ const LoginPage = () => {
             </div>
             <div className="input-group">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 placeholder="비밀번호를 입력해주세요"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+              <span
+                className="password-toggle-icon"
+                onClick={togglePasswordVisibility}
+              >
                 {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
               </span>
             </div>
@@ -124,16 +133,24 @@ const LoginPage = () => {
           <div className="divider">
             <span>또는</span>
           </div>
-          
-          {/* ✨ 3. 각 버튼에 onClick 이벤트를 연결합니다. */}
+
           <div className="social-login-buttons">
-            <button className="social-button" onClick={() => handleSocialLogin('naver')}>
+            <button
+              className="social-button"
+              onClick={() => handleSocialLogin("naver")}
+            >
               <img src={naverLogo} alt="Naver Login" />
             </button>
-            <button className="social-button" onClick={() => handleSocialLogin('google')}>
+            <button
+              className="social-button"
+              onClick={() => handleSocialLogin("google")}
+            >
               <img src={googleLogo} alt="Google Login" />
             </button>
-            <button className="social-button" onClick={() => handleSocialLogin('kakao')}>
+            <button
+              className="social-button"
+              onClick={() => handleSocialLogin("kakao")}
+            >
               <img src={kakaoLogo} alt="Kakao Login" />
             </button>
           </div>

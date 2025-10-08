@@ -53,5 +53,6 @@
     "workerDirectory": [
       "public"
     ]
-  }
+  },
+  "proxy": "https://auth.youth-fi.com"
 }

@@ -35,7 +35,7 @@ const SignupPage = () => {
       return;
     }
     try {
-      await axiosInstance.post("/api/email/vertification/send", { email });
+      await axiosInstance.post("/api/email/verification/send", { email });
       alert(`'${email}'로 인증번호가 발송되었습니다.`);
       setIsAuthCodeSent(true);
     } catch (err) {
@@ -51,7 +51,7 @@ const SignupPage = () => {
       return;
     }
     try {
-      await axiosInstance.post("/api/email/vertification/verify", {
+      await axiosInstance.post("/api/email/verification/verify", {
         email: email,
         verificationCode: authCode,
       });

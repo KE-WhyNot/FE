@@ -2,10 +2,8 @@ import { useState } from "react";
 import "./LoginPage.css";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-// --- ⬇️ 1. axios 대신 axiosInstance를 import 합니다. ⬇️ ---
 import axiosInstance from "../../api/axiosInstance";
 
-// 이미지 및 로고 import
 import youthfiLogo from "../../assets/logos/youthfi.png";
 import loginDeskImage from "../../assets/images/login_desk.png";
 import googleLogo from "../../assets/logos/google.png";
@@ -29,25 +27,40 @@ const LoginPage = () => {
     setError("");
 
     try {
-      // --- ⬇️ 2. axios.post를 axiosInstance.post로 변경하고, URL을 수정합니다. ⬇️ ---
       const response = await axiosInstance.post("/api/auth/login", {
-        id: id,
+        userId: id, // Swagger에 맞게 userId로 유지
         password: password,
       });
 
-      if (response.data.success) {
-        console.log("로그인 성공:", response.data);
-        localStorage.setItem("token", response.data.token);
-        navigate("/main");
+      console.log("로그인 응답:", response.data);
+
+      // ✅ 서버 응답 구조에 맞게 수정
+      if (response.data.code === "COMMON200") {
+        const { accessToken, refreshToken } = response.data.result;
+
+        if (accessToken && refreshToken) {
+          localStorage.setItem("accessToken", accessToken);
+          localStorage.setItem("refreshToken", refreshToken);
+
+          alert("로그인 성공!");
+          navigate("/main"); // ✅ 로그인 성공 시 이동
+        } else {
+          setError("토큰 정보를 불러올 수 없습니다.");
+        }
+      } else {
+        // ✅ 서버가 에러코드를 리턴한 경우
+        setError(response.data.message || "로그인에 실패했습니다.");
       }
     } catch (err) {
-      console.error("로그인 실패:", err.response.data);
-      setError(err.response.data.message);
+      console.error("로그인 실패:", err);
+      setError(
+        err.response?.data?.message ||
+          "아이디 또는 비밀번호가 올바르지 않습니다."
+      );
     }
   };
 
-  // --- ✨ 소셜 로그인 관련 코드 ---
-
+  // --- ✨ 소셜 로그인 URL들 ---
   const GOOGLE_AUTH_URL =
     "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=618174215491-u3rdo188811ifrti3uvrs0f2an5fdoam.apps.googleusercontent.com&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fgoogle&scope=openid%20profile%20email&state=test123";
   const NAVER_AUTH_URL =
@@ -72,8 +85,6 @@ const LoginPage = () => {
     }
     window.location.href = url;
   };
-
-  // ------------------------------------
 
   return (
     <div className="login-page-container">

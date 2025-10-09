@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import useAuthStore from "./store/useAuthStore";
 
 import LoginPage from "./components/LoginPage/LoginPage";
-import AuthCallbackGoogle from "./components/LoginPage/AuthCallbackGoogle"; // ✅ 구글 콜백 import
+import AuthCallbackGoogle from "./components/LoginPage/AuthCallbackGoogle";
+import AuthCallbackKakao from "./components/LoginPage/AuthCallbackKakao"; 
 import MainPage from "./components/MainPage/MainPage";
 import SignupPage from "./components/SignupPage/SignupPage";
 import PaperTrading from "./components/PaperTrading/PaperTrading";
@@ -38,8 +39,9 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-        {/* ✅ 구글 로그인 콜백 (보호 X, 로그인 전에도 접근 가능) */}
+        {/* ✅ 소셜 로그인 콜백 (보호 X, 로그인 전에도 접근 가능) */}
         <Route path="/auth/callback/google" element={<AuthCallbackGoogle />} />
+        <Route path="/auth/callback/kakao" element={<AuthCallbackKakao />} />
 
         {/* ✅ 로그인된 사용자만 접근 가능한 보호 라우트 */}
         <Route

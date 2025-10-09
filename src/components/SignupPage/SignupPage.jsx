@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import Calendar from "react-calendar"; // ✅ 달력 라이브러리 추가
+import "react-calendar/dist/Calendar.css"; // ✅ 기본 스타일 불러오기
 import { useLocation, useNavigate } from "react-router-dom";
 import "./SignupPage.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
@@ -20,6 +22,7 @@ const SignupPage = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false); // ✅ 캘린더 표시 상태 추가
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,7 +35,7 @@ const SignupPage = () => {
     }
   }, [location.state]);
 
-  // --- 이메일 인증 및 회원가입 핸들러 (기존 코드 동일) ---
+  // --- 이메일 인증 요청 ---
   const handleRequestAuthCode = async () => {
     if (!email) {
       alert("이메일을 먼저 입력해주세요.");
@@ -48,6 +51,7 @@ const SignupPage = () => {
     }
   };
 
+  // --- 이메일 인증 확인 ---
   const handleVerifyAuthCode = async () => {
     if (!authCode) {
       alert("인증번호를 입력해주세요.");
@@ -67,6 +71,14 @@ const SignupPage = () => {
     }
   };
 
+  // ✅ 캘린더 날짜 선택 핸들러
+  const handleDateChange = (date) => {
+    const formatted = date.toISOString().split("T")[0]; // YYYY-MM-DD 형태로 포맷
+    setBirthdate(formatted);
+    setShowCalendar(false); // 날짜 선택 후 캘린더 닫기
+  };
+
+  // --- 회원가입 처리 ---
   const handleSignup = async (e) => {
     e.preventDefault();
     setError("");
@@ -116,6 +128,7 @@ const SignupPage = () => {
   return (
     <div className="signup-page-container">
       <img src={youthfiLogo} alt="YOUTHFI Logo" className="main-logo" />
+
       <div className="left-panel">
         <div className="welcome-text">
           <h1>회원가입으로 시작하기</h1>
@@ -131,10 +144,12 @@ const SignupPage = () => {
           className="desk-illustration"
         />
       </div>
+
       <div className="right-panel">
         <div className="signup-form-container">
           <h2>회원가입</h2>
           <form onSubmit={handleSignup}>
+            {/* 아이디 */}
             <div className="input-group">
               <input
                 type="text"
@@ -144,12 +159,13 @@ const SignupPage = () => {
               />
             </div>
 
+            {/* 이메일 */}
             <div className="input-group with-button">
               <input
                 type="email"
                 placeholder="이메일을 입력하세요"
                 value={email}
-                disabled={isVerified} // ✅ 구글 로그인 시 수정 불가
+                disabled={isVerified}
                 onChange={(e) => setEmail(e.target.value)}
               />
               {!isVerified && (
@@ -164,6 +180,7 @@ const SignupPage = () => {
               )}
             </div>
 
+            {/* 인증번호 입력 */}
             {!isVerified && (
               <div className="input-group with-button">
                 <input
@@ -184,15 +201,36 @@ const SignupPage = () => {
               </div>
             )}
 
-            <div className="input-group">
+            {/* ✅ 생년월일 (캘린더) */}
+            <div className="input-group" style={{ position: "relative" }}>
               <input
                 type="text"
-                placeholder="생년월일을 입력하세요 (예: 1990-01-01)"
+                placeholder="생년월일을 선택하세요"
                 value={birthdate}
-                onChange={(e) => setBirthdate(e.target.value)}
+                readOnly
+                onClick={() => setShowCalendar(!showCalendar)} // 클릭 시 달력 표시
               />
+              {showCalendar && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "45px",
+                    zIndex: 10,
+                    backgroundColor: "white",
+                    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.15)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <Calendar
+                    onChange={handleDateChange}
+                    value={birthdate ? new Date(birthdate) : new Date()}
+                    maxDate={new Date()} // 미래 선택 불가
+                  />
+                </div>
+              )}
             </div>
 
+            {/* 이름 */}
             <div className="input-group">
               <input
                 type="text"
@@ -202,6 +240,7 @@ const SignupPage = () => {
               />
             </div>
 
+            {/* 비밀번호 */}
             <div className="input-group">
               <input
                 type={showPassword ? "text" : "password"}
@@ -217,6 +256,7 @@ const SignupPage = () => {
               </span>
             </div>
 
+            {/* 비밀번호 확인 */}
             <div className="input-group">
               <input
                 type={showConfirmPassword ? "text" : "password"}
@@ -226,7 +266,9 @@ const SignupPage = () => {
               />
               <span
                 className="password-toggle-icon"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                onClick={() =>
+                  setShowConfirmPassword(!showConfirmPassword)
+                }
               >
                 {showConfirmPassword ? (
                   <AiOutlineEyeInvisible />
@@ -236,8 +278,10 @@ const SignupPage = () => {
               </span>
             </div>
 
+            {/* 에러 메시지 */}
             {error && <p className="error-message">{error}</p>}
 
+            {/* 등록 버튼 */}
             <button
               type="submit"
               className="signup-button"

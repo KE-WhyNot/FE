@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import "./AllStocks.css";
-
-// --- react-financial-charts 관련 import ---
 import { ChartCanvas, Chart } from "react-financial-charts";
 import { XAxis, YAxis } from "react-financial-charts";
 import { discontinuousTimeScaleProvider } from "react-financial-charts";
@@ -11,6 +9,7 @@ import { sma } from "@react-financial-charts/indicators";
 import { last } from "react-financial-charts";
 import { format } from "d3-format";
 import { timeFormat } from "d3-time-format";
+import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 
 // --- Mock Data 생성 및 가공 ---
 const generateMockData = (count) => {
@@ -76,10 +75,13 @@ const StockTooltip = ({ currentItem }) => {
   );
 };
 
+// ✨ 기존 SVG 하트 아이콘 컴포넌트 삭제
+
 const AllStocks = () => {
   const [orderType, setOrderType] = useState("buy");
   const [price, setPrice] = useState(89500);
   const [quantity, setQuantity] = useState(0);
+  const [isFavorite, setIsFavorite] = useState(false); 
 
   const xScaleProvider = discontinuousTimeScaleProvider.inputDateAccessor(d => d.date);
   const { data, xScale, xAccessor, displayXAccessor } = xScaleProvider(calculatedData);
@@ -100,6 +102,15 @@ const AllStocks = () => {
   const c = getChangeInfo(latestData.close, prevData.close);
   const dayOfWeek = ['일', '월', '화', '수', '목', '금', '토'][latestData.date.getDay()];
 
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+    if (!isFavorite) {
+      alert("관심 종목으로 추가되었습니다!");
+    } else {
+      alert("관심 종목에서 해제되었습니다.");
+    }
+  };
+
   return (
     <div className="all-stocks-container">
       <div className="stock-page-header">
@@ -107,8 +118,14 @@ const AllStocks = () => {
       </div>
       <div className="stock-detail-grid">
         <div className="chart-section widget">
+          {/* ✨ 헤더 구조 및 아이콘 수정 */}
           <div className="widget-header">
-            <h3>삼성전자</h3>
+            <div className="stock-title-container">
+              <h3>삼성전자</h3>
+              <button onClick={handleToggleFavorite} className="favorite-toggle-btn">
+                {isFavorite ? <AiFillHeart className="is-favorite" /> : <AiOutlineHeart />}
+              </button>
+            </div>
             <div className="chart-tabs">
               <button className="active">1일</button><button>1주</button><button>1달</button>
             </div>

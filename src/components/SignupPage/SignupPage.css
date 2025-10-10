@@ -1,19 +1,18 @@
-
-/* 전체 페이지 컨테이너 */
-.login-page-container {
+/* 전체 페이지 컨테이너 스타일 */
+.signup-page-container {
   display: flex;
   width: 100%;
   max-width: 1280px;
   min-height: 100vh;
   margin: 0 auto;
+  font-family: 'Pretendard', sans-serif;
   background-color: #ffffff;
   align-items: flex-start;
   justify-content: space-between;
   padding: 2rem;
   box-sizing: border-box;
-  position: relative; /* 로고 기준점 */
+  position: relative;
 }
-
 /* 좌측 상단 로고 */
 .main-logo {
   position: absolute;
@@ -22,7 +21,6 @@
   width: 110px;
   z-index: 10;
 }
-
 /* 왼쪽 영역 */
 .left-panel {
   flex: 1;
@@ -35,41 +33,23 @@
   position: relative;
   min-height: calc(100vh - 4rem);
 }
-
-.welcome-text {
-  text-align: left;
-  margin-bottom: 2rem;
-}
-
 .welcome-text h1 {
   font-size: 2.8rem;
   font-weight: 700;
   margin: 0 0 1rem 0;
   color: #222;
 }
-
 .welcome-text p {
   font-size: 1.25rem;
   color: #555;
-  margin: 0;
+  margin: 0 0 2rem 0;
 }
-
-.signup-prompt-left {
-  font-size: 1rem;
-  margin-top: 2rem;
-}
-
-.signup-prompt-left span {
-  color: #555;
-}
-
 .signup-prompt-left a {
   margin-left: 0.5rem;
   color: #6d55ff;
   font-weight: 600;
   text-decoration: none;
 }
-
 /* 책상 일러스트 */
 .desk-illustration {
   position: absolute;
@@ -79,7 +59,6 @@
   max-width: 240px;
   z-index: 5;
 }
-
 /* 오른쪽 영역 */
 .right-panel {
   flex: 0.8;
@@ -90,7 +69,8 @@
   z-index: 10;
 }
 
-.login-form-container {
+/* ✨ 회원가입 폼 컨테이너 스타일 (LoginPage의 login-form-container와 유사) */
+.signup-form-container {
   background-color: #ffffff;
   padding: 3rem;
   border-radius: 20px;
@@ -98,20 +78,28 @@
   width: 100%;
   max-width: 420px;
 }
-
-.login-form-container h2 {
+.signup-form-container h2 {
   font-size: 1.8rem;
   font-weight: 700;
   text-align: center;
   margin-bottom: 2rem;
   color: #333;
 }
-
+/* --- 입력 그룹 스타일 --- */
 .input-group {
   position: relative;
   margin-bottom: 1.2rem;
 }
-
+/* 버튼이 있는 입력 그룹 */
+.input-group.with-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.input-group.with-button input,
+.input-group.with-button .inline-button {
+  height: 48px; /* 인풋/버튼 높이 통일 */
+}
 .input-group input {
   width: 100%;
   padding: 1rem;
@@ -121,7 +109,35 @@
   font-size: 1rem;
   box-sizing: border-box;
 }
+.input-group input:disabled {
+  background-color: #ebebeb;
+  color: #999;
+}
 
+/* ✨ [수정] 입력창 옆 인라인 버튼 */
+.inline-button {
+  flex-shrink: 0;
+  width: 120px; /* ✨ 너비를 고정값으로 지정 */
+  padding: 0; /* ✨ 기존 padding은 제거 */
+  border: 1px solid #6d55ff;
+  background-color: #fff;
+  color: #6d55ff;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inline-button:disabled {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+  color: #aaa;
+  cursor: not-allowed;
+}
+/* 비밀번호 토글 아이콘 */
 .password-toggle-icon {
   position: absolute;
   top: 50%;
@@ -131,17 +147,8 @@
   color: #888;
   font-size: 1.2rem;
 }
-
-.forgot-password-link {
-  display: block;
-  text-align: right;
-  font-size: 0.875rem;
-  color: #888;
-  text-decoration: none;
-  margin-bottom: 2rem;
-}
-
-.login-button {
+/* 등록하기 버튼 */
+.signup-button {
   width: 100%;
   padding: 1rem;
   border: none;
@@ -151,68 +158,24 @@
   font-size: 1.1rem;
   font-weight: 600;
   cursor: pointer;
+  margin-top: 2rem;
+  transition: background-color 0.2s;
+}
+.signup-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+.signup-button:hover:not(:disabled) {
+  background-color: #5a45e0;
 }
 
-.signup-prompt-right {
-  text-align: center;
-  margin-top: 1.5rem;
+.react-calendar {
+  border: none;
+  font-family: inherit;
 }
 
-.signup-prompt-right a {
-  color: #555;
-  font-size: 0.9rem;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-/* 구분선 */
-.divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 1.5rem 0;
-  color: #ccc;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.divider span {
-  padding: 0 1rem;
-}
-
-/* 소셜 로그인 버튼 */
-.social-login-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-}
-
-.social-button {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.social-button img {
-  width: 24px;
-  height: 24px;
-}
-
-
-.error-message {
-  color: red;
-  font-size: 0.875rem;
-  text-align: center;
-  margin-top: 1rem;
+.react-calendar__tile--active {
+  background: #007bff;
+  color: white;
+  border-radius: 8px;
 }

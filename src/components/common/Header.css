@@ -1,0 +1,290 @@
+/* 헤더를 감싸는 컨테이너 */
+.header-container {
+  grid-area: header;
+  width: 100%;
+  padding: 1.5rem 2rem;
+  box-sizing: border-box;
+}
+
+/* app-header floating 스타일 */
+.app-header {
+  width: 100%;
+  margin: 0;
+  padding: 1rem 2.5rem;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  box-sizing: border-box;
+  position: relative; 
+  height: 80px;
+}
+
+/* 로고 컨테이너 */
+.logo-container {
+  position: absolute;
+  top: 50%;
+  left: 2.5rem;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+
+.header-logo {
+  height: 100px;
+}
+
+/* 네비게이션 메뉴 */
+.header-nav {
+  display: flex;
+  align-items: center;
+  margin: 0 auto;
+  gap: 4.5rem;
+  padding-left: 120px;
+}
+
+.header-nav a {
+  position: relative;
+  text-decoration: none;
+  color: #333;
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding: 0.5rem 0;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+/* 밑줄 기본 스타일 (평소에는 보이지 않음) */
+.header-nav a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 3px;
+  background-color: #5844d1;
+  transform: scaleX(0);
+  transition: transform 0.3s ease-in-out;
+}
+
+/* ✨ 1. 마우스를 올린 메뉴는 항상 밑줄과 색상 변경 */
+.header-nav a:hover {
+  color: #5844d1;
+}
+.header-nav a:hover::after {
+  transform: scaleX(1);
+}
+
+/* ✨ 2. 활성화된(현재 페이지) 메뉴는 기본적으로 밑줄 표시 */
+.header-nav a.active {
+  color: #5844d1;
+}
+.header-nav a.active::after {
+  transform: scaleX(1);
+}
+
+/* ✨ 3. 하지만, 네비게이션 영역 전체에 마우스가 올라가 있다면(.is-hovered), 활성화된 메뉴의 밑줄을 숨김 */
+/* (이렇게 하면 마우스를 올린 메뉴에만 밑줄이 보이게 됩니다) */
+.header-nav.is-hovered a.active {
+  color: #333; 
+}
+
+.header-nav.is-hovered a.active::after {
+  transform: scaleX(0);
+}
+
+
+/* 사용자 정보 컨테이너 */
+.user-info-container {
+  display: flex;
+  align-items: center;
+  background-color: #f4f2ff;
+  padding: 0.5rem 0.6rem;
+  border-radius: 30px;
+  flex-shrink: 0;
+}
+
+.user-profile-link {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem; /* 아바타와 이름 사이 간격 */
+  cursor: pointer; /* ✨ 마우스를 올리면 손가락 모양으로 변경 */
+  margin-right: 0.5rem; /* 알림 아이콘과의 간격 */
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+/* 알림 아이콘 */
+.notification-bell {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background-color: #5844d1;
+  color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.4rem;
+  cursor: pointer;
+}
+
+/* --- ✨ 알림 관련 스타일 추가 --- */
+
+/* 알림 아이콘과 팝업 패널을 감싸는 컨테이너 (위치 기준점) */
+.notification-container {
+  position: relative;
+}
+
+/* 알림 아이콘 뱃지 */
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: #ff4d4f; /* 눈에 띄는 빨간색 */
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+  border: 2px solid white;
+}
+
+/* 알림 팝업 패널 */
+.notification-panel {
+  position: absolute;
+  top: 120%; /* 아이콘 아래에 위치 */
+  right: 0;
+  width: 320px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  border: 1px solid #eee;
+  z-index: 100;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* 개별 알림 아이템 */
+.notification-item {
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+/* 안 읽은 알림 스타일 */
+.notification-item.unread {
+  background-color: #f0efff; /* A7A3FF 보다 연한 색으로 가독성 확보 */
+  font-weight: 500;
+}
+
+/* 읽은 알림 스타일 (기본값) */
+.notification-item.read {
+  background-color: #ffffff;
+  color: #888;
+}
+
+.notification-item:hover {
+  background-color: #e9e7ff; /* 마우스 올렸을 때 색상 */
+}
+
+@media (max-width: 1200px) {
+  .app-header {
+    padding: 1rem 1.5rem; /* 헤더의 좌우 여백을 줄여 공간 확보 */
+  }
+
+  .header-nav {
+    gap: 2.5rem; /* 메뉴 사이의 간격을 줄임 */
+  }
+}
+
+/* 화면 너비가 992px 이하일 때 적용 */
+@media (max-width: 992px) {
+  .header-logo {
+    height: 50px; /* 로고 크기를 약간 줄임 */
+  }
+
+  .header-nav {
+    gap: 1.5rem; /* 메뉴 사이의 간격을 더 줄임 */
+  }
+
+  .header-nav a {
+    font-size: 1.1rem; /* 메뉴 글자 크기를 줄임 */
+  }
+
+  /* 사용자 이름 숨기기 (선택 사항) */
+  .user-name {
+    display: none;
+  }
+}
+
+/* 화면 너비가 768px 이하일 때 적용 (모바일 환경 등) */
+@media (max-width: 768px) {
+  /* 로고만 보이도록 메뉴 숨기기 (햄버거 메뉴 등으로 대체 필요) */
+  .header-nav {
+    display: none;
+  }
+
+  .user-info-container {
+    /* 필요하다면 사용자 정보 영역도 숨기거나 디자인 변경 */
+  }
+}
+
+.notification-panel {
+  /* ✨ 패널 내부 스크롤을 위해 flex 구조로 변경 */
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+}
+
+.notification-list-popup {
+  overflow-y: auto; /* ✨ 알림 목록만 스크롤되도록 설정 */
+}
+
+.notification-footer {
+  padding: 0.5rem;
+  border-top: 1px solid #f0f0f0;
+  background-color: #f8f9fa;
+}
+
+.view-all-btn {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #5844d1;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s;
+}
+
+.view-all-btn:hover {
+  background-color: #e9e7ff;
+}

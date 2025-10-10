@@ -1,0 +1,101 @@
+.stock-recommendation-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #f9fafb;
+  min-height: 100vh;
+}
+
+.stock-recommendation-content {
+  width: 100%;
+  max-width: 1400px;
+  padding: 0 2rem 2rem;
+  box-sizing: border-box;
+}
+
+.stock-recommendation-content h1 {
+  font-size: 2rem;
+  margin-top: 0;
+  margin-bottom: 2rem;
+}
+
+.title-prefix {
+  color: #888; /* 회색으로 변경 */
+}
+
+.stock-table-container {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 1rem 1.2rem;
+  text-align: left;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #555;
+  font-size: 0.85rem;
+}
+
+th svg {
+  vertical-align: middle;
+  margin-left: 0.3rem;
+  color: #999;
+}
+
+tbody tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+tbody tr:hover {
+  background-color: #f0f2ff;
+}
+
+td {
+  color: #333;
+}
+
+/* 유틸리티 클래스 */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+  font-weight: 500;
+}
+
+.text-blue {
+  color: #007bff;
+}
+
+.text-red {
+  color: #e53e3e;
+}
+
+.text-grey {
+  color: #888;
+}
+
+.highlight-red {
+  color: #e53e3e;
+  font-weight: 700;
+}
+
+.highlight-orange {
+  color: #dd6b20;
+  font-weight: 700;
+}

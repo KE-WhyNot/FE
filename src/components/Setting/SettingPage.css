@@ -1,0 +1,172 @@
+/* 공통 섹션 제목 스타일 */
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+/* 알림 설정 페이지 전용 스타일 */
+.setting-list {
+  max-width: 500px;
+}
+
+.setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.setting-item:first-child {
+  border-top: 1px solid #f0f0f0;
+}
+
+.setting-item span {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* CSS 토글 스위치 스타일 */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #5844d1;
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* 저장/취소 버튼 */
+.form-actions {
+    max-width: 500px;
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.8rem;
+}
+
+.form-actions .cancel-button,
+.form-actions .save-button {
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid #ddd;
+}
+
+.form-actions .cancel-button {
+    background-color: #f8f9fa;
+}
+
+.form-actions .save-button {
+    background-color: #5844d1;
+    color: white;
+    border-color: #5844d1;
+}
+
+/* 계정 설정 관련 스타일 */
+.account-settings {
+  margin-top: 4rem;
+  max-width: 500px;
+}
+
+.action-button {
+  padding: 0.5rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-button:hover {
+  background-color: #f1f3f5;
+}
+
+.action-button.delete {
+  border-color: #f44336;
+  background-color: #ffebee;
+  color: #f44336;
+}
+
+.action-button.delete:hover {
+  background-color: #ffcdd2;
+}
+
+/* 확인 모달 내부 스타일 */
+.confirmation-modal-content p {
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin: 1rem 0 2rem 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+}
+
+.modal-actions .cancel-button,
+.modal-actions .confirm-button {
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #ddd;
+}
+
+.modal-actions .cancel-button {
+    background-color: #f8f9fa;
+}
+
+.modal-actions .confirm-button {
+    background-color: #5844d1;
+    color: white;
+    border: none;
+}
+
+.modal-actions .confirm-button.delete {
+  background-color: #f44336;
+}

@@ -1,0 +1,271 @@
+/* --- 메인 대시보드 스타일 --- */
+.paper-trading-container {
+  background-color: #f9fafb;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.2rem;
+  flex-shrink: 0;
+}
+
+.dashboard-header h2 {
+  font-size: 1.8rem;
+  margin: 0;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.stock-search {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 1.2rem;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.widget {
+  background-color: #ffffff;
+  padding: 1.2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+  flex-shrink: 0;
+}
+
+.widget-header.clickable {
+  cursor: pointer;
+}
+
+.widget-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.add-button {
+  background-color: #f0efff;
+  color: #6e55ff;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.positive { color: #f44336; }
+.negative { color: #1976d2; }
+.neutral { color: #888; }
+
+.widget-header.market-selector {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 0.8rem;
+}
+
+.market-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.market-buttons button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.market-buttons button.active {
+  color: #333;
+}
+
+/* 1. 차트 위젯 */
+.chart-tabs { display: flex; gap: 0.5rem; }
+.chart-tabs button { background: none; border: none; padding: 0.2rem 0.6rem; border-radius: 8px; cursor: pointer; font-weight: 500; font-size: 0.85rem;}
+.chart-tabs button.active { background-color: #f0efff; color: #6e55ff; }
+
+.line-chart-container {
+  height: auto;
+  flex-grow: 1;
+  min-height: 150px;
+}
+.chart-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; font-size: 0.85rem; color: #555; margin-top: 0.8rem; flex-shrink: 0; }
+.chart-summary span { font-weight: 600; margin-right: 0.5rem; }
+
+/* 2. 관심 종목 위젯 */
+.watchlist-list { flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
+.stock-item { display: flex; align-items: center; gap: 0.8rem; }
+.stock-logo { width: 36px; height: 36px; border-radius: 50%; background-color: #f0f0f0; display: flex; justify-content: center; align-items: center; font-weight: bold; flex-shrink: 0; }
+.stock-info { flex-grow: 1; min-width: 0; }
+.stock-info span, .stock-price span { display: block; font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stock-info small, .stock-price small { color: #888; font-size: 0.8rem; }
+.stock-price { text-align: right; min-width: 80px; flex-shrink: 0; }
+
+/* 3. 내 종목 위젯 */
+.total-assets { margin-bottom: 1rem; flex-shrink: 0;}
+.total-assets h2 { margin: 0; font-size: 1.8rem; }
+.holdings-section { margin-top: 0.8rem; }
+.holdings-section h4 { margin: 0 0 0.5rem 0; font-size: 0.95rem; }
+.stock-holding-item { display: flex; justify-content: space-between; font-size: 0.9rem; padding: 0.2rem 0; }
+.holding-price { text-align: right; }
+.holding-price span { display: block; }
+.holding-price small { font-size: 0.8rem; }
+
+/* 4. 거래내역 & 포트폴리오 */
+.widget-group { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 1.2rem; 
+  overflow: hidden;
+}
+
+.transaction-list { flex-grow: 1; display: flex; flex-direction: column; gap: 0.8rem; overflow-y: auto; }
+.transaction-item { display: flex; align-items: center; font-size: 0.85rem; }
+.transaction-item .date { font-weight: 600; margin-right: 0.8rem; }
+.transaction-item .info { flex-grow: 1; min-width: 0; }
+.transaction-item .info span { display: block; }
+.transaction-item .info small { color: #888; }
+.transaction-item .amount { text-align: right; }
+.transaction-item .amount span, .transaction-item .amount small { display: block; }
+
+.custom-tooltip {
+  background-color: #333;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+}
+
+.custom-tooltip strong {
+  font-weight: 700;
+}
+
+.chart-widget {
+  overflow: visible;
+}
+
+/* --- ✨ 투자 현황(원형 차트) 위젯 스타일 --- */
+
+.portfolio-widget .pie-chart-container {
+  position: relative; /* 중앙 라벨 배치를 위함 */
+  flex-grow: 1;
+  min-height: 150px;
+}
+
+/* ✨ 중앙 요약 정보 스타일 */
+.chart-center-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none; /* 마우스 이벤트가 차트에 전달되도록 */
+}
+
+.chart-center-label span {
+  font-size: 0.9rem;
+  color: #888;
+}
+
+.chart-center-label strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #333;
+}
+
+/* ✨ 호버 애니메이션 및 그림자 효과 */
+.portfolio-widget .pie-chart-container svg path {
+  transition: transform 0.2s ease-in-out;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.05));
+}
+
+.portfolio-widget .pie-chart-container svg path:hover {
+  transform: scale(1.05);
+}
+
+/* ✨ 커스텀 툴팁 스타일 */
+.custom-pie-tooltip {
+  background-color: #222;
+  color: white;
+  padding: 0.6rem 0.9rem;
+  border-radius: 8px;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  min-width: 100px;
+}
+.custom-pie-tooltip strong {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+.custom-pie-tooltip span {
+  font-size: 0.85rem;
+  color: #ddd;
+}
+
+/* ✨ 커스텀 범례 스타일 */
+.pie-chart-legend {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.legend-label {
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react"; // ✅ useEffect 추가!
+import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import useAuthStore from "./store/useAuthStore";
 
@@ -21,6 +21,8 @@ import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
 import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
 import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
 import PrivateRoute from "./api/PrivateRoute";
+import SavingsDetailPage from "./components/SavingsDetailPage/SavingsDetailPage";
+import PolicyDetailPage from "./components/PolicyDetailPage/PolicyDetailPage";
 
 function App() {
   const { fetchProfile } = useAuthStore();
@@ -35,15 +37,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* ✅ 로그인 & 회원가입 페이지는 보호 안함 */}
+        {/* ✅ 로그인 & 회원가입 페이지 (비보호) */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
 
-        {/* ✅ 소셜 로그인 콜백 (보호 X, 로그인 전에도 접근 가능) */}
+        {/* ✅ 소셜 로그인 콜백 (비보호) */}
         <Route path="/auth/callback/google" element={<AuthCallbackGoogle />} />
         <Route path="/auth/callback/kakao" element={<AuthCallbackKakao />} />
 
-        {/* ✅ 로그인된 사용자만 접근 가능한 보호 라우트 */}
+        {/* ✅ 보호된 라우트 영역 */}
         <Route
           path="/main"
           element={
@@ -53,11 +55,20 @@ function App() {
           }
         />
 
+        {/* ✅ 예금/정책 페이지 + 상세 페이지 (보호됨) */}
         <Route
           path="/savings"
           element={
             <PrivateRoute>
               <SavingsPage />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/savings/:productId"
+          element={
+            <PrivateRoute>
+              <SavingsDetailPage />
             </PrivateRoute>
           }
         />
@@ -70,7 +81,16 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route
+          path="/policy/:policyId"
+          element={
+            <PrivateRoute>
+              <PolicyDetailPage />
+            </PrivateRoute>
+          }
+        />
 
+        {/* ✅ 포트폴리오 관련 페이지 (보호됨) */}
         <Route
           path="/portfolio"
           element={
@@ -79,7 +99,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/portfolio-main"
           element={
@@ -88,7 +107,6 @@ function App() {
             </PrivateRoute>
           }
         />
-
         <Route
           path="/portfolio/recommendations"
           element={
@@ -98,7 +116,7 @@ function App() {
           }
         />
 
-        {/* ✅ SettingLayout 및 하위 페이지들도 보호 */}
+        {/* ✅ 설정 관련 페이지 (SettingLayout 내부 구조 유지) */}
         <Route
           path="/setting"
           element={
@@ -114,7 +132,7 @@ function App() {
           <Route path="investment" element={<InvestmentPropensityPage />} />
         </Route>
 
-        {/* ✅ PaperTrading 관련 페이지들도 보호 */}
+        {/* ✅ PaperTrading 관련 (DashboardLayout으로 감쌈) */}
         <Route
           element={
             <PrivateRoute>

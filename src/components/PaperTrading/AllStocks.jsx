@@ -42,13 +42,32 @@ const AllStocks = () => {
   const [quantity, setQuantity] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
 
+  // 실시간 주가 (3초마다 변동)
+  const [livePrice, setLivePrice] = useState(89500);
+  const [liveChange, setLiveChange] = useState(0.0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const randomChange = (Math.random() - 0.5) * 500;
+      setLivePrice((prev) => {
+        const newPrice = Math.max(50000, prev + randomChange);
+        setLiveChange(((newPrice - prev) / prev) * 100);
+        return newPrice;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
+
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  // ✅ 데이터 생성 및 가공
+  // 데이터 생성 및 가공
   const data = useMemo(() => generateMockData(150), []);
   const dates = data.map((d) => d.date.toISOString().slice(0, 10));
+
+  // ✅ 반드시 ECharts 규격: [open, close, low, high]
   const values = data.map((d) => [d.open, d.close, d.low, d.high]);
+
   const volumes = data.map((d) => d.volume);
 
   const sma5 = useMemo(() => calculateSMA(data, 5), [data]);
@@ -60,28 +79,54 @@ const AllStocks = () => {
   const change = latestData.close - prevData.close;
   const changePct = ((change / prevData.close) * 100).toFixed(2);
   const colorClass = change > 0 ? "positive" : change < 0 ? "negative" : "neutral";
-
   const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][latestData.date.getDay()];
 
-  /** ✅ 차트 초기화 및 업데이트 */
+  /** 차트 초기화 및 업데이트 */
   useEffect(() => {
     if (!chartRef.current) return;
 
-    // 차트 초기화 (기존 인스턴스 파괴 후 새로 생성)
-    if (chartInstance.current) {
-      chartInstance.current.dispose();
-    }
+    if (chartInstance.current) chartInstance.current.dispose();
     chartInstance.current = echarts.init(chartRef.current);
 
     const option = {
       backgroundColor: "transparent",
-      animation: true,
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "cross" },
-        backgroundColor: "rgba(0,0,0,0.6)",
-        borderWidth: 0,
-        textStyle: { color: "#fff" },
+        backgroundColor: "#fff",
+        borderColor: "#ddd",
+        borderWidth: 1,
+        textStyle: { color: "#333", fontSize: 12 },
+        // ✅ candle.value(배열)를 사용하고, [open, close, low, high] 순서로 읽는다
+        formatter: function (params) {
+          const candle = params.find((p) => p.seriesName === "캔들차트");
+          const sma5P = params.find((p) => p.seriesName === "SMA5");
+          const sma20P = params.find((p) => p.seriesName === "SMA20");
+          const sma60P = params.find((p) => p.seriesName === "SMA60");
+
+          if (!candle || !Array.isArray(candle.value)) return "";
+
+          const [open, close, low, high] = candle.value; // ← 순서 유지
+          const date = candle.axisValue;
+
+          const fmt = (n) =>
+            (typeof n === "number" ? n : Number(n)).toLocaleString(undefined, {
+              maximumFractionDigits: 2,
+            });
+
+          return `
+            <div style="padding:8px 10px;">
+              <div style="font-weight:600; margin-bottom:6px;">${date}</div>
+              <div>📈 시가: ${fmt(open)}</div>
+              <div>📉 종가: ${fmt(close)}</div>
+              <div>🔺 고가: ${fmt(high)}</div>
+              <div>🔻 저가: ${fmt(low)}</div>
+              ${sma5P?.data && sma5P.data !== "-" ? `<div style="color:#6BA583;">단기 이동평균선(5): ${fmt(sma5P.data)}</div>` : ""}
+              ${sma20P?.data && sma20P.data !== "-" ? `<div style="color:#FFC658;">중기 이동평균선(20): ${fmt(sma20P.data)}</div>` : ""}
+              ${sma60P?.data && sma60P.data !== "-" ? `<div style="color:#E4B3B3;">장기 이동평균선(60): ${fmt(sma60P.data)}</div>` : ""}
+            </div>
+          `;
+        },
       },
       grid: [
         { left: 40, right: 60, top: 20, height: 250 },
@@ -91,41 +136,14 @@ const AllStocks = () => {
         {
           type: "category",
           data: dates,
-          scale: true,
           boundaryGap: false,
           axisLine: { lineStyle: { color: "#ccc" } },
-          splitLine: { show: false },
-          min: "dataMin",
-          max: "dataMax",
         },
-        {
-          type: "category",
-          gridIndex: 1,
-          data: dates,
-          axisLine: { lineStyle: { color: "#ccc" } },
-          axisTick: { show: false },
-          axisLabel: { show: false },
-          splitLine: { show: false },
-        },
+        { type: "category", gridIndex: 1, data: dates, show: false },
       ],
       yAxis: [
-        {
-          scale: true,
-          axisLine: { lineStyle: { color: "#ccc" } },
-          splitLine: { show: true, lineStyle: { color: "#eee" } },
-        },
-        {
-          gridIndex: 1,
-          splitNumber: 3,
-          axisLine: { show: false },
-          axisTick: { show: false },
-          axisLabel: { show: false },
-          splitLine: { show: false },
-        },
-      ],
-      dataZoom: [
-        { type: "inside", xAxisIndex: [0, 1], start: 50, end: 100 },
-        { show: false, type: "slider", xAxisIndex: [0, 1], top: "95%", start: 50, end: 100 },
+        { scale: true, splitLine: { lineStyle: { color: "#eee" } } },
+        { gridIndex: 1, show: false },
       ],
       series: [
         {
@@ -171,8 +189,11 @@ const AllStocks = () => {
           data: volumes,
           itemStyle: {
             color: (params) => {
-              const [open, close] = values[params.dataIndex];
-              return close > open ? "rgba(211,47,47,0.4)" : "rgba(25,118,210,0.4)";
+              const close = values[params.dataIndex][1];
+              const open = values[params.dataIndex][0];
+              return close > open
+                ? "rgba(211,47,47,0.4)"
+                : "rgba(25,118,210,0.4)";
             },
           },
         },
@@ -180,7 +201,6 @@ const AllStocks = () => {
     };
 
     chartInstance.current.setOption(option);
-
     const handleResize = () => chartInstance.current.resize();
     window.addEventListener("resize", handleResize);
     return () => {
@@ -195,10 +215,18 @@ const AllStocks = () => {
     alert(isFavorite ? "관심 종목에서 해제되었습니다." : "관심 종목으로 추가되었습니다!");
   }, [isFavorite]);
 
+  // 임시 호가 데이터
+  const sellOrders = [89700, 89600, 89500, 89400, 89300];
+  const buyOrders = [89200, 89100, 89000, 88900, 88800];
+
   return (
     <div className="all-stocks-container">
       <div className="stock-page-header">
-        <input type="text" placeholder="종목명 또는 코드를 검색하세요." className="global-stock-search" />
+        <input
+          type="text"
+          placeholder="종목명 또는 코드를 검색하세요."
+          className="global-stock-search"
+        />
       </div>
 
       <div className="stock-detail-grid">
@@ -211,7 +239,9 @@ const AllStocks = () => {
               </button>
             </div>
             <div className="chart-tabs">
-              <button className="active">1일</button><button>1주</button><button>1달</button>
+              <button className="active">1일</button>
+              <button>1주</button>
+              <button>1달</button>
             </div>
           </div>
 
@@ -220,13 +250,14 @@ const AllStocks = () => {
             <span className={colorClass}>
               종가 {latestData.close.toLocaleString()} ({changePct}%)
             </span>
+            <span className={liveChange >= 0 ? "positive" : "negative"}>
+              현재가 {livePrice.toLocaleString()}원 ({liveChange.toFixed(2)}%)
+            </span>
           </div>
 
-          {/* ✅ Apache ECharts 차트 */}
           <div ref={chartRef} style={{ width: "100%", height: 450 }}></div>
         </div>
 
-        {/* ✅ 주문창은 그대로 유지 */}
         <aside className="order-panel">
           <div className="widget">
             <h3 className="order-title">주식 주문</h3>
@@ -234,10 +265,32 @@ const AllStocks = () => {
               <div className="stock-logo-small"></div>
               <span>삼성전자</span>
             </div>
+
             <div className="order-tabs">
-              <button onClick={() => setOrderType("buy")} className={orderType === "buy" ? "active" : ""}>매수</button>
-              <button onClick={() => setOrderType("sell")} className={orderType === "sell" ? "active" : ""}>매도</button>
+              <button onClick={() => setOrderType("buy")} className={orderType === "buy" ? "active" : ""}>
+                매수
+              </button>
+              <button onClick={() => setOrderType("sell")} className={orderType === "sell" ? "active" : ""}>
+                매도
+              </button>
             </div>
+
+            <div className="order-book">
+              {sellOrders.map((p, i) => (
+                <div key={i} className="order-row sell">
+                  <span>매도 {5 - i}</span>
+                  <span>{p.toLocaleString()}원</span>
+                </div>
+              ))}
+              <div className="divider"></div>
+              {buyOrders.map((p, i) => (
+                <div key={i} className="order-row buy">
+                  <span>매수 {i + 1}</span>
+                  <span>{p.toLocaleString()}원</span>
+                </div>
+              ))}
+            </div>
+
             <div className="order-form">
               <div className="form-group">
                 <label>가격</label>
@@ -245,12 +298,22 @@ const AllStocks = () => {
               </div>
               <div className="form-group">
                 <label>수량</label>
-                <input type="number" value={quantity} onChange={(e) => setQuantity(Number(e.target.value))} />
+                <input
+                  type="number"
+                  min="0"
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
+                />
               </div>
             </div>
+
             <div className="order-summary">
-              <div><span>총액</span> <span className="total-amount">{(price * quantity).toLocaleString()} 원</span></div>
+              <div>
+                <span>총액</span>
+                <span className="total-amount">{(price * quantity).toLocaleString()} 원</span>
+              </div>
             </div>
+
             <button className={`order-button ${orderType}`}>{orderType === "buy" ? "매수" : "매도"}</button>
           </div>
         </aside>

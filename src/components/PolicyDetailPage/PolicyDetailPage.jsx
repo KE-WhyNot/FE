@@ -37,7 +37,7 @@ const policyData = [
     application: {
       procedure: '대구형 청년희망주택 입주자가 대구안방 플랫폼을 통해 지원 신청',
       evaluation: '분기별 신청 및 3, 6, 9, 12월 20일 지출',
-      site: 'https://anbang.daegu.go.kr/hopeHousing/businessOv erView.do',
+      site: 'https://anbang.daegu.go.kr/hopeHousing/businessOverView.do',
       documents: '주민등록등본, 금융거래확인서, 대출이자납입증명서 등',
     },
     otherInfo: {

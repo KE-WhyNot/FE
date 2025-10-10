@@ -197,12 +197,6 @@
   color: white;
 }
 
-
-/* ✨ 이 부분을 수정했습니다. */
-.content-wrapper {
-  /* transform 속성들을 제거하여 내부 요소 크기가 그대로 유지되도록 합니다. */
-}
-
 /* 드롭다운 스타일 */
 .sort-dropdown-container {
   position: relative;

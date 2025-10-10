@@ -2,9 +2,9 @@ import React from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import './PolicyDetailPage.css';
 import Header from '../common/Header';
-import { FaHome, FaShareAlt, FaPrint, FaBookmark } from 'react-icons/fa';
+import { FaShareAlt, FaPrint, FaBookmark, FaArrowLeft } from 'react-icons/fa'; // ✨ FaArrowLeft 추가
 
-// PolicyPage에 있던 예시 데이터를 여기로 가져와 상세 정보 필드를 추가합니다.
+// ... (policyData는 이전과 동일)
 const policyData = [
   { 
     id: 1, 
@@ -68,9 +68,19 @@ const PolicyDetailPage = () => {
         <div className="policy-detail-layout">
             <Header />
             <main className="policy-detail-content">
+                {/* ✨ '목록으로' 버튼 추가 */}
+                <button onClick={() => navigate(-1)} className="back-button">
+                    <FaArrowLeft /> 목록으로
+                </button>
+
                 <div className="policy-header">
                     <div className="policy-tags">
                         {policy.tags.map((tag, i) => <span key={i}>{tag}</span>)}
+                    </div>
+                    <div className="policy-actions">
+                        <button><FaShareAlt /></button>
+                        <button><FaPrint /></button>
+                        <button><FaBookmark /></button>
                     </div>
                 </div>
 
@@ -103,8 +113,7 @@ const PolicyDetailPage = () => {
     );
 };
 
-
-// 섹션을 동적으로 렌더링하기 위한 헬퍼 컴포넌트
+// ... (Section 컴포넌트는 이전과 동일)
 const Section = ({ title, data, isOtherSection = false }) => {
     const keyMap = {
         policyNumber: '정책번호', field: '정책분야', supportContent: '지원내용', period: '사업 운영 기간', applicationPeriod: '사업 신청기간', scale: '지원 규모(명)',

@@ -493,3 +493,15 @@
 .all-regions-selected input {
   margin-right: 0.5rem;
 }
+
+/* PolicyPage.css 파일 하단에 아래 내용을 추가해주세요. */
+
+.policy-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex; /* 카드가 flex 아이템으로 동작하도록 */
+}
+
+.policy-card-link .policy-card {
+  width: 100%; /* 링크 내부에서 카드가 꽉 차도록 */
+}

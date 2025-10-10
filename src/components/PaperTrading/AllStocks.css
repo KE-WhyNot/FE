@@ -38,9 +38,40 @@
   margin-bottom: 1rem;
 }
 
+/* --- ✨ 아이콘 스타일링 시작 --- */
+.stock-title-container {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* 제목과 아이콘 사이 간격 */
+}
+
 .widget-header h3 {
   margin: 0;
+  font-size: 1.5rem;
 }
+
+.favorite-toggle-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  line-height: 0; /* 아이콘 정렬을 위한 설정 */
+}
+
+.favorite-toggle-btn svg {
+  font-size: 1.5rem; /* 아이콘 크기 (24px) */
+  color: #a0aec0; /* 기본 아이콘 색상 (회색) */
+  transition: transform 0.1s ease-out, color 0.2s ease;
+}
+
+.favorite-toggle-btn svg.is-favorite {
+  color: #d32f2f; /* 즐겨찾기 선택 시 색상 (빨간색) */
+}
+
+.favorite-toggle-btn:hover svg {
+  transform: scale(1.15); /* 마우스 호버 시 약간 커지는 효과 */
+}
+/* --- ✨ 아이콘 스타일링 끝 --- */
 
 .chart-tabs button {
   background: none;

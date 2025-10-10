@@ -168,3 +168,14 @@
 .signup-button:hover:not(:disabled) {
   background-color: #5a45e0;
 }
+
+.react-calendar {
+  border: none;
+  font-family: inherit;
+}
+
+.react-calendar__tile--active {
+  background: #007bff;
+  color: white;
+  border-radius: 8px;
+}

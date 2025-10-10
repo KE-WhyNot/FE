@@ -1,25 +1,25 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom'; // ✨ 1. Link 컴포넌트 import
 import './SavingsPage.css';
 import Header from '../common/Header';
 import { FaSearch, FaPlus, FaChevronDown, FaLandmark, FaMinus, FaSyncAlt } from 'react-icons/fa';
 
-// 데이터 부분은 이전과 동일하므로 생략합니다.
+// 예시 데이터에 id 추가
 const savingsData = [
-  { bank: 'SH수협은행', product: 'Sh첫만남우대예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.90%', baseRate: '1.85%', period: 12, benefits: ['첫거래', '비대면가입'] },
-  { bank: 'SC제일은행', product: 'e-그린세이브예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.85%', baseRate: '2.55%', period: 6, benefits: ['비대면가입'] },
-  { bank: '우리은행', product: '우리 첫거래 우대 정기예금', tags: ['특판', '방문없이 가입', '누구나가입'], maxRate: '2.80%', baseRate: '1.80%', period: 12, benefits: ['첫거래', '은행앱사용'] },
-  { bank: '제주은행', product: 'J정기예금', tags: ['특판', '방문없이 가입', '누구나가입'], maxRate: '2.75%', baseRate: '2.00%', period: 24, benefits: ['비대면가입'] },
-  { bank: 'SH수협은행', product: 'Sh해양플라스틱Zero!예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.75%', baseRate: '2.40%', period: 6, benefits: ['카드사용'] },
-  { bank: 'IBK기업은행', product: 'IBK D-day통장', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.70%', baseRate: '2.20%', period: 12, benefits: ['급여연동', '공과금연동'] },
-  { bank: '하나은행', product: '하나의 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.65%', baseRate: '2.10%', period: 24, benefits: ['연금'] },
-  { bank: 'KB국민은행', product: 'KB Star 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.60%', baseRate: '2.00%', period: 12, benefits: ['은행앱사용', '재예치'] },
-  { bank: '신한은행', product: '쏠편한 정기예금', tags: ['특판', '방문없이 가입'], maxRate: '2.55%', baseRate: '1.95%', period: 6, benefits: ['비대면가입', '은행앱사용'] },
-  { bank: '카카오뱅크', product: '카카오뱅크 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.50%', baseRate: '2.00%', period: 12, benefits: ['비대면가입', '첫거래'] },
+    { id: 'ad8c6895fdfa41f3b7a384f9abc78ab8', bank: 'SH수협은행', product: 'Sh첫만남우대예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.90%', baseRate: '1.85%', period: 12, benefits: ['첫거래', '비대면가입'] },
+    { id: 'e-greencsaveyegum', bank: 'SC제일은행', product: 'e-그린세이브예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.85%', baseRate: '2.55%', period: 6, benefits: ['비대면가입'] },
+    { id: 'woori-first-deal', bank: '우리은행', product: '우리 첫거래 우대 정기예금', tags: ['특판', '방문없이 가입', '누구나가입'], maxRate: '2.80%', baseRate: '1.80%', period: 12, benefits: ['첫거래', '은행앱사용'] },
+    { id: 'jeju-j-deposit', bank: '제주은행', product: 'J정기예금', tags: ['특판', '방문없이 가입', '누구나가입'], maxRate: '2.75%', baseRate: '2.00%', period: 24, benefits: ['비대면가입'] },
+    { id: 'sh-plastic-zero', bank: 'SH수협은행', product: 'Sh해양플라스틱Zero!예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.75%', baseRate: '2.40%', period: 6, benefits: ['카드사용'] },
+    { id: 'ibk-d-day', bank: 'IBK기업은행', product: 'IBK D-day통장', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.70%', baseRate: '2.20%', period: 12, benefits: ['급여연동', '공과금연동'] },
+    { id: 'hana-one-deposit', bank: '하나은행', product: '하나의 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.65%', baseRate: '2.10%', period: 24, benefits: ['연금'] },
+    { id: 'kb-star-deposit', bank: 'KB국민은행', product: 'KB Star 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.60%', baseRate: '2.00%', period: 12, benefits: ['은행앱사용', '재예치'] },
+    { id: 'shinhan-sol-deposit', bank: '신한은행', product: '쏠편한 정기예금', tags: ['특판', '방문없이 가입'], maxRate: '2.55%', baseRate: '1.95%', period: 6, benefits: ['비대면가입', '은행앱사용'] },
+    { id: 'kakao-deposit', bank: '카카오뱅크', product: '카카오뱅크 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.50%', baseRate: '2.00%', period: 12, benefits: ['비대면가입', '첫거래'] },
 ];
 
 
 const SavingsPage = () => {
-  // state 및 핸들러 함수 부분은 이전과 동일하므로 생략합니다.
     const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
     const [sortOrder, setSortOrder] = useState('최고금리순');
     const sortDropdownRef = useRef(null);
@@ -220,7 +220,6 @@ const SavingsPage = () => {
                     ))}
                   </div>
                 </div>
-                {/* ✨ 1. 안내 문구 위치 변경 */}
                 <small className="panel-disclaimer">*신협 상품에는 적용되지 않습니다.</small>
                 <div className="panel-actions">
                   <button className="reset-button" onClick={handleBenefitReset}><FaSyncAlt /> 초기화</button>
@@ -252,27 +251,29 @@ const SavingsPage = () => {
         </div>
 
         <div className="savings-list-container">
-          {sortedData.map((item, index) => (
-            <div className="savings-item" key={index}>
-              <div className="item-left">
-                <div className="bank-logo"><FaLandmark /></div>
-                <div className="product-info">
-                  <span className="product-name">{item.product}</span>
-                  <span className="bank-name">{item.bank}</span>
-                  <div className="tags">
-                    {item.tags.map((tag, i) => (
-                      <span key={i} className={`tag ${tag === '특판' ? 'highlight' : ''}`}>{tag}</span>
-                    ))}
-                  </div>
+          {sortedData.map((item) => (
+            <Link to={`/savings/${item.id}`} key={item.id} className="savings-item-link">
+                <div className="savings-item">
+                    <div className="item-left">
+                        <div className="bank-logo"><FaLandmark /></div>
+                        <div className="product-info">
+                            <span className="product-name">{item.product}</span>
+                            <span className="bank-name">{item.bank}</span>
+                            <div className="tags">
+                                {item.tags.map((tag, i) => (
+                                    <span key={i} className={`tag ${tag === '특판' ? 'highlight' : ''}`}>{tag}</span>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="item-right">
+                        <div className="rate-info">
+                            <span className="rate-max">최고 {item.maxRate}</span>
+                            <span className="rate-base">기본 {item.baseRate}</span>
+                        </div>
+                    </div>
                 </div>
-              </div>
-              <div className="item-right">
-                <div className="rate-info">
-                  <span className="rate-max">최고 {item.maxRate}</span>
-                  <span className="rate-base">기본 {item.baseRate}</span>
-                </div>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
 

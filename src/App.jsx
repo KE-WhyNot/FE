@@ -21,6 +21,8 @@ import StockRecommendationPage from "./components/StockRecommendationPage/StockR
 import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
 import SavingsDetailPage from "./components/SavingsDetailPage/SavingsDetailPage"; // ✨ 1. 상세 페이지 import
 
+import PolicyDetailPage from "./components/PolicyDetailPage/PolicyDetailPage";
+
 
 function App() {
   return (
@@ -40,6 +42,7 @@ function App() {
         <Route path="/savings" element={<SavingsPage />} />
         <Route path="/savings/:productId" element={<SavingsDetailPage />} /> {/* ✨ 2. 상세 페이지 경로 추가 */}
         <Route path="/policy" element={<PolicyPage />} />
+        <Route path="/policy/:policyId" element={<PolicyDetailPage />} /> {/* ✨ 2. 상세 페이지 경로 추가 */}
         <Route element={<DashboardLayout />}>
           <Route path="/papertrading" element={<PaperTrading />} />
           <Route path="/all-stocks" element={<AllStocks />} />

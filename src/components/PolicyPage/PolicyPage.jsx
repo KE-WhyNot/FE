@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './PolicyPage.css';
 import Header from '../common/Header';
 import {
@@ -390,24 +391,26 @@ const PolicyPage = () => {
         </div>
         <div className="policy-grid">
           {filteredPolicies.map((policy) => (
-            <div className="policy-card" key={policy.id}>
-              <div className="card-top">
-                <span className="status-badge">{policy.status}</span>
-                <div className="tags">
-                  {policy.tags.map((tag, i) => (
-                    <span key={i} className="tag">{tag}</span>
-                  ))}
+            <Link to={`/policy/${policy.id}`} key={policy.id} className="policy-card-link">
+              <div className="policy-card">
+                <div className="card-top">
+                  <span className="status-badge">{policy.status}</span>
+                  <div className="tags">
+                    {policy.tags.map((tag, i) => (
+                      <span key={i} className="tag">{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <h3 className="policy-title">{policy.title}</h3>
+                <p className="policy-description">{policy.description}</p>
+                <div className="card-footer">
+                  <div className="period-info">
+                    <span className="period-label">신청기간</span>
+                    <span className="period-date">{policy.period}</span>
+                  </div>
                 </div>
               </div>
-              <h3 className="policy-title">{policy.title}</h3>
-              <p className="policy-description">{policy.description}</p>
-              <div className="card-footer">
-                <div className="period-info">
-                  <span className="period-label">신청기간</span>
-                  <span className="period-date">{policy.period}</span>
-                </div>
-              </div>
-            </div>
+            </Link>
           ))}
         </div>
         <div className="pagination">

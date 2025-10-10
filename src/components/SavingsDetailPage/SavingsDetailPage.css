@@ -26,131 +26,136 @@
   margin-bottom: 2rem;
 }
 
-.product-summary-card {
+/* --- 상단 요약 카드 --- */
+.product-summary-card-new {
   background-color: #ffffff;
   border-radius: 16px;
   padding: 2rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
 }
 
-.summary-header {
+.summary-header-new {
   display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.product-name-new { font-size: 2rem; font-weight: 700; margin: 0 0 0.5rem; }
+.bank-name-new { font-size: 1rem; color: #888; }
+.bank-logo-new {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #eee;
+  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 1.5rem;
+  font-size: 1.5rem;
+  color: #888;
+}
+
+.tags-new { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+.tags-new .tag { background-color: #f0f0f0; padding: 0.3rem 0.6rem; border-radius: 6px; font-size: 0.8rem; }
+
+.rates-new {
+  display: flex;
+  border-top: 1px solid #f0f0f0;
   border-bottom: 1px solid #f0f0f0;
-  padding-bottom: 1.5rem;
+  padding: 1.5rem 0;
   margin-bottom: 1.5rem;
 }
 
-.summary-header .bank-logo {
-  width: 60px;
-  height: 60px;
-  font-size: 2rem;
-}
+.rate-item { flex: 1; text-align: center; }
+.rate-item:first-child { border-right: 1px solid #f0f0f0; }
+.rate-item span { color: #888; font-size: 0.9rem; }
+.rate-item strong { display: block; font-size: 1.5rem; font-weight: 700; color: #5844d1; }
+.rate-item small { color: #aaa; font-size: 0.8rem; }
 
-.summary-header .bank-name {
-  font-size: 1rem;
-  color: #888;
-}
+.action-buttons-new { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.action-buttons-new button { padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+.contact-btn { background-color: #f0f2f5; border: none; }
+.official-site-btn { background-color: #5844d1; color: white; border: none; }
 
-.summary-header .product-name {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-}
-
-.summary-body .rate-info-main {
-  text-align: center;
-}
-
-.rate-info-main .rate-label {
-  font-size: 1rem;
-  color: #555;
-}
-
-.rate-info-main .rate-value {
-  display: block;
-  font-size: 3rem;
-  font-weight: 700;
-  color: #5844d1;
-  margin-top: 0.5rem;
-}
-
-.summary-body .tags {
-  justify-content: center;
-  margin-top: 1.5rem;
-}
-
-.product-details-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+/* --- 탭 메뉴 --- */
+.tab-navigation {
+  display: flex;
+  border-bottom: 2px solid #eee;
   margin-bottom: 2rem;
 }
-
-.detail-item {
-  display: flex;
-  flex-direction: column;
-}
-
-.detail-label {
-  font-size: 0.9rem;
+.tab-navigation button {
+  padding: 1rem 0;
+  margin-right: 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
   color: #888;
-  margin-bottom: 0.5rem;
-}
-
-.detail-value {
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.product-description-card {
-  background-color: #ffffff;
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  margin-bottom: 2rem;
-}
-
-.product-description-card h2 {
-  font-size: 1.5rem;
-  margin-top: 0;
-}
-
-.product-description-card p,
-.product-description-card ul {
-  line-height: 1.8;
-  color: #333;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 1rem;
-}
-
-.action-buttons button {
-  flex: 1;
-  padding: 1.2rem;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 12px;
-  border: 1px solid;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
+  margin-bottom: -2px;
 }
+.tab-navigation button.active { color: #5844d1; border-bottom-color: #5844d1; }
+.tab-content { background-color: #fff; padding: 2rem; border-radius: 16px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06); }
 
-.share-button {
-  background-color: #fff;
-  border-color: #ccc;
-  color: #333;
-}
+/* --- 상품 안내 탭 --- */
+.product-info-grid { display: flex; flex-direction: column; }
+.info-row { display: flex; padding: 1.2rem 0; border-bottom: 1px solid #f0f0f0; }
+.info-row:last-child { border-bottom: none; }
+.info-label { width: 120px; flex-shrink: 0; color: #888; }
+.info-value { line-height: 1.6; }
+.info-row.notice .info-value { color: #e53e3e; }
 
-.signup-button {
-  background-color: #5844d1;
-  border-color: #5844d1;
-  color: white;
+/* --- 금리 안내 탭 --- */
+.rate-calculator { padding-bottom: 2rem; border-bottom: 1px solid #f0f0f0; margin-bottom: 2rem; }
+.rate-calculator h4 { margin-top: 0; }
+.amount-input-wrapper {
+    position: relative;
+    margin-bottom: 1.5rem;
 }
+.amount-input-wrapper input {
+    width: 95%;
+    border: none;
+    border-bottom: 2px solid #333;
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: right;
+    padding-right: 2rem;
+}
+.amount-input-wrapper span { position: absolute; right: 0; bottom: 0.5rem; font-size: 1.2rem; }
+
+.rate-options { display: flex; gap: 1rem; margin-bottom: 2rem; }
+.rate-option { flex: 1; padding: 1rem; border: 1px solid #eee; border-radius: 8px; text-align: center; cursor: pointer; }
+.rate-option.active { border-color: #5844d1; background-color: #f4f2ff; }
+.rate-option span { color: #888; }
+.rate-option strong { display: block; font-size: 1.3rem; margin-top: 0.3rem; }
+
+.calculation-result { border-top: 1px solid #f0f0f0; padding-top: 1rem; }
+.result-row { display: flex; justify-content: space-between; padding: 0.5rem 0; }
+.result-row .interest { color: #5844d1; }
+.result-row .tax { color: #e53e3e; }
+
+.final-amount { display: flex; justify-content: space-between; align-items: baseline; margin-top: 1.5rem; }
+.final-amount span { font-weight: 600; }
+.final-amount strong { font-size: 1.8rem; font-weight: 700; color: #5844d1; }
+
+.rate-details h4 { font-size: 1.2rem; }
+.rate-table { width: 100%; border-collapse: collapse; margin-bottom: 2rem; }
+.rate-table th, .rate-table td { padding: 0.8rem; border: 1px solid #eee; text-align: center; }
+.rate-table th { background-color: #f8f9fa; }
+
+.condition-list { list-style: none; padding: 0; }
+.condition-list li { display: flex; gap: 1rem; margin-bottom: 1rem; }
+.condition-list strong {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  background-color: #f0f2f5;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.condition-list span { display: block; }
+.condition-list small { color: #888; }

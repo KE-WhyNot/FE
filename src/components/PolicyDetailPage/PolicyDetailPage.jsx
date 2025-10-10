@@ -77,22 +77,9 @@ const PolicyDetailPage = () => {
                     <div className="policy-tags">
                         {policy.tags.map((tag, i) => <span key={i}>{tag}</span>)}
                     </div>
-                    <div className="policy-actions">
-                        <button><FaShareAlt /></button>
-                        <button><FaPrint /></button>
-                        <button><FaBookmark /></button>
-                    </div>
                 </div>
 
                 <h2 className="policy-title-main">{policy.title}</h2>
-
-                <div className="policy-meta">
-                    <span>최종 수정일 {policy.lastUpdated}</span>
-                    <span className="meta-divider">|</span>
-                    <span>스크랩 수 {policy.scraps}</span>
-                    <span className="meta-divider">|</span>
-                    <span>조회수 {policy.views}</span>
-                </div>
                 
                 <div className="hashtag-container">
                     <span>#공공임대주택</span>

@@ -1,3 +1,6 @@
+/* =============================
+   ✅ 전체 레이아웃
+============================= */
 .policy-page-layout {
   display: flex;
   flex-direction: column;
@@ -14,13 +17,16 @@
 }
 
 .page-title {
-  font-size: 2.5rem;
+  font-size: 2.2rem;
   font-weight: 700;
-  margin-top: 2rem;
-  margin-bottom: 2rem;
+  margin: 2rem 0;
+  text-align: left;
+  color: #222;
 }
 
-/* --- 필터링 영역 전체 컨테이너 --- */
+/* =============================
+   ✅ 필터 영역
+============================= */
 .policy-filter-container {
   position: relative;
   margin-bottom: 2rem;
@@ -35,14 +41,24 @@
 .search-box {
   display: flex;
   align-items: center;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  padding: 0.7rem 1rem;
+  padding: 0.6rem 1rem;
   flex-grow: 1;
-  background-color: white;
+  background-color: #fff;
 }
-.search-box .search-icon { color: #888; margin-right: 0.5rem; }
-.search-box input { border: none; outline: none; font-size: 1rem; width: 100%; }
+
+.search-box .search-icon {
+  color: #888;
+  margin-right: 0.5rem;
+}
+
+.search-box input {
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  width: 100%;
+}
 
 .filter-button {
   background-color: #fff;
@@ -56,6 +72,12 @@
   align-items: center;
   gap: 0.5rem;
   white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background-color: #f4f2ff;
+  border-color: #c6b7ff;
 }
 
 .filter-button.active {
@@ -64,7 +86,9 @@
   border-color: #5844d1;
 }
 
-/* --- 정책분야 상세 필터 패널 스타일 --- */
+/* =============================
+   ✅ 필터 패널
+============================= */
 .policy-filter-panel {
   position: absolute;
   top: calc(100% + 10px);
@@ -98,11 +122,14 @@
   border-bottom: 1px solid #f0f0f0;
   margin-bottom: 1rem;
 }
-.category-header svg { font-size: 1.2rem; color: #5844d1; }
-.category-header h4 { margin: 0; font-size: 1.1rem; }
-.category-header label { margin-left: auto; font-size: 0.9rem; white-space: nowrap; }
-.category-header input { margin-left: auto; }
-
+.category-header svg {
+  font-size: 1.2rem;
+  color: #5844d1;
+}
+.category-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
 
 .subcategory-list {
   display: flex;
@@ -114,14 +141,17 @@
   display: flex;
   align-items: center;
 }
+
 .subcategory-item input {
   margin-right: 0.5rem;
 }
+
 .subcategory-item label {
   font-size: 0.95rem;
   color: #555;
   cursor: pointer;
 }
+
 .subcategory-item input:checked + label {
   color: #5844d1;
   font-weight: 600;
@@ -136,22 +166,50 @@
   border-top: 1px solid #f0f0f0;
 }
 
-.panel-actions button {
-  padding: 0.7rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  border: 1px solid;
-  border-radius: 25px;
+/* =============================
+   ✅ 버튼 (검색/초기화 등)
+============================= */
+button {
+  font-family: inherit;
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.search-button,
+.reset-button,
+.pagination button {
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 25px;
+  border: 1px solid;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
 }
-.search-button { background-color: #333; color: white; border-color: #333; }
-.reset-button { background-color: #fff; color: #555; border-color: #ccc; }
 
+.search-button {
+  background-color: #5844d1;
+  color: white;
+  border-color: #5844d1;
+}
+.search-button:hover {
+  background-color: #4531ba;
+}
 
-/* --- 기존 스타일 --- */
+.reset-button {
+  background-color: white;
+  color: #555;
+  border-color: #ccc;
+}
+.reset-button:hover {
+  background-color: #f5f5f5;
+}
+
+/* =============================
+   ✅ 리스트 영역
+============================= */
 .policy-list-info-bar {
   display: flex;
   justify-content: space-between;
@@ -163,23 +221,42 @@
 
 .policy-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  column-gap: 1rem; /* 좌우 카드 간격 */
+  row-gap: 4rem; /* 상하 카드 간격 */
+  align-items: stretch;
+}
+
+.policy-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
 }
 
 .policy-card {
-  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  background-color: #fff;
   border: 1px solid #e9e9e9;
   border-radius: 12px;
   padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
+  transition: all 0.2s ease;
+}
+
+.policy-card:hover {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .card-top {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start; /* 배지 여러 줄일 때 위쪽 정렬 */
+  flex-wrap: wrap; /* ✅ 여러 줄 허용 */
+  gap: 0.5rem 0.75rem; /* 줄 간격 균형 */
   margin-bottom: 1rem;
 }
 
@@ -190,34 +267,40 @@
   font-weight: 500;
   padding: 0.2rem 0.6rem;
   border-radius: 4px;
+  line-height: 1.2; /* ✅ 높이 일정하게 */
 }
 
-.tags { display: flex; gap: 0.5rem; }
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+}
+
 .tag {
   background-color: #f4f2ff;
   color: #5844d1;
   font-size: 0.75rem;
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
+  line-height: 1.2;
 }
 
 .policy-title {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 0.75rem 0;
-  flex-grow: 1;
 }
 
 .policy-description {
   font-size: 0.9rem;
   color: #666;
   line-height: 1.5;
-  margin: 0 0 1.5rem 0;
-  flex-grow: 2;
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
 }
 
+/* ✅ 카드 하단 영역 */
 .card-footer {
-  display: flex;
   border-top: 1px solid #f0f0f0;
   padding-top: 1rem;
   margin-top: auto;
@@ -225,283 +308,54 @@
 
 .period-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  width: 100%;
+  gap: 0.5rem;
   font-size: 0.85rem;
+  white-space: nowrap;
 }
 
-.period-label { color: #888; font-weight: 500; }
-.period-date { color: #333; font-weight: 600; }
+.period-label {
+  color: #888;
+  font-weight: 500;
+  width: 60px; /* ✅ 고정 너비로 줄바꿈 방지 */
+  flex-shrink: 0;
+}
 
+.period-date {
+  color: #333;
+  font-weight: 600;
+  white-space: nowrap; /* ✅ 날짜 줄바꿈 방지 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =============================
+   ✅ 페이지네이션
+============================= */
 .pagination {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
-  margin-top: 3rem;
-}
-.pagination a { text-decoration: none; color: #555; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; }
-.pagination a:hover { background-color: #f0f0f0; }
-.pagination a.active { background-color: #5844d1; color: white; }
-
-/* --- 드롭다운 스타일 --- */
-.filter-item, .sort-dropdown-container {
-  position: relative;
-  display: inline-block;
+  margin-top: 4rem;
 }
 
-.sort-dropdown-button {
-  background-color: transparent; border: none; cursor: pointer;
-  font-size: 0.9rem; font-weight: 500; color: #555;
-  display: flex; align-items: center; gap: 0.3rem;
-}
-
-.filter-dropdown-menu, .sort-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 8px);
-  background-color: white; border: 1px solid #e0e0e0;
-  border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  list-style: none; padding: 0.5rem 0; margin: 0; z-index: 20;
-}
-
-.filter-dropdown-menu { left: 0; width: 180px; font-size: 0.95rem; }
-.sort-dropdown-menu { right: 0; width: 120px; }
-
-.filter-dropdown-menu li, .sort-dropdown-menu li {
-  padding: 0.8rem 1.2rem; cursor: pointer; transition: background-color 0.2s;
-}
-.filter-dropdown-menu li:hover, .sort-dropdown-menu li:hover { background-color: #f4f2ff; }
-
-.personal-info-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.personal-info-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-}
-
-.filter-row {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    border-bottom: 1px solid #f0f0f0;
-    padding-bottom: 1.5rem;
-}
-.filter-row:last-child {
-    border-bottom: none;
-}
-
-.row-label {
-    font-weight: 600;
-    color: #333;
-    width: 80px; /* 라벨 너비 고정 */
-    flex-shrink: 0;
-}
-
-.filter-group {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.filter-group label {
-    font-weight: 600;
-    margin-right: 0.5rem;
-}
-
-.filter-group input[type="number"],
-.filter-group select {
-    width: 120px;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-}
-
-.income-group input {
-    width: 150px;
-}
-
-.select-button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #555;
-    background-color: #555;
-    color: white;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-.tag-group {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-}
-
-.tag-button {
-    padding: 0.5rem 1rem;
-    border: 1px solid #ccc;
-    background-color: #f7f7f9;
-    color: #555;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
-
-.tag-button.active {
-    background-color: #e0dfff;
-    border-color: #5844d1;
-    color: #5844d1;
-    font-weight: 600;
-}
-
-
-/* ✨ --- 지역 선택 모달 스타일 --- ✨ */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal-container {
+.pagination button {
   background-color: white;
-  border-radius: 12px;
-  width: 600px;
-  max-width: 90%;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 1.2rem;
-}
-
-.close-button {
-  background: none;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-.region-columns {
-  display: flex;
-  height: 400px;
-  border: 1px solid #e0e0e0;
+  color: #555;
+  border-color: #ddd;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
+  min-width: 40px;
 }
 
-.region-list {
-  list-style: none;
-  margin: 0;
-  padding: 0.5rem;
-  width: 200px;
-  border-right: 1px solid #e0e0e0;
-  overflow-y: auto;
+.pagination button:hover {
+  background-color: #f4f2ff;
+  border-color: #c6b7ff;
 }
 
-.region-list li {
-  padding: 0.8rem 1rem;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.region-list li:hover {
-  background-color: #f4f4f4;
-}
-
-.region-list li.active {
-  background-color: #e0dfff;
-  color: #5844d1;
-  font-weight: 600;
-}
-
-.sub-region-list {
-  flex-grow: 1;
-  padding: 1.2rem;
-  overflow-y: auto;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.checkbox-item {
-  display: flex;
-  align-items: center;
-}
-.checkbox-item input {
-  margin-right: 0.5rem;
-}
-
-.modal-footer {
-  display: flex;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e0e0e0;
-}
-
-.modal-footer button {
-  padding: 0.6rem 1.2rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.modal-button-cancel {
-  background-color: #f0f0f0;
-}
-
-.modal-button-reset {
-  background-color: transparent;
-  margin-right: 0.5rem;
-}
-
-.modal-button-apply {
+.pagination button.active {
   background-color: #5844d1;
   color: white;
   border-color: #5844d1;
-}
-
-.all-regions-selected {
-  padding: 0.5rem;
-  display: flex;
-  align-items: center;
-}
-
-.all-regions-selected input {
-  margin-right: 0.5rem;
-}
-
-/* PolicyPage.css 파일 하단에 아래 내용을 추가해주세요. */
-
-.policy-card-link {
-  text-decoration: none;
-  color: inherit;
-  display: flex; /* 카드가 flex 아이템으로 동작하도록 */
-}
-
-.policy-card-link .policy-card {
-  width: 100%; /* 링크 내부에서 카드가 꽉 차도록 */
 }

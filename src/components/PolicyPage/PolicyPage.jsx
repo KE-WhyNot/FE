@@ -13,7 +13,7 @@ import {
   FaSyncAlt,
 } from "react-icons/fa";
 import Header from "../common/Header";
-import usePolicyStore from "../../store/usePolicyStore";
+import { usePoliciesQuery } from "../../hooks/usePoliciesQuery"; // ✅ React Query 훅
 import "./PolicyPage.css";
 
 // --- 필터 데이터 (남겨둠, 나중에 API 연결 시 사용 예정) ---
@@ -76,12 +76,8 @@ const personalInfoFilters = {
 };
 
 const PolicyPage = () => {
-  const { policiesByPage, totalCount, isLoading, fetchPolicies } =
-    usePolicyStore();
-
   const [pageNum, setPageNum] = useState(1);
   const [pageSize] = useState(12);
-
   const [sortOrder, setSortOrder] = useState("관련도순");
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
   const sortDropdownRef = useRef(null);
@@ -92,13 +88,13 @@ const PolicyPage = () => {
     personal: {},
   });
 
-  const policies = policiesByPage[pageNum] || [];
-  const totalPages = Math.ceil(totalCount / pageSize);
+  // ✅ React Query 사용
+  const { data, isLoading, isError, error, refetch, isFetching } =
+    usePoliciesQuery(pageNum, pageSize);
 
-  // ✅ 페이지 전환 시 데이터 로드
-  useEffect(() => {
-    fetchPolicies(pageNum, pageSize);
-  }, [pageNum, pageSize, fetchPolicies]);
+  const policies = data?.list || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   // ✅ 외부 클릭 시 정렬 메뉴 닫기
   useEffect(() => {
@@ -144,9 +140,15 @@ const PolicyPage = () => {
     setSelectedFilters({ ...selectedFilters, personal: updated });
   };
 
-  const handleSearch = () => setActiveFilter(null);
-  const handleReset = () =>
+  const handleSearch = () => {
+    refetch(); // ✅ React Query 재요청
+    setActiveFilter(null);
+  };
+
+  const handleReset = () => {
     setSelectedFilters({ categories: {}, personal: {} });
+    refetch();
+  };
 
   const categoryIcons = {
     일자리: <FaBriefcase />,
@@ -307,9 +309,14 @@ const PolicyPage = () => {
           </div>
         </div>
 
-        {isLoading && !policies.length ? (
+        {/* --- 데이터 표시 --- */}
+        {isLoading || isFetching ? (
           <p style={{ textAlign: "center", marginTop: "50px" }}>
             정책 정보를 불러오는 중입니다...
+          </p>
+        ) : isError ? (
+          <p style={{ textAlign: "center", color: "red" }}>
+            데이터를 불러오지 못했습니다: {error.message}
           </p>
         ) : (
           <div className="policy-grid">
@@ -353,6 +360,7 @@ const PolicyPage = () => {
           </div>
         )}
 
+        {/* --- 페이지네이션 --- */}
         {totalPages > 1 && (
           <div className="pagination">
             <button

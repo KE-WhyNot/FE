@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./LoginPage.css";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import axiosInstance from "../../api/axiosInstance";
+import axiosInstance from "../../api/authAxiosInstance";
 import useAuthStore from "../../store/useAuthStore"; // ✅ Zustand 전역 상태 import
 
 import youthfiLogo from "../../assets/logos/youthfi.png";

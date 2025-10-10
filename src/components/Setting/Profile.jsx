@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Profile.css";
-import axiosInstance from "../../api/axiosInstance"; // ✅ axiosInstance 추가
+import axiosInstance from "../../api/authAxiosInstance"; // ✅ axiosInstance 추가
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);

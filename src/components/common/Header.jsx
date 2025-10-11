@@ -1,43 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./Header.css";
 import youthfiLogo from "../../assets/logos/youthfi.png";
 import userAvatar from "../../assets/images/avatar.png";
 import { IoMdNotifications } from "react-icons/io";
-import useAuthStore from "../../store/useAuthStore"; // ✅ Zustand 스토어 import
-
-const mockNotifications = [
-  { id: 1, message: "새로운 튜토리얼이 추가되었습니다.", read: false },
-  {
-    id: 2,
-    message: "Nvidia 주식 관련 퀴즈가 업데이트되었습니다.",
-    read: false,
-  },
-  { id: 3, message: "포트폴리오 수익률이 5%를 달성했습니다!", read: true },
-  { id: 4, message: "9월 예적금 정책이 변경되었습니다.", read: false },
-];
+import useAuthStore from "../../store/useAuthStore";
+import useNotificationStore from "../../store/useNotificationStore";
 
 const Header = () => {
-  const [isNavHovered, setIsNavHovered] = useState(false);
-  const [notifications, setNotifications] = useState(mockNotifications);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isNavHovered, setIsNavHovered] = useState(false);
 
-  // ✅ Zustand에서 전역 로그인 정보 가져오기
   const { user, isAuthenticated } = useAuthStore();
+  const {
+    headerNotifications,
+    unreadCount,
+    fetchHeaderNotifications,
+    fetchUnreadCount,
+    markAsRead,
+  } = useNotificationStore();
 
   const navigate = useNavigate();
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const userId = user?.id || 1;
+
+  // ✅ 초기 데이터 로드
+  useEffect(() => {
+    fetchHeaderNotifications(userId); // 4개만
+    fetchUnreadCount(userId);
+  }, [userId, fetchHeaderNotifications, fetchUnreadCount]);
 
   const toggleNotificationPanel = () => {
     setIsPanelOpen(!isPanelOpen);
   };
 
-  const handleNotificationClick = (id) => {
-    setNotifications(
-      notifications.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification
-      )
-    );
+  const handleNotificationClick = async (id) => {
+    await markAsRead(userId, id);
+    await fetchHeaderNotifications(userId); // ✅ 클릭 후 헤더 새로고침
+    await fetchUnreadCount(userId);
   };
 
   const handleViewAllNotifications = () => {
@@ -53,7 +52,7 @@ const Header = () => {
           <img src={youthfiLogo} alt="YOUTHFI Logo" className="header-logo" />
         </div>
 
-        {/* --- 네비게이션 메뉴 --- */}
+        {/* --- 네비게이션 --- */}
         <nav
           className={`header-nav ${isNavHovered ? "is-hovered" : ""}`}
           onMouseEnter={() => setIsNavHovered(true)}
@@ -74,8 +73,6 @@ const Header = () => {
             onClick={() => navigate("/setting/profile")}
           >
             <img src={userAvatar} alt="User Avatar" className="user-avatar" />
-
-            {/* ✅ Zustand 상태에서 바로 이름 표시 */}
             {isAuthenticated && (user?.name || user?.userId) ? (
               <span className="user-name">{user.name || user.userId}</span>
             ) : (
@@ -99,16 +96,18 @@ const Header = () => {
             {isPanelOpen && (
               <div className="notification-panel">
                 <div className="notification-list-popup">
-                  {notifications.length > 0 ? (
-                    notifications.map((notification) => (
+                  {headerNotifications.length > 0 ? (
+                    headerNotifications.map((n) => (
                       <div
-                        key={notification.id}
+                        key={n.notificationId}
                         className={`notification-item ${
-                          notification.read ? "read" : "unread"
+                          n.read ? "read" : "unread"
                         }`}
-                        onClick={() => handleNotificationClick(notification.id)}
+                        onClick={() =>
+                          handleNotificationClick(n.notificationId)
+                        }
                       >
-                        {notification.message}
+                        {n.message}
                       </div>
                     ))
                   ) : (

@@ -57,5 +57,6 @@
       "public"
     ]
   },
-  "proxy": "https://auth.youth-fi.com"
+  "proxy": "https://auth.youth-fi.com",
+  "proxy": "https://notify.youth-fi.com"
 }

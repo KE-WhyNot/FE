@@ -1,57 +1,95 @@
-import React, { useState } from 'react';
-import './Notification.css';
-// 아이콘 import
-import { FaMoneyBillWave, FaChartLine, FaTrophy } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import "./Notification.css";
+import {
+  FaMoneyBillWave,
+  FaChartLine,
+  FaTrophy,
+  FaChevronLeft,
+  FaChevronRight,
+} from "react-icons/fa";
+import useNotificationStore from "../../store/useNotificationStore";
+import useAuthStore from "../../store/useAuthStore";
 
-// 임의의 알림 데이터
-const mockNotifications = [
-  { id: 1, type: 'trade', message: 'SK하이닉스 2주 매수가 체결되었습니다.', time: '2시간 전', read: false },
-  { id: 2, type: 'dividend', message: '코카콜라(KO)에서 배당금이 지급되었습니다.', time: '1일 전', read: false },
-  { id: 3, type: 'ranking', message: '모의투자 랭킹이 상위 10%에 진입했습니다!', time: '3일 전', read: true },
-  { id: 4, type: 'trade', message: '삼성전자 1주 매도가 체결되었습니다.', time: '5일 전', read: true },
-];
-
-// 알림 타입에 따라 아이콘을 반환하는 함수
+// 아이콘 매핑 함수
 const getIconForType = (type) => {
   switch (type) {
-    case 'dividend': return <FaMoneyBillWave />;
-    case 'trade': return <FaChartLine />;
-    case 'ranking': return <FaTrophy />;
-    default: return null;
+    case "dividend":
+      return <FaMoneyBillWave />;
+    case "trade":
+      return <FaChartLine />;
+    case "ranking":
+      return <FaTrophy />;
+    default:
+      return null;
   }
 };
 
 const Notification = () => {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [page, setPage] = useState(0);
 
-  // 알림 클릭 시 '읽음'으로 처리하는 함수
-  const handleMarkAsRead = (id) => {
-    setNotifications(
-      notifications.map(n => (n.id === id ? { ...n, read: true } : n))
-    );
+  const { user } = useAuthStore();
+  const userId = user?.id || 1; // ✅ fallback
+
+  const { notifications, totalPages, loading, fetchNotifications, markAsRead } =
+    useNotificationStore();
+
+  // ✅ 페이지 변경 시 자동 새로고침
+  useEffect(() => {
+    fetchNotifications(userId, page, 10);
+  }, [userId, page, fetchNotifications]);
+
+  // ✅ 알림 클릭 시 읽음 처리
+  const handleMarkAsRead = async (id) => {
+    await markAsRead(userId, id);
   };
+
+  // ✅ 페이지 이동
+  const handlePrevPage = () => setPage((p) => Math.max(p - 1, 0));
+  const handleNextPage = () => setPage((p) => (p + 1 < totalPages ? p + 1 : p));
 
   return (
     <>
       <h1>알림</h1>
-      <div className="notification-list">
-        {notifications.map(notification => (
-          <div 
-            key={notification.id} 
-            className={`notification-item ${notification.read ? 'read' : 'unread'}`}
-            onClick={() => handleMarkAsRead(notification.id)}
-          >
-            <div className={`icon-wrapper ${notification.type}`}>
-              {getIconForType(notification.type)}
+
+      {loading ? (
+        <p className="loading-text">불러오는 중...</p>
+      ) : notifications.length === 0 ? (
+        <p className="no-data">표시할 알림이 없습니다.</p>
+      ) : (
+        <div className="notification-list">
+          {notifications.map((n) => (
+            <div
+              key={n.notificationId}
+              className={`notification-item ${n.read ? "read" : "unread"}`}
+              onClick={() => handleMarkAsRead(n.notificationId)}
+            >
+              <div className={`icon-wrapper ${n.type}`}>
+                {getIconForType(n.type)}
+              </div>
+              <div className="notification-content">
+                <p>{n.message}</p>
+                <small>{n.time || n.createdAt}</small>
+              </div>
+              {!n.read && <div className="unread-dot"></div>}
             </div>
-            <div className="notification-content">
-              <p>{notification.message}</p>
-              <small>{notification.time}</small>
-            </div>
-            {!notification.read && <div className="unread-dot"></div>}
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
+
+      {/* ✅ 페이지네이션 */}
+      {totalPages > 1 && (
+        <div className="pagination">
+          <button onClick={handlePrevPage} disabled={page === 0}>
+            <FaChevronLeft /> 이전
+          </button>
+          <span>
+            {page + 1} / {totalPages}
+          </span>
+          <button onClick={handleNextPage} disabled={page + 1 >= totalPages}>
+            다음 <FaChevronRight />
+          </button>
+        </div>
+      )}
     </>
   );
 };

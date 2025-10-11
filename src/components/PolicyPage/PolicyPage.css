@@ -223,7 +223,7 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   column-gap: 1rem; /* 좌우 카드 간격 */
-  row-gap: 4rem; /* 상하 카드 간격 */
+  row-gap: 1rem; /* 상하 카드 간격 */
   align-items: stretch;
 }
 
@@ -238,17 +238,16 @@ button {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  height: 100%;
-  background-color: #fff;
-  border: 1px solid #e9e9e9;
+  height: 340px;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  padding: 1.5rem;
-  transition: all 0.2s ease;
+  padding: 16px;
+  background: #fff;
+  transition: box-shadow 0.2s ease;
 }
 
 .policy-card:hover {
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
-  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .card-top {
@@ -286,24 +285,35 @@ button {
 }
 
 .policy-title {
-  font-size: 1.1rem;
+  font-size: 16px;
   font-weight: 600;
-  margin: 0 0 0.75rem 0;
+  color: #111;
+  margin-bottom: 8px;
+  line-height: 1.4;
 }
 
 .policy-description {
-  font-size: 0.9rem;
-  color: #666;
-  line-height: 1.5;
-  margin-bottom: 1.5rem;
   flex-grow: 1;
+  color: #444;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: hidden; /* 넘치는 텍스트 숨김 */
+  text-overflow: ellipsis; /* ... 표시 */
+  display: -webkit-box; /* 웹킷 기반 멀티라인 클램프 */
+  -webkit-line-clamp: 3; /* ✅ 최대 줄 수 지정 (3줄 이후 ...처리) */
+  -webkit-box-orient: vertical;
+  height: 72px; /* 고정 높이 (줄 높이 × 줄 수) */
 }
 
 /* ✅ 카드 하단 영역 */
 .card-footer {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 1rem;
   margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid #eee;
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  justify-content: space-between;
 }
 
 .period-info {
@@ -358,4 +368,283 @@ button {
   background-color: #5844d1;
   color: white;
   border-color: #5844d1;
+}
+
+/* ===============================
+   퍼스널 필터 (학력, 전공, 등등)
+================================== */
+
+.personal-info-panel {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  padding: 24px;
+  margin-top: 12px;
+}
+
+.personal-info-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 24px;
+  border-bottom: 1px dashed #e5e5e5;
+  padding-bottom: 16px;
+}
+
+.filter-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-group label {
+  font-weight: 600;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.region-select-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.region-select-box select {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 14px;
+  background: #fff;
+}
+
+.region-select-button {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.region-select-button:hover {
+  background: #4338ca;
+}
+
+.age-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.age-group input {
+  width: 60px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.income-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.income-group input {
+  width: 90px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 6px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.tag-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+}
+
+.tag-button {
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 6px 14px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+
+.tag-button:hover {
+  background: #f3f4f6;
+}
+
+.tag-button.active {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+}
+
+/* ===============================
+   지역 선택 모달
+================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.modal-container {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 700px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.close-btn {
+  border: none;
+  background: none;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.modal-body h4 {
+  font-size: 16px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+
+.region-columns {
+  display: flex;
+  gap: 24px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  height: 250px;
+  overflow-y: auto;
+}
+
+.region-list,
+.region-sublist {
+  flex: 1;
+  border-right: 1px solid #eee;
+  padding-right: 12px;
+}
+
+.region-sublist {
+  border-right: none;
+}
+
+.region-list div,
+.region-sublist div {
+  padding: 6px 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.region-list div:hover,
+.region-sublist div:hover {
+  background: #f3f4f6;
+}
+
+.selected-region-list {
+  margin-top: 12px;
+  min-height: 40px;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  background: #fafafa;
+  font-size: 13px;
+  color: #555;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.modal-footer button {
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.modal-footer button:hover {
+  background: #f9fafb;
+}
+
+.modal-footer button.apply {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: white;
+}
+
+.modal-footer button.apply:hover {
+  background: #4338ca;
+}
+
+.modal-footer button.reset {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type="number"] {
+  -moz-appearance: textfield;
 }

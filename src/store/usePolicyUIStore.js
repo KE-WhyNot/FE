@@ -17,6 +17,12 @@ const usePolicyUIStore = create((set) => ({
     personal: {},
   },
 
+  // ✅ 실제 API 요청에 사용되는 필터 상태
+  appliedFilters: {
+    categories: {},
+    personal: {},
+  },
+
   // ✅ 액션 함수들
   setPageNum: (pageNum) => set({ pageNum }),
   setSortOrder: (sortOrder) => set({ sortOrder }),
@@ -27,11 +33,16 @@ const usePolicyUIStore = create((set) => ({
   setActiveFilter: (filter) => set({ activeFilter: filter }),
 
   setSelectedFilters: (selectedFilters) => set({ selectedFilters }),
+  setAppliedFilters: (appliedFilters) => set({ appliedFilters }),
 
+  // ✅ 초기화 (UI + API용 필터 둘 다 리셋)
   resetFilters: () =>
     set({
       selectedFilters: { categories: {}, personal: {} },
+      appliedFilters: { categories: {}, personal: {} },
       activeFilter: null,
+      sortOrder: "관련도순", // ⚙️ 정렬도 초기화 (원하면 삭제 가능)
+      pageNum: 1,
     }),
 }));
 

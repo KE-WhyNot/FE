@@ -1,4 +1,3 @@
-// src/api/policyApi.js
 import policyAxios from "./policyAxiosInstance";
 
 /**
@@ -18,7 +17,6 @@ export const fetchPolicies = async ({ pageNum = 1, pageSize = 12 } = {}) => {
     });
 
     const result = response.data?.result;
-
     if (!result) {
       throw new Error("서버 응답에 result 필드가 없습니다.");
     }
@@ -27,7 +25,7 @@ export const fetchPolicies = async ({ pageNum = 1, pageSize = 12 } = {}) => {
 
     /**
      * ✅ [임시 제한] 너무 많은 데이터가 올 경우, 50개까지만 표시
-     *    - 나중에 백엔드 페이지네이션이 완성되면 이 부분 제거 가능
+     *    (서버가 페이지네이션 완성되기 전 임시 조치)
      */
     if (list.length > 50) {
       console.warn("⚠️ 데이터가 많아 50개까지만 표시 중입니다.");

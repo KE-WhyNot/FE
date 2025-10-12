@@ -53,46 +53,58 @@ const SavingsPage = () => {
     useEffect(() => {
         const fetchSavingsData = async () => {
             try {
-                let bankIdsToFilter = [];
-                if (selectedBankCategory !== 0) {
-                    const bankRes = await api.get(`/api/finproduct/filter/bank?type=${selectedBankCategory}`);
-                    bankIdsToFilter = bankRes.data.map(bank => bank.id);
-                    if (bankIdsToFilter.length === 0) {
-                        setSavingsData([]);
-                        setTotalCount(0);
-                        return;
-                    }
-                }
+                // --- ⬇️ 수정된 부분 시작 ⬇️ ---
+
+                // 1. 은행 ID 목록을 가져오는 로직을 모두 삭제합니다.
 
                 const params = {
                     page_num: currentPage,
                     page_size: itemsPerPage,
                     product_type: selectedCategories.length === 1 ? (selectedCategories[0] === '예금' ? 1 : 2) : 0,
+                    
+                    // 2. 'bank_type' 파라미터를 추가합니다. 
+                    //    '전체'(0)가 아닐 경우에만 type 값을 전달합니다.
+                    bank_type: selectedBankCategory !== 0 ? selectedBankCategory : null,
+
                     periods: selectedPeriod === '전체' ? null : parseInt(selectedPeriod.replace('개월','')),
-                    banks: bankIdsToFilter.length > 0 ? bankIdsToFilter.join(',') : null, 
                     special_conditions: selectedBenefits.length > 0 ? selectedBenefits.join(',') : null,
                     interest_rate_sort: sortOrder === '최고금리순' ? 'include_bonus' : 'base_only',
                 };
                 
+                // 3. 사용하지 않는 파라미터를 요청에서 제외합니다.
                 Object.keys(params).forEach(key => {
                   if (params[key] === null || params[key] === '' || (Array.isArray(params[key]) && params[key].length === 0)) {
-                    // product_type=0 은 전체를 의미하므로 삭제하지 않음
+                     // product_type=0 은 '전체'를 의미하므로 삭제하지 않습니다.
                      if(key !== 'product_type') {
                        delete params[key];
                     }
                   }
                 });
 
+                // 4. 다시 GET 방식으로 요청합니다.
                 const response = await api.get('/api/finproduct/list', { params });
-                setSavingsData(response.data.result.finProductList);
+                
+                // --- ⬆️ 수정된 부분 끝 ⬆️ ---
+
+
+                // '상세 유형' 필터링 (프론트엔드 처리)
+                let filteredData = response.data.result.finProductList;
+                if (selectedProductTypes.length > 0) {
+                    filteredData = filteredData.filter(item => 
+                        selectedProductTypes.every(type => item.product_type_chip.includes(type))
+                    );
+                }
+
+                setSavingsData(filteredData);
                 setTotalCount(response.data.result.pagging.total_count);
+
             } catch (error) {
                 console.error("Failed to fetch savings data:", error);
             }
         };
 
         fetchSavingsData();
-    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage]);
+    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes]);
 
 
     useEffect(() => {

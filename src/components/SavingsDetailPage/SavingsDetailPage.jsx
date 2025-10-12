@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './SavingsDetailPage.css';
 import Header from '../common/Header';
 import { FaLandmark, FaArrowLeft } from 'react-icons/fa';
+import { fetchFinanceProductDetail } from '../../api/client.js';
+import { normalizeDetail, toCurrency, percentStringToDecimal } from '../../utils/finance.js';
 
 // 상세 페이지에 필요한 정보를 포함하도록 예시 데이터 확장
 const savingsData = [
@@ -40,7 +42,9 @@ const savingsData = [
 const SavingsDetailPage = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
-    const product = savingsData.find(item => item.id === productId);
+    const [loading, setLoading ] = useState(true);
+    const [error, setError ] = useState(null);
+    const [product, setProduct] = useState(null);
 
     const [activeTab, setActiveTab] = useState('info');
     const [depositAmount, setDepositAmount] = useState(10000000);
@@ -48,14 +52,25 @@ const SavingsDetailPage = () => {
     const [selectedRateType, setSelectedRateType] = useState('max'); 
     const [calculated, setCalculated] = useState({ principal: 0, preTaxInterest: 0, tax: 0, postTaxAmount: 0 });
 
+
+    useEffect(() => {
+        let on = true;
+        setLoading(true); setError(null);
+        fetchFinanceProductDetail(productId)
+            .then(raw => on && setProduct(normalizeDetail(raw)))
+            .catch(e => on && setError(e.message || String(e)))
+            .finally(() => on && setLoading(false));
+        return () => { on = false; };
+        }, [productId]);
+
     useEffect(() => {
         if (product) {
             const principal = depositAmount || 0;
             // ✨ 2. 선택된 금리 타입에 따라 다른 이율을 적용
-            const rateString = selectedRateType === 'max' ? product.maxRate : product.baseRate;
-            const rate = parseFloat(rateString) / 100;
+            const rate = selectedRateType === 'max' ? product.rates.max : product.rates.base
             
-            const preTaxInterest = principal * rate;
+            const months = product.termMonths ?? 12;
+            const preTaxInterest = principal * rate * (months / 12);
             const tax = preTaxInterest * 0.154;
             const postTaxAmount = principal + preTaxInterest - tax;
 
@@ -68,7 +83,9 @@ const SavingsDetailPage = () => {
         }
     }, [depositAmount, product, selectedRateType]); // ✨ selectedRateType을 종속성 배열에 추가
 
-    if (!product) {
+        if (loading) return <div>불러오는 중...</div>;
+        if (error) return <div>오류: {error}</div>;
+        if (!product) {
         return <div>상품 정보를 찾을 수 없습니다.</div>;
     }
 
@@ -94,13 +111,12 @@ const SavingsDetailPage = () => {
                     <div className="rates-new">
                         <div className="rate-item">
                             <span>최고</span>
-                            <strong>연 {product.maxRate}</strong>
+                            <strong>연 {(product.rates.max * 100).toFixed(2)}%</strong>
                         </div>
                         <div className="rate-item">
                             <span>기본</span>
-                            <strong>연 {product.baseRate}</strong>
-                            <small>({product.period}개월, 세전)</small>
-                        </div>
+                            <strong>연 {(product.rates.base * 100).toFixed(2)}%</strong>
+                            <small>({product.termMonths}개월, 세전)</small>                        </div>
                     </div>
                     {/* ✨ 3. 버튼 영역 삭제 */}
                 </div>
@@ -133,7 +149,7 @@ const SavingsDetailPage = () => {
                             <div className="amount-input-wrapper">
                                 <input 
                                     type="text" 
-                                    value={depositAmount.toLocaleString()} 
+                                    value={toCurrency(depositAmount)}
                                     onChange={(e) => {
                                         const value = e.target.value.replace(/,/g, '');
                                         if (!isNaN(value)) {
@@ -150,24 +166,24 @@ const SavingsDetailPage = () => {
                                     className={`rate-option ${selectedRateType === 'max' ? 'active' : ''}`}
                                     onClick={() => setSelectedRateType('max')}
                                 >
-                                    <span>최고금리</span><strong>{product.maxRate}</strong>
+                                    <span>최고금리</span><strong>{(product.rates.max * 100).toFixed(2)}%</strong>
                                 </div>
                                 <div 
                                     className={`rate-option ${selectedRateType === 'base' ? 'active' : ''}`}
                                     onClick={() => setSelectedRateType('base')}
                                 >
-                                    <span>기본금리</span><strong>{product.baseRate}</strong>
+                                    <span>기본금리</span><strong>{(product.rates.base * 100).toFixed(2)}%</strong>
                                 </div>
                             </div>
                             
                             <div className="calculation-result">
-                                <div className="result-row"><span>원금합계</span><span>{calculated.principal.toLocaleString()}원</span></div>
-                                <div className="result-row"><span>세전이자</span><span className="interest">+ {calculated.preTaxInterest.toLocaleString()}원</span></div>
-                                <div className="result-row"><span>이자과세(15.4%)</span><span className="tax">- {Math.floor(calculated.tax).toLocaleString()}원</span></div>
+                                <div className="result-row"><span>원금합계</span><span className="interest">+ {toCurrency(calculated.preTaxInterest)}원</span></div>
+                                <div className="result-row"><span>세전이자</span><span className="interest">+ {toCurrency(calculated.preTaxInterest)}원</span></div>
+                                <div className="result-row"><span>이자과세(15.4%)</span><span className="tax">- {toCurrency(calculated.tax)}원</span></div>
                             </div>
                             <div className="final-amount">
                                 <span>세후수령액</span>
-                                <strong>{Math.floor(calculated.postTaxAmount).toLocaleString()}원</strong>
+                                <strong>{toCurrency(calculated.postTaxAmount)}원</strong>
                             </div>
                         </div>
 
@@ -177,7 +193,7 @@ const SavingsDetailPage = () => {
                                 <thead><tr><th>기간</th><th>금리</th></tr></thead>
                                 <tbody>
                                     {product.rateInfo.byPeriod.map((item, i) => (
-                                        <tr key={i}><td>{item.period}</td><td>{item.rate}</td></tr>
+                                        < tr key={i}><td>{item.period}</td><td>{(percentStringToDecimal(item.rate)*100).toFixed(3)}%</td></tr>
                                     ))}
                                 </tbody>
                             </table>

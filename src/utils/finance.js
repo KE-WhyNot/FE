@@ -1,6 +1,6 @@
 // src/utils/finance.js
 export const percentStringToDecimal = (s) => {
-  if (typeof s === 'number') return s;
+  if (typeof s === 'number') return s / 100;
   if (typeof s === 'string') {
     const n = parseFloat(s.replace('%', '').trim());
     return isNaN(n) ? 0 : n / 100;
@@ -25,42 +25,62 @@ function inferPeriodLabel(byPeriod) {
 export function normalizeDetail(resp) {
   console.log('[normalize] input keys', resp && Object.keys(resp));
 
-  const top = (resp && resp.topinfo) || {};
-  const ratesRoot = (resp && resp.interest_rates) || [];
-  const ratesBottom = (resp && resp.bottom2 && resp.bottom2.interest_rates) || [];
-  const rawRates = ratesRoot.length ? ratesRoot : ratesBottom;
+  const top = resp?.top || {};
+  const bottom1 = resp?.bottom1 || {};
+  const bottom2 = resp?.bottom2 || {};
 
-  const byPeriod = (rawRates || []).map((r) => ({
-    period: (r && (r.period || r.save_trm)) || '',
-    rate:
-      typeof (r && r.rate) === 'number'
-        ? r.rate
-        : percentStringToDecimal(r && (r.rate || r.intr_rate)),
+  const rawRates = (bottom2 && bottom2.interest_rates) || [];
+  let byPeriod = rawRates.map((r) => ({
+    period: r.period || r.save_trm || '',
+    rate: String(r.rate || r.intr_rate || 0),
   }));
 
-  const nums = byPeriod.map((r) => r.rate).filter((x) => Number.isFinite(x));
-  const max = nums.length ? Math.max(...nums) : 0;
-  const base = nums.length ? nums[0] : 0;
+  // 기간별 금리 정보가 없을 경우, 기본 정보를 바탕으로 한 줄을 생성합니다.
+  if (byPeriod.length === 0 && bottom1.period) {
+    byPeriod.push({
+      period: bottom1.period,
+      // rate 값은 아래에서 동적으로 채워지므로 여기서는 기본값만 설정합니다.
+      rate: String(top.min_interest_rate || 0) 
+    });
+  }
+
+  // '조건별' 우대금리 문자열을 파싱하여 객체 배열로 만듭니다.
+  const specialConditionsString = bottom1.special_conditions || '';
+  const byCondition = specialConditionsString
+    .split(/<br\s*\/?>/i)
+    .map(line => line.replace(/①|②|③|④|⑤/g, '').trim())
+    .filter(line => line)
+    .map(line => {
+      const match = line.match(/(.*\S)\s*\((.+)\)$/);
+      if (match) {
+        return { condition: match[1].trim(), benefit: match[2].trim() };
+      }
+      return { condition: line, benefit: '' };
+    });
 
   const out = {
-    id: top && top.finproduct_id,
-    bank: top && top.bank_name,
-    product: top && top.product_name,
-    rates: { max, base },         // 소수 (0.028)
+    id: top.finproduct_id,
+    bank: top.bank_name,
+    product: top.product_name,
+    imageUrl: top.image_url,
+    tags: top.product_type_chip || [],
+    rates: {
+      max: percentStringToDecimal(top.max_interest_rate),
+      base: percentStringToDecimal(top.min_interest_rate)
+    },
     termMonths: inferMonths(byPeriod),
     details: {
-      periodLabel: inferPeriodLabel(byPeriod),
-      amountRange: top && top.product_guideline,
-      method: top && top.join_way,
-      target: (top && (top.target || top.join_member)) || '',
-      benefitCondition: top && top.spcl_cnd,
+      period: bottom1.period || '', // '기간' 데이터 연결
+      amount: bottom1.product_guide,
+      method: bottom1.subscription_method,
+      target: bottom1.target,
+      benefitCondition: bottom1.special_conditions,
       interestPayment: '만기일시지급',
-      notice: undefined,
-      protection: undefined,
+      notice: '만기 전 해지할 경우 약정 금리보다 낮은 중도해지금리가 적용됩니다.',
     },
     rateInfo: {
       byPeriod,
-      byCondition: [],
+      byCondition,
     },
   };
 

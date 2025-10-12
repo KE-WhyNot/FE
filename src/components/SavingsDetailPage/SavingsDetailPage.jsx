@@ -103,7 +103,14 @@ const SavingsDetailPage = () => {
                             <h1 className="product-name-new">{product.product}</h1>
                             <span className="bank-name-new">{product.bank}</span>
                         </div>
-                        <div className="bank-logo-new"><FaLandmark /></div>
+                        <div className="bank-logo-new">
+                        {/* product.imageUrl이 있을 경우에만 이미지를 보여줍니다. */}
+                        {product.imageUrl ? (
+                            <img src={product.imageUrl} alt={`${product.bank} 로고`} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                        ) : (
+                            <FaLandmark />
+                        )}
+                        </div>
                     </div>
                     <div className="tags-new">
                         {product.tags.map((tag, i) => <span key={i} className="tag">{tag}</span>)}
@@ -131,13 +138,12 @@ const SavingsDetailPage = () => {
                         {/* ... (상품 안내 탭 내용은 동일) ... */}
                         <div className="product-info-grid">
                             <div className="info-row"><div className="info-label">기간</div><div className="info-value">{product.details.period}</div></div>
-                            <div className="info-row"><div className="info-label">금액</div><div className="info-value">{product.details.amount}</div></div>
+                            <div className="info-row"><div className="info-label">상품 가이드</div><div className="info-value" dangerouslySetInnerHTML={{ __html: product.details.amount }} /></div>
                             <div className="info-row"><div className="info-label">가입방법</div><div className="info-value">{product.details.method}</div></div>
                             <div className="info-row"><div className="info-label">대상</div><div className="info-value">{product.details.target}</div></div>
-                            <div className="info-row"><div className="info-label">우대조건</div><div className="info-value">{product.details.benefitCondition}</div></div>
+                            <div className="info-row"><div className="info-label">우대조건</div><div className="info-value" dangerouslySetInnerHTML={{ __html: product.details.benefitCondition }} /></div>
                             <div className="info-row"><div className="info-label">이자지급</div><div className="info-value">{product.details.interestPayment}</div></div>
-                            <div className="info-row notice"><div className="info-label">유의</div><div className="info-value">{product.details.notice}</div></div>
-                            <div className="info-row"><div className="info-label">예금자보호</div><div className="info-value">{product.details.protection}</div></div>
+                            <div className="info-row notice"><div className="info-label">유의사항</div><div className="info-value">{product.details.notice}</div></div>
                         </div>
                     </div>
                 )}
@@ -192,9 +198,27 @@ const SavingsDetailPage = () => {
                             <table className="rate-table">
                                 <thead><tr><th>기간</th><th>금리</th></tr></thead>
                                 <tbody>
-                                    {product.rateInfo.byPeriod.map((item, i) => (
-                                        < tr key={i}><td>{item.period}</td><td>{(percentStringToDecimal(item.rate)*100).toFixed(3)}%</td></tr>
-                                    ))}
+                                    {product.rateInfo.byPeriod.map((item, i) => {
+                                        // 기간별 금리 정보가 하나뿐일 때, 선택된 금리(최고/기본)를 동적으로 보여줍니다.
+                                        if (product.rateInfo.byPeriod.length === 1) {
+                                            const displayRate = selectedRateType === 'max'
+                                                ? (product.rates.max * 100).toFixed(2)
+                                                : (product.rates.base * 100).toFixed(2);
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{item.period}</td>
+                                                    <td>{displayRate}%</td>
+                                                </tr>
+                                            );
+                                        }
+                                        // 여러 기간 정보가 있을 때는 기존 방식대로 보여줍니다.
+                                        return (
+                                            <tr key={i}>
+                                                <td>{item.period}</td>
+                                                <td>{parseFloat(item.rate).toFixed(2)}%</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                             <h4>조건별</h4>

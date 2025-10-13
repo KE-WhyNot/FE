@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
+import Calendar from "react-calendar"; // ✅ 캘린더 import
+import "react-calendar/dist/Calendar.css"; // ✅ 기본 스타일 import
 import "./Profile.css";
-import axiosInstance from "../../api/axiosInstance"; // ✅ axiosInstance 추가
+import axiosInstance from "../../api/authAxiosInstance";
+import useAuthStore from "../../store/useAuthStore"; // ✅ zustand 전역 사용자 상태
 
 const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -11,8 +14,11 @@ const Profile = () => {
 
   const [name, setName] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [showCalendar, setShowCalendar] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+
+  const { user, setUser } = useAuthStore(); // ✅ zustand에서 사용자 정보 가져오기
 
   // ✅ 사용자 정보 불러오기
   useEffect(() => {
@@ -26,9 +32,7 @@ const Profile = () => {
         }
 
         const response = await axiosInstance.get("/api/auth/profile", {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
 
         const data = response.data.result;
@@ -48,7 +52,7 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  // ✅ 프로필 수정 모드 전환
+  // ✅ 수정 모드 전환
   const handleEditClick = () => {
     setOriginalData({ name, birthDate });
     setIsEditing(true);
@@ -66,22 +70,42 @@ const Profile = () => {
         return;
       }
 
+      // 🔹 유효성 검사
+      if (newPassword && !currentPassword) {
+        alert("현재 비밀번호를 입력해야 비밀번호를 변경할 수 있습니다.");
+        return;
+      }
+
+      // 🔹 요청 본문 생성 (Swagger 스펙 기반)
       const body = {
         name,
         birth: birthDate,
       };
 
-      if (newPassword.trim()) {
-        body.password = newPassword;
+      if (currentPassword.trim() && newPassword.trim()) {
+        body.currentPassword = currentPassword;
+        body.newPassword = newPassword;
+        body.passwordChangeValid = true;
+      } else {
+        body.passwordChangeValid = false;
       }
 
+      console.log("📦 PATCH body:", body);
+
       await axiosInstance.patch("/api/auth/profile", body, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
 
       alert("프로필이 성공적으로 수정되었습니다.");
+
+      // ✅ 전역 상태 업데이트 → 헤더 닉네임 즉시 반영
+      setUser({
+        ...user,
+        name,
+        birth: birthDate,
+      });
+
+      // ✅ UI 상태 초기화
       setIsEditing(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -101,6 +125,13 @@ const Profile = () => {
     setIsEditing(false);
     setCurrentPassword("");
     setNewPassword("");
+  };
+
+  // ✅ 날짜 선택 시 YYYY-MM-DD 형식으로 저장
+  const handleDateSelect = (date) => {
+    const formatted = date.toISOString().split("T")[0];
+    setBirthDate(formatted);
+    setShowCalendar(false);
   };
 
   if (loading) {
@@ -140,16 +171,29 @@ const Profile = () => {
         </div>
 
         {/* 생년월일 */}
-        <div className="form-group">
+        <div className="form-group birthdate-group">
           <label htmlFor="birthDate">생년월일</label>
           {isEditing ? (
-            <input
-              type="text"
-              id="birthDate"
-              placeholder="입력하세요 (예시: 1990-01-01)"
-              value={birthDate}
-              onChange={(e) => setBirthDate(e.target.value)}
-            />
+            <div className="calendar-wrapper">
+              <input
+                type="text"
+                id="birthDate"
+                value={birthDate}
+                readOnly
+                placeholder="날짜를 선택하세요"
+                onClick={() => setShowCalendar(!showCalendar)}
+              />
+              {showCalendar && (
+                <div className="calendar-popup">
+                  <Calendar
+                    onChange={handleDateSelect}
+                    value={birthDate ? new Date(birthDate) : new Date()}
+                    maxDate={new Date()} // 미래 선택 불가
+                    locale="ko-KR"
+                  />
+                </div>
+              )}
+            </div>
           ) : (
             <p className="view-mode-text">{birthDate}</p>
           )}
@@ -181,6 +225,7 @@ const Profile = () => {
           </>
         )}
 
+        {/* 버튼 영역 */}
         <div className="form-actions">
           {isEditing ? (
             <>

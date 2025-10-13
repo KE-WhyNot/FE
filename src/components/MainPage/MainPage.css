@@ -25,16 +25,16 @@
   margin-bottom: 2rem;
   gap: 2rem;
   overflow: hidden; /* border-radius가 ::before에도 적용되도록 */
-  
+
   /* ✨ 1. 배경 이미지 설정 */
-  background-image: url('../../assets/images/6240060.jpg'); /* 이 부분을 수정했습니다. */
+  background-image: url("../../assets/images/6240060.jpg"); /* 이 부분을 수정했습니다. */
   background-size: cover;
-  background-position: center 25%
+  background-position: center 25%;
 }
 
 /* ✨ 2. 배경 위 텍스트 가독성을 위한 오버레이 추가 */
 .main-banner::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -84,7 +84,6 @@
   background-color: #c53030;
 }
 
-
 /* --- 하단 3단 카드 섹션 --- */
 .card-section {
   display: grid;
@@ -127,7 +126,8 @@
 }
 
 /* 청년정책 카드 리스트 */
-.policy-list, .savings-list {
+.policy-list,
+.savings-list {
   list-style: none;
   padding: 0;
   margin: 0;
@@ -136,10 +136,12 @@
   gap: 1.5rem;
 }
 
-.policy-list li, .savings-list li {
+.policy-list li,
+.savings-list li {
   display: flex;
   align-items: center;
   gap: 1rem;
+  justify-content: space-between;
 }
 
 .item-icon {
@@ -159,11 +161,16 @@
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  min-width: 0;
 }
 
 .item-title {
   font-weight: 600;
   color: #333;
+  white-space: nowrap; /* ✅ 한 줄로 유지 */
+  overflow: hidden; /* ✅ 넘치면 숨김 */
+  text-overflow: ellipsis; /* ✅ ... 처리 */
+  max-width: 180px; /* ✅ 카드 폭에 맞게 적당히 조절 */
 }
 
 .item-source {
@@ -190,19 +197,19 @@
 }
 
 .rate-label {
-    font-size: 0.8rem;
-    color: #888;
+  font-size: 0.8rem;
+  color: #888;
 }
 
 .rate-value {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #5844d1;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #5844d1;
 }
 
 .rate-base {
-    font-size: 0.8rem;
-    color: #aaa;
+  font-size: 0.8rem;
+  color: #aaa;
 }
 
 /* 포트폴리오 카드 (차트 컨테이너) */

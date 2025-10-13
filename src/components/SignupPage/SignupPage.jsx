@@ -6,7 +6,7 @@ import "./SignupPage.css";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import youthfiLogo from "../../assets/logos/youthfi.png";
 import loginDeskImage from "../../assets/images/login_desk.png";
-import axiosInstance from "../../api/axiosInstance";
+import axiosInstance from "../../api/authAxiosInstance";
 
 const SignupPage = () => {
   // --- 상태 ---
@@ -266,9 +266,7 @@ const SignupPage = () => {
               />
               <span
                 className="password-toggle-icon"
-                onClick={() =>
-                  setShowConfirmPassword(!showConfirmPassword)
-                }
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               >
                 {showConfirmPassword ? (
                   <AiOutlineEyeInvisible />

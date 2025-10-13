@@ -67,7 +67,7 @@ const LoginPage = () => {
 
   // --- ✨ 소셜 로그인 URL들 ---
   const GOOGLE_AUTH_URL =
-    "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=618174215491-u3rdo188811ifrti3uvrs0f2an5fdoam.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fyouth-fi.com%2Fauth%2Fcallback%2Fgoogle&scope=openid%20profile%20email&state=test123ㄴ";
+    "https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=618174215491-u3rdo188811ifrti3uvrs0f2an5fdoam.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Fyouth-fi.com%2Fauth%2Fcallback%2Fgoogle&scope=openid%20profile%20email&state=test123";
   const NAVER_AUTH_URL =
     "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=F2t5MnE8W6DBr7PfaG94&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fnaver&scope=name%20email%20profile_image&state=xyz123";
   const KAKAO_AUTH_URL =

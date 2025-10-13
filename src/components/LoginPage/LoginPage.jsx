@@ -2,7 +2,7 @@ import { useState } from "react";
 import "./LoginPage.css";
 import { useNavigate } from "react-router-dom";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import axiosInstance from "../../api/axiosInstance";
+import axiosInstance from "../../api/authAxiosInstance";
 import useAuthStore from "../../store/useAuthStore"; // ✅ Zustand 전역 상태 import
 
 import youthfiLogo from "../../assets/logos/youthfi.png";
@@ -71,7 +71,7 @@ const LoginPage = () => {
   const NAVER_AUTH_URL =
     "https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=F2t5MnE8W6DBr7PfaG94&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fnaver&scope=name%20email%20profile_image&state=xyz123";
   const KAKAO_AUTH_URL =
-    "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=78e3b0999e39cf40232bdd8c78edd504&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fauth%2Fcallback%2Fkakao&scope=account_email%20profile_nickname%20profile_image&state=xyz123";
+    "https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=78e3b0999e39cf40232bdd8c78edd504&redirect_uri=https%3A%2F%2Fyouth-fi.com%2Fauth%2Fcallback%2Fkakao&scope=account_email%20profile_nickname%20profile_image&state=xyz123";
 
   const handleSocialLogin = (provider) => {
     let url;

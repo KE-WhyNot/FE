@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./SettingPage.css";
 import { useNavigate } from "react-router-dom";
 import Modal from "../../components/common/Modal";
-import axiosInstance from "../../api/axiosInstance"; // ✅ axiosInstance 추가
+import axiosInstance from "../../api/authAxiosInstance"; // ✅ axiosInstance 추가
 
 const SettingPage = () => {
   // --- 알림 설정 State ---

@@ -56,6 +56,6 @@
     "workerDirectory": [
       "public"
     ]
-  },
-  "proxy": "https://notify.youth-fi.com"
+  }
+
 }

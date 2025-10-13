@@ -634,9 +634,9 @@ const PolicyPage = () => {
             </button>
             {isSortDropdownOpen && (
               <ul className="sort-dropdown-menu">
-                <li onClick={() => setSortOrder("관련도순")}>관련도순</li>
+                <li onClick={() => setSortOrder("마감임박순")}>마감임박순</li>
                 <li onClick={() => setSortOrder("최신순")}>최신순</li>
-                <li onClick={() => setSortOrder("인기순")}>인기순</li>
+                <li onClick={() => setSortOrder("오래된순")}>오래된순</li>
               </ul>
             )}
           </div>

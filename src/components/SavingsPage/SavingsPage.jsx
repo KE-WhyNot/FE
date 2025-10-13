@@ -1,25 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom'; // ✨ 1. Link 컴포넌트 import
+import { Link } from 'react-router-dom';
 import './SavingsPage.css';
 import Header from '../common/Header';
-import { FaSearch, FaPlus, FaChevronDown, FaLandmark, FaMinus, FaSyncAlt } from 'react-icons/fa';
-
-// 예시 데이터에 id 추가
-const savingsData = [
-    { id: 'ad8c6895fdfa41f3b7a384f9abc78ab8', bank: 'SH수협은행', product: 'Sh첫만남우대예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.90%', baseRate: '1.85%', period: 12, benefits: ['첫거래', '비대면가입'] },
-    { id: 'e-greencsaveyegum', bank: 'SC제일은행', product: 'e-그린세이브예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.85%', baseRate: '2.55%', period: 6, benefits: ['비대면가입'] },
-    { id: 'woori-first-deal', bank: '우리은행', product: '우리 첫거래 우대 정기예금', tags: ['특판', '방문없이 가입', '누구나가입'], maxRate: '2.80%', baseRate: '1.80%', period: 12, benefits: ['첫거래', '은행앱사용'] },
-    { id: 'jeju-j-deposit', bank: '제주은행', product: 'J정기예금', tags: ['특판', '방문없이 가입', '누구나가입'], maxRate: '2.75%', baseRate: '2.00%', period: 24, benefits: ['비대면가입'] },
-    { id: 'sh-plastic-zero', bank: 'SH수협은행', product: 'Sh해양플라스틱Zero!예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.75%', baseRate: '2.40%', period: 6, benefits: ['카드사용'] },
-    { id: 'ibk-d-day', bank: 'IBK기업은행', product: 'IBK D-day통장', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.70%', baseRate: '2.20%', period: 12, benefits: ['급여연동', '공과금연동'] },
-    { id: 'hana-one-deposit', bank: '하나은행', product: '하나의 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.65%', baseRate: '2.10%', period: 24, benefits: ['연금'] },
-    { id: 'kb-star-deposit', bank: 'KB국민은행', product: 'KB Star 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.60%', baseRate: '2.00%', period: 12, benefits: ['은행앱사용', '재예치'] },
-    { id: 'shinhan-sol-deposit', bank: '신한은행', product: '쏠편한 정기예금', tags: ['특판', '방문없이 가입'], maxRate: '2.55%', baseRate: '1.95%', period: 6, benefits: ['비대면가입', '은행앱사용'] },
-    { id: 'kakao-deposit', bank: '카카오뱅크', product: '카카오뱅크 정기예금', tags: ['방문없이 가입', '누구나가입'], maxRate: '2.50%', baseRate: '2.00%', period: 12, benefits: ['비대면가입', '첫거래'] },
-];
-
+import { FaSearch, FaPlus, FaChevronDown, FaMinus, FaSyncAlt } from 'react-icons/fa';
+import axios from 'axios';
+import Modal from '../common/Modal'; // Modal 컴포넌트를 import 합니다.
 
 const SavingsPage = () => {
+    const [savingsData, setSavingsData] = useState([]);
+    const [benefitOptions, setBenefitOptions] = useState([]);
+    
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalCount, setTotalCount] = useState(0);
+    const itemsPerPage = 10;
+
+    const [selectedBankCategory, setSelectedBankCategory] = useState(0); 
+
+    const [selectedCategories, setSelectedCategories] = useState([]);
     const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
     const [sortOrder, setSortOrder] = useState('최고금리순');
     const sortDropdownRef = useRef(null);
@@ -39,257 +36,341 @@ const SavingsPage = () => {
     const [selectedBenefits, setSelectedBenefits] = useState([]);
     const benefitFilterRef = useRef(null);
     const benefitButtonRef = useRef(null);
+    
+    // --- 은행 선택 모달 관련 상태 ---
+    const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+    const [bankOptions, setBankOptions] = useState([]);
+    const [modalBankType, setModalBankType] = useState(1); // 1: 은행, 2: 저축은행
+    const [tempSelectedBanks, setTempSelectedBanks] = useState([]);
+    const [selectedBanks, setSelectedBanks] = useState([]);
+    
+    const api = axios.create({
+      baseURL: 'https://policy.youth-fi.com',
+    });
+    
+    useEffect(() => {
+      const fetchBenefitOptions = async () => {
+        try {
+          const benefitRes = await api.get('/api/finproduct/filter/special_condition?type=1');
+          setBenefitOptions(benefitRes.data);
+        } catch (error) {
+          console.error("Failed to fetch benefit options:", error);
+        }
+      };
+      fetchBenefitOptions();
+    }, []);
+
+    // --- 은행 목록을 모달이 열릴 때 가져오도록 수정 ---
+    useEffect(() => {
+        if (!isBankModalOpen) return;
+
+        const fetchBankOptions = async () => {
+            try {
+                const response = await api.get('/api/finproduct/filter/bank', {
+                    params: { type: modalBankType }
+                });
+                setBankOptions(response.data.result || []);
+            } catch (error) {
+                console.error("Failed to fetch bank options:", error);
+                setBankOptions([]);
+            }
+        };
+        fetchBankOptions();
+    }, [isBankModalOpen, modalBankType]);
+
+    useEffect(() => {
+        const fetchSavingsData = async () => {
+            try {
+                const params = {
+                    page_num: currentPage,
+                    page_size: itemsPerPage,
+                    product_type: selectedCategories.length === 1 ? (selectedCategories[0] === '예금' ? 1 : 2) : 0,
+                    bank_type: selectedBankCategory !== 0 ? selectedBankCategory : null,
+                    banks: selectedBanks.length > 0 ? selectedBanks : null,
+                    periods: selectedPeriod === '전체' ? null : parseInt(selectedPeriod.replace('개월','')),
+                    special_conditions: selectedBenefits.length > 0 ? selectedBenefits : null,
+                    interest_rate_sort: sortOrder === '최고금리순' ? 'include_bonus' : 'base_only',
+                };
+                
+                Object.keys(params).forEach(key => {
+                  if (params[key] === null || params[key] === '' || (Array.isArray(params[key]) && params[key].length === 0)) {
+                     if(key !== 'product_type') {
+                       delete params[key];
+                    }
+                  }
+                });
+
+                const response = await api.get('/api/finproduct/list', { params });
+                
+                let filteredData = response.data.result.finProductList;
+                if (selectedProductTypes.length > 0) {
+                    filteredData = filteredData.filter(item => 
+                        selectedProductTypes.every(type => item.product_type_chip.includes(type))
+                    );
+                }
+
+                setSavingsData(filteredData);
+                setTotalCount(response.data.result.pagging.total_count);
+
+            } catch (error) {
+                console.error("Failed to fetch savings data:", error);
+            }
+        };
+
+        fetchSavingsData();
+    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes, selectedBanks]);
 
 
     useEffect(() => {
         const handleClickOutside = (event) => {
-            if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) {
-                setIsSortDropdownOpen(false);
-            }
-            if (periodAmountFilterRef.current && !periodAmountFilterRef.current.contains(event.target) && !periodButtonRef.current.contains(event.target)) {
-                setIsPeriodAmountFilterOpen(false);
-            }
-            if (productTypeFilterRef.current && !productTypeFilterRef.current.contains(event.target) && !productTypeButtonRef.current.contains(event.target)) {
-                setIsProductTypeFilterOpen(false);
-            }
-            if (benefitFilterRef.current && !benefitFilterRef.current.contains(event.target) && !benefitButtonRef.current.contains(event.target)) {
-                setIsBenefitFilterOpen(false);
-            }
+            if (sortDropdownRef.current && !sortDropdownRef.current.contains(event.target)) { setIsSortDropdownOpen(false); }
+            if (periodAmountFilterRef.current && !periodAmountFilterRef.current.contains(event.target) && !periodButtonRef.current.contains(event.target)) { setIsPeriodAmountFilterOpen(false); }
+            if (productTypeFilterRef.current && !productTypeFilterRef.current.contains(event.target) && !productTypeButtonRef.current.contains(event.target)) { setIsProductTypeFilterOpen(false); }
+            if (benefitFilterRef.current && !benefitFilterRef.current.contains(event.target) && !benefitButtonRef.current.contains(event.target)) { setIsBenefitFilterOpen(false); }
         };
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const sortedData = [...savingsData].sort((a, b) => {
-        const rateA = parseFloat(sortOrder === '최고금리순' ? a.maxRate : a.baseRate);
-        const rateB = parseFloat(sortOrder === '최고금리순' ? b.maxRate : b.baseRate);
-        return rateB - rateA;
-    });
-
-    const handlePeriodAmountReset = () => {
-        setDepositAmount('');
-        setSelectedPeriod('전체');
-    };
-
-    const handlePeriodAmountApply = () => {
-        console.log('적용된 금액:', depositAmount, '적용된 기간:', selectedPeriod);
-        setIsPeriodAmountFilterOpen(false);
-    };
-
+    const handlePeriodAmountReset = () => { setDepositAmount(''); setSelectedPeriod('전체'); };
+    const handlePeriodAmountApply = () => { setIsPeriodAmountFilterOpen(false); };
     const periodOptions = ['전체', '6개월', '12개월', '24개월'];
 
-    const handleProductTypeChange = (type) => {
-      setSelectedProductTypes(prevTypes => 
-        prevTypes.includes(type) 
-          ? prevTypes.filter(t => t !== type)
-          : [...prevTypes, type]
-      );
+    const handleCategoryChange = (category) => { setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [category]); setCurrentPage(1); };
+    const handleProductTypeChange = (type) => { setSelectedProductTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]); setCurrentPage(1); };
+    
+    const handleBankCategoryChange = (bankCategoryId) => {
+      setSelectedBankCategory(bankCategoryId);
+      setCurrentPage(1); 
     };
 
-    const handleProductTypeReset = () => {
-      setSelectedProductTypes([]);
+    const handleProductTypeReset = () => { 
+        setSelectedProductTypes([]); 
+        setSelectedCategories([]); 
+        setSelectedBankCategory(0);
+        setSelectedBanks([]); // 선택된 은행도 초기화
+        setCurrentPage(1);
     };
-
-    const handleProductTypeApply = () => {
-      console.log('적용된 상품 유형:', selectedProductTypes);
-      setIsProductTypeFilterOpen(false);
-    };
+    const handleProductTypeApply = () => { setIsProductTypeFilterOpen(false); };
     
     const productTypeOptions = ['특판', '방문없이 가입', '누구나가입'];
 
-    const handleBenefitChange = (benefit) => {
-      setSelectedBenefits(prevBenefits => 
-        prevBenefits.includes(benefit) 
-          ? prevBenefits.filter(b => b !== benefit)
-          : [...prevBenefits, benefit]
-      );
+    const handleBenefitChange = (benefit) => { setSelectedBenefits(prev => prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]); setCurrentPage(1); };
+    const handleBenefitReset = () => { setSelectedBenefits([]); };
+    const handleBenefitApply = () => { setIsBenefitFilterOpen(false); };
+  
+    const categoryTitle = selectedCategories.length === 1 ? selectedCategories[0] : '예·적금';
+    
+    // --- 은행 모달 관련 핸들러 ---
+    const handleOpenBankModal = (bankType) => {
+        setSelectedBankCategory(bankType);
+        setModalBankType(bankType);
+        setTempSelectedBanks(selectedBanks);
+        setIsBankModalOpen(true);
     };
 
-    const handleBenefitReset = () => {
-      setSelectedBenefits([]);
+    const handleCloseBankModal = () => {
+        setIsBankModalOpen(false);
     };
 
-    const handleBenefitApply = () => {
-      console.log('적용된 우대조건:', selectedBenefits);
-      setIsBenefitFilterOpen(false);
+    const handleTempBankSelect = (bankName) => {
+        setTempSelectedBanks(prev => 
+            prev.includes(bankName) 
+            ? prev.filter(b => b !== bankName) 
+            : [...prev, bankName]
+        );
+    };
+
+    const handleSelectAllBanks = (e) => {
+        if (e.target.checked) {
+            setTempSelectedBanks(bankOptions.map(b => b.bank_name));
+        } else {
+            setTempSelectedBanks([]);
+        }
+    };
+
+    const handleApplyBankSelection = () => {
+        setSelectedBanks(tempSelectedBanks);
+        handleCloseBankModal();
+        setCurrentPage(1);
     };
     
-    const benefitOptions = ['비대면가입', '은행앱사용', '급여연동', '연금', '공과금연동', '카드사용', '첫거래', '입출금통장', '재예치'];
-  
+    const renderPagination = () => {
+        const totalPages = Math.ceil(totalCount / itemsPerPage);
+        if (totalPages <= 1) return null;
+        const pageGroupSize = 5;
+        const currentPageGroup = Math.ceil(currentPage / pageGroupSize);
+        let startPage = (currentPageGroup - 1) * pageGroupSize + 1;
+        let endPage = Math.min(startPage + pageGroupSize - 1, totalPages);
+        const pageNumbers = [];
+        for (let i = startPage; i <= endPage; i++) {
+          pageNumbers.push(i);
+        }
+        return (
+          <div className="pagination">
+            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(prev => Math.max(prev - 1, 1)); }}>&lt; 이전</a>
+            {startPage > 1 && (<> <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(1); }}>1</a> <span>...</span> </>)}
+            {pageNumbers.map(number => (<a href="#" key={number} className={currentPage === number ? 'active' : ''} onClick={(e) => { e.preventDefault(); setCurrentPage(number); }}> {number} </a>))}
+            {endPage < totalPages && (<> <span>...</span> <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(totalPages); }}>{totalPages}</a> </>)}
+            <a href="#" onClick={(e) => { e.preventDefault(); setCurrentPage(prev => Math.min(prev + 1, totalPages)); }}>다음 &gt;</a>
+          </div>
+        );
+    };
+
   return (
     <div className="savings-page-layout">
       <Header />
       <main className="savings-content">
         <h1 className="page-title">예·적금</h1>
-
         <div className="content-wrapper">
-        <div className="filter-bar">
-          <div className="search-box">
-            <FaSearch className="search-icon" />
-            <input type="text" placeholder="검색어 입력" />
-          </div>
-          <div className="filter-item-container" ref={periodButtonRef}>
-            <button 
-              className={`filter-button ${isPeriodAmountFilterOpen ? 'active' : ''}`}
-              onClick={() => setIsPeriodAmountFilterOpen(!isPeriodAmountFilterOpen)}
-            >
-              기간·금액 {isPeriodAmountFilterOpen ? <FaMinus /> : <FaPlus />}
-            </button>
-            {isPeriodAmountFilterOpen && (
-              <div className="filter-panel" ref={periodAmountFilterRef}>
-                <div className="panel-section">
-                  <h4>예치금액</h4>
-                  <div className="amount-input-group">
-                    <input type="number" placeholder="금액 입력" value={depositAmount} onChange={(e) => setDepositAmount(e.target.value)} />
-                    <span>원</span>
+          <div className="filter-bar">
+            <div className="search-box"> <FaSearch className="search-icon" /> <input type="text" placeholder="검색어 입력" /> </div>
+            <div className="filter-item-container" ref={periodButtonRef}>
+              <button className={`filter-button ${isPeriodAmountFilterOpen ? 'active' : ''}`} onClick={() => setIsPeriodAmountFilterOpen(!isPeriodAmountFilterOpen)}> 기간·금액 {isPeriodAmountFilterOpen ? <FaMinus /> : <FaPlus />} </button>
+              {isPeriodAmountFilterOpen && ( <div className="filter-panel" ref={periodAmountFilterRef}> <div className="panel-section"> <h4>기간</h4> <div className="period-button-group"> {periodOptions.map(period => ( <button key={period} className={`period-button ${selectedPeriod === period ? 'active' : ''}`} onClick={() => setSelectedPeriod(period)}> {period} </button> ))} </div> </div> <div className="panel-actions"> <button className="reset-button" onClick={handlePeriodAmountReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handlePeriodAmountApply}>적용</button> </div> </div> )}
+            </div>
+            
+            <div className="filter-item-container" ref={productTypeButtonRef}>
+              <button className={`filter-button ${isProductTypeFilterOpen ? 'active' : ''}`} onClick={() => setIsProductTypeFilterOpen(!isProductTypeFilterOpen)}> 상품유형 {isProductTypeFilterOpen ? <FaMinus /> : <FaPlus />} </button>
+              {isProductTypeFilterOpen && (
+                <div className="filter-panel large" ref={productTypeFilterRef}>
+                  <div className="panel-section">
+                    <h4>상품 분류</h4>
+                    <div className="product-category-button-group">
+                      <button className={`period-button ${selectedCategories.includes('예금') ? 'active' : ''}`} onClick={() => handleCategoryChange('예금')}> 예금 </button>
+                      <button className={`period-button ${selectedCategories.includes('적금') ? 'active' : ''}`} onClick={() => handleCategoryChange('적금')}> 적금 </button>
+                    </div>
+                  </div>
+                  <div className="panel-section">
+                    <h4>금융기관</h4>
+                    <div className="product-bank-type-button-group">
+                        <button 
+                          className={`period-button ${selectedBankCategory === 1 ? 'active' : ''}`} 
+                          onClick={() => handleOpenBankModal(1)}
+                        >
+                          은행
+                        </button>
+                        <button 
+                          className={`period-button ${selectedBankCategory === 2 ? 'active' : ''}`} 
+                          onClick={() => handleOpenBankModal(2)}
+                        >
+                          저축은행
+                        </button>
+                        <button 
+                          className={`period-button ${selectedBankCategory === 0 ? 'active' : ''}`} 
+                          onClick={() => { handleBankCategoryChange(0); setSelectedBanks([]); }}
+                        >
+                          전체
+                        </button>
+                    </div>
+                  </div>
+                  <div className="panel-section">
+                    <h4>상세 유형</h4>
+                    <div className="product-type-button-group">
+                      {productTypeOptions.map(type => ( <button key={type} className={`period-button ${selectedProductTypes.includes(type) ? 'active' : ''}`} onClick={() => handleProductTypeChange(type)}> {type} </button>))}
+                    </div>
+                  </div>
+                  <div className="panel-actions">
+                    <button className="reset-button" onClick={handleProductTypeReset}><FaSyncAlt /> 초기화</button>
+                    <button className="apply-button" onClick={handleProductTypeApply}>적용</button>
                   </div>
                 </div>
-                <div className="panel-section">
-                  <h4>기간</h4>
-                  <div className="period-button-group">
-                    {periodOptions.map(period => (
-                      <button 
-                        key={period}
-                        className={`period-button ${selectedPeriod === period ? 'active' : ''}`}
-                        onClick={() => setSelectedPeriod(period)}
-                      >
-                        {period}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="panel-actions">
-                  <button className="reset-button" onClick={handlePeriodAmountReset}><FaSyncAlt /> 초기화</button>
-                  <button className="apply-button" onClick={handlePeriodAmountApply}>적용</button>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="filter-item-container" ref={productTypeButtonRef}>
-            <button 
-              className={`filter-button ${isProductTypeFilterOpen ? 'active' : ''}`}
-              onClick={() => setIsProductTypeFilterOpen(!isProductTypeFilterOpen)}
-            >
-              상품유형 {isProductTypeFilterOpen ? <FaMinus /> : <FaPlus />}
-            </button>
-            {isProductTypeFilterOpen && (
-              <div className="filter-panel" ref={productTypeFilterRef}>
-                <div className="panel-section">
-                  <h4>유형</h4>
-                  <div className="product-type-button-group">
-                    {productTypeOptions.map(type => (
-                      <button 
-                        key={type}
-                        className={`period-button ${selectedProductTypes.includes(type) ? 'active' : ''}`}
-                        onClick={() => handleProductTypeChange(type)}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="panel-actions">
-                  <button className="reset-button" onClick={handleProductTypeReset}><FaSyncAlt /> 초기화</button>
-                  <button className="apply-button" onClick={handleProductTypeApply}>적용</button>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="filter-item-container" ref={benefitButtonRef}>
-            <button 
-              className={`filter-button ${isBenefitFilterOpen ? 'active' : ''}`}
-              onClick={() => setIsBenefitFilterOpen(!isBenefitFilterOpen)}
-            >
-              우대조건 {isBenefitFilterOpen ? <FaMinus /> : <FaPlus />}
-            </button>
-            {isBenefitFilterOpen && (
-              <div className="filter-panel large" ref={benefitFilterRef}>
-                <div className="panel-section">
-                  <h4>우대조건</h4>
-                  <div className="benefit-button-group">
-                    {benefitOptions.map(benefit => (
-                      <button 
-                        key={benefit}
-                        className={`period-button ${selectedBenefits.includes(benefit) ? 'active' : ''}`}
-                        onClick={() => handleBenefitChange(benefit)}
-                      >
-                        {benefit}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <small className="panel-disclaimer">*신협 상품에는 적용되지 않습니다.</small>
-                <div className="panel-actions">
-                  <button className="reset-button" onClick={handleBenefitReset}><FaSyncAlt /> 초기화</button>
-                  <button className="apply-button" onClick={handleBenefitApply}>적용</button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="list-info-bar">
-          <span className="total-count">
-            총 <strong>{sortedData.length}</strong>건의 예·적금 정보가 있습니다.
-          </span>
-          <div className="sort-dropdown-container" ref={sortDropdownRef}>
-              <button
-                  className="sort-dropdown-button"
-                  onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
-              >
-                  {sortOrder} <FaChevronDown size="0.8em" />
-              </button>
-              {isSortDropdownOpen && (
-                  <ul className="sort-dropdown-menu">
-                      <li onClick={() => { setSortOrder('최고금리순'); setIsSortDropdownOpen(false); }}>최고금리순</li>
-                      <li onClick={() => { setSortOrder('기본금리순'); setIsSortDropdownOpen(false); }}>기본금리순</li>
-                  </ul>
               )}
+            </div>
+             <div className="filter-item-container" ref={benefitButtonRef}>
+              <button className={`filter-button ${isBenefitFilterOpen ? 'active' : ''}`} onClick={() => setIsBenefitFilterOpen(!isBenefitFilterOpen)}> 우대조건 {isBenefitFilterOpen ? <FaMinus /> : <FaPlus />} </button>
+              {isBenefitFilterOpen && ( <div className="filter-panel large" ref={benefitFilterRef}> <div className="panel-section"> <h4>우대조건</h4> <div className="benefit-button-group"> {benefitOptions.map(benefit => ( <button key={benefit.id} className={`period-button ${selectedBenefits.includes(benefit.db_row_name) ? 'active' : ''}`} onClick={() => handleBenefitChange(benefit.db_row_name)}> {benefit.name} </button> ))} </div> </div> <small className="panel-disclaimer">*신협 상품에는 적용되지 않습니다.</small> <div className="panel-actions"> <button className="reset-button" onClick={handleBenefitReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handleBenefitApply}>적용</button> </div> </div> )}
+            </div>
           </div>
-        </div>
 
-        <div className="savings-list-container">
-          {sortedData.map((item) => (
-            <Link to={`/savings/${item.id}`} key={item.id} className="savings-item-link">
-                <div className="savings-item">
-                    <div className="item-left">
-                        <div className="bank-logo"><FaLandmark /></div>
-                        <div className="product-info">
-                            <span className="product-name">{item.product}</span>
-                            <span className="bank-name">{item.bank}</span>
-                            <div className="tags">
-                                {item.tags.map((tag, i) => (
-                                    <span key={i} className={`tag ${tag === '특판' ? 'highlight' : ''}`}>{tag}</span>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                    <div className="item-right">
-                        <div className="rate-info">
-                            <span className="rate-max">최고 {item.maxRate}</span>
-                            <span className="rate-base">기본 {item.baseRate}</span>
-                        </div>
-                    </div>
-                </div>
-            </Link>
-          ))}
-        </div>
+          <div className="list-info-bar">
+            <span className="total-count"> 총 <strong>{totalCount}</strong>건의 {categoryTitle} 정보가 있습니다. </span>
+            <div className="sort-dropdown-container" ref={sortDropdownRef}>
+              <button className="sort-dropdown-button" onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}> {sortOrder} <FaChevronDown size="0.8em" /> </button>
+              {isSortDropdownOpen && ( <ul className="sort-dropdown-menu"> <li onClick={() => { setSortOrder('최고금리순'); setIsSortDropdownOpen(false); }}>최고금리순</li> <li onClick={() => { setSortOrder('기본금리순'); setIsSortDropdownOpen(false); }}>기본금리순</li> </ul> )}
+            </div>
+          </div>
 
-        <div className="pagination">
-          <a href="#">&lt; 이전</a>
-          <a href="#" className="active">1</a>
-          <a href="#">2</a>
-          <a href="#">3</a>
-          <a href="#">4</a>
-          <a href="#">5</a>
-          <span>...</span>
-          <a href="#">99</a>
-          <a href="#">다음 &gt;</a>
-        </div>
+          <div className="savings-list-container">
+            {savingsData.map((item) => (
+              <Link to={`/savings/${item.finproduct_id}`} key={item.finproduct_id} className="savings-item-link">
+                  <div className="savings-item">
+                      <div className="item-left">
+                          <div className="bank-logo">
+                            <img src={item.image_url} alt={item.bank_name} style={{ width: '100%', height: '100%', borderRadius: '50%' }}/>
+                          </div>
+                          <div className="product-info">
+                              <span className="product-name">{item.product_name}</span>
+                              <span className="bank-name">{item.bank_name}</span>
+                              <div className="tags">
+                                  {item.product_type_chip.map((tag, i) => ( <span key={i} className={`tag ${tag === '특판' ? 'highlight' : ''}`}>{tag}</span> ))}
+                              </div>
+                          </div>
+                      </div>
+                      <div className="item-right">
+                          <div className="rate-info">
+                              <span className="rate-max">최고 {item.max_interest_rate}%</span>
+                              <span className="rate-base">기본 {item.min_interest_rate}%</span>
+                          </div>
+                      </div>
+                  </div>
+              </Link>
+            ))}
+          </div>
+          
+          {renderPagination()}
+
         </div>
       </main>
+
+      {isBankModalOpen && (
+        <Modal isOpen={isBankModalOpen} onClose={handleCloseBankModal} title="은행 선택">
+          <div className="bank-modal-body">
+            <div className="bank-modal-tabs">
+              <button 
+                className={`bank-modal-tab ${modalBankType === 1 ? 'active' : ''}`}
+                onClick={() => setModalBankType(1)}
+              >
+                은행
+              </button>
+              <button 
+                className={`bank-modal-tab ${modalBankType === 2 ? 'active' : ''}`}
+                onClick={() => setModalBankType(2)}
+              >
+                저축은행
+              </button>
+            </div>
+            <div className="bank-modal-header">
+              <label>
+                <input 
+                    type="checkbox" 
+                    onChange={handleSelectAllBanks}
+                    checked={bankOptions.length > 0 && tempSelectedBanks.length === bankOptions.length}
+                /> 
+                모든 은행 선택
+              </label>
+            </div>
+            <div className="bank-grid">
+              {bankOptions.map(bank => (
+                <div 
+                  key={bank.bank_id} 
+                  className={`bank-item ${tempSelectedBanks.includes(bank.bank_name) ? 'active' : ''}`}
+                  onClick={() => handleTempBankSelect(bank.bank_name)}
+                >
+                  <div className="bank-item-logo">
+                    <img src={bank.image_url} alt={bank.bank_name} />
+                  </div>
+                  <span className="bank-item-name">{bank.bank_name}</span>
+                  <div className="bank-item-plus">+</div>
+                </div>
+              ))}
+            </div>
+            <div className="bank-modal-footer">
+              <button className="confirm-button" onClick={handleApplyBankSelection}>확인</button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

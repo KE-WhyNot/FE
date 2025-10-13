@@ -127,7 +127,11 @@
   left: 0;
   top: 0;
 }
-.info-value-detail { line-height: 1.6; }
+.info-value-detail {
+  line-height: 1.6;
+  word-break: break-all;
+  overflow-wrap: break-word;
+}
 .info-value-detail a { color: #5844d1; text-decoration: none; }
 .info-value-detail a:hover { text-decoration: underline; }
 

@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './SavingsPage.css';
 import Header from '../common/Header';
-import { FaSearch, FaPlus, FaChevronDown, FaLandmark, FaMinus, FaSyncAlt } from 'react-icons/fa';
+import { FaSearch, FaPlus, FaChevronDown, FaMinus, FaSyncAlt } from 'react-icons/fa';
 import axios from 'axios';
+import Modal from '../common/Modal'; // Modal 컴포넌트를 import 합니다.
 
 const SavingsPage = () => {
     const [savingsData, setSavingsData] = useState([]);
@@ -25,15 +26,24 @@ const SavingsPage = () => {
     const [selectedPeriod, setSelectedPeriod] = useState('전체');
     const periodAmountFilterRef = useRef(null);
     const periodButtonRef = useRef(null);
+
     const [isProductTypeFilterOpen, setIsProductTypeFilterOpen] = useState(false);
     const [selectedProductTypes, setSelectedProductTypes] = useState([]);
     const productTypeFilterRef = useRef(null);
     const productTypeButtonRef = useRef(null);
+
     const [isBenefitFilterOpen, setIsBenefitFilterOpen] = useState(false);
     const [selectedBenefits, setSelectedBenefits] = useState([]);
     const benefitFilterRef = useRef(null);
     const benefitButtonRef = useRef(null);
-
+    
+    // --- 은행 선택 모달 관련 상태 ---
+    const [isBankModalOpen, setIsBankModalOpen] = useState(false);
+    const [bankOptions, setBankOptions] = useState([]);
+    const [modalBankType, setModalBankType] = useState(1); // 1: 은행, 2: 저축은행
+    const [tempSelectedBanks, setTempSelectedBanks] = useState([]);
+    const [selectedBanks, setSelectedBanks] = useState([]);
+    
     const api = axios.create({
       baseURL: 'https://policy.youth-fi.com',
     });
@@ -50,44 +60,48 @@ const SavingsPage = () => {
       fetchBenefitOptions();
     }, []);
 
+    // --- 은행 목록을 모달이 열릴 때 가져오도록 수정 ---
+    useEffect(() => {
+        if (!isBankModalOpen) return;
+
+        const fetchBankOptions = async () => {
+            try {
+                const response = await api.get('/api/finproduct/filter/bank', {
+                    params: { type: modalBankType }
+                });
+                setBankOptions(response.data.result || []);
+            } catch (error) {
+                console.error("Failed to fetch bank options:", error);
+                setBankOptions([]);
+            }
+        };
+        fetchBankOptions();
+    }, [isBankModalOpen, modalBankType]);
+
     useEffect(() => {
         const fetchSavingsData = async () => {
             try {
-                // --- ⬇️ 수정된 부분 시작 ⬇️ ---
-
-                // 1. 은행 ID 목록을 가져오는 로직을 모두 삭제합니다.
-
                 const params = {
                     page_num: currentPage,
                     page_size: itemsPerPage,
                     product_type: selectedCategories.length === 1 ? (selectedCategories[0] === '예금' ? 1 : 2) : 0,
-                    
-                    // 2. 'bank_type' 파라미터를 추가합니다. 
-                    //    '전체'(0)가 아닐 경우에만 type 값을 전달합니다.
                     bank_type: selectedBankCategory !== 0 ? selectedBankCategory : null,
-
+                    banks: selectedBanks.length > 0 ? selectedBanks : null,
                     periods: selectedPeriod === '전체' ? null : parseInt(selectedPeriod.replace('개월','')),
-                    special_conditions: selectedBenefits.length > 0 ? selectedBenefits.join(',') : null,
+                    special_conditions: selectedBenefits.length > 0 ? selectedBenefits : null,
                     interest_rate_sort: sortOrder === '최고금리순' ? 'include_bonus' : 'base_only',
                 };
                 
-                // 3. 사용하지 않는 파라미터를 요청에서 제외합니다.
                 Object.keys(params).forEach(key => {
                   if (params[key] === null || params[key] === '' || (Array.isArray(params[key]) && params[key].length === 0)) {
-                     // product_type=0 은 '전체'를 의미하므로 삭제하지 않습니다.
                      if(key !== 'product_type') {
                        delete params[key];
                     }
                   }
                 });
 
-                // 4. 다시 GET 방식으로 요청합니다.
                 const response = await api.get('/api/finproduct/list', { params });
                 
-                // --- ⬆️ 수정된 부분 끝 ⬆️ ---
-
-
-                // '상세 유형' 필터링 (프론트엔드 처리)
                 let filteredData = response.data.result.finProductList;
                 if (selectedProductTypes.length > 0) {
                     filteredData = filteredData.filter(item => 
@@ -104,7 +118,7 @@ const SavingsPage = () => {
         };
 
         fetchSavingsData();
-    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes]);
+    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes, selectedBanks]);
 
 
     useEffect(() => {
@@ -134,19 +148,53 @@ const SavingsPage = () => {
         setSelectedProductTypes([]); 
         setSelectedCategories([]); 
         setSelectedBankCategory(0);
+        setSelectedBanks([]); // 선택된 은행도 초기화
         setCurrentPage(1);
     };
     const handleProductTypeApply = () => { setIsProductTypeFilterOpen(false); };
     
     const productTypeOptions = ['특판', '방문없이 가입', '누구나가입'];
-    const bankCategoryOptions = [{ id: 0, name: '전체' }, { id: 1, name: '은행' }, { id: 2, name: '저축은행' }];
 
     const handleBenefitChange = (benefit) => { setSelectedBenefits(prev => prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]); setCurrentPage(1); };
     const handleBenefitReset = () => { setSelectedBenefits([]); };
     const handleBenefitApply = () => { setIsBenefitFilterOpen(false); };
   
     const categoryTitle = selectedCategories.length === 1 ? selectedCategories[0] : '예·적금';
+    
+    // --- 은행 모달 관련 핸들러 ---
+    const handleOpenBankModal = (bankType) => {
+        setSelectedBankCategory(bankType);
+        setModalBankType(bankType);
+        setTempSelectedBanks(selectedBanks);
+        setIsBankModalOpen(true);
+    };
 
+    const handleCloseBankModal = () => {
+        setIsBankModalOpen(false);
+    };
+
+    const handleTempBankSelect = (bankName) => {
+        setTempSelectedBanks(prev => 
+            prev.includes(bankName) 
+            ? prev.filter(b => b !== bankName) 
+            : [...prev, bankName]
+        );
+    };
+
+    const handleSelectAllBanks = (e) => {
+        if (e.target.checked) {
+            setTempSelectedBanks(bankOptions.map(b => b.bank_name));
+        } else {
+            setTempSelectedBanks([]);
+        }
+    };
+
+    const handleApplyBankSelection = () => {
+        setSelectedBanks(tempSelectedBanks);
+        handleCloseBankModal();
+        setCurrentPage(1);
+    };
+    
     const renderPagination = () => {
         const totalPages = Math.ceil(totalCount / itemsPerPage);
         if (totalPages <= 1) return null;
@@ -196,11 +244,24 @@ const SavingsPage = () => {
                   <div className="panel-section">
                     <h4>금융기관</h4>
                     <div className="product-bank-type-button-group">
-                      {bankCategoryOptions.map(cat => (
-                        <button key={cat.id} className={`period-button ${selectedBankCategory === cat.id ? 'active' : ''}`} onClick={() => handleBankCategoryChange(cat.id)}>
-                          {cat.name}
+                        <button 
+                          className={`period-button ${selectedBankCategory === 1 ? 'active' : ''}`} 
+                          onClick={() => handleOpenBankModal(1)}
+                        >
+                          은행
                         </button>
-                      ))}
+                        <button 
+                          className={`period-button ${selectedBankCategory === 2 ? 'active' : ''}`} 
+                          onClick={() => handleOpenBankModal(2)}
+                        >
+                          저축은행
+                        </button>
+                        <button 
+                          className={`period-button ${selectedBankCategory === 0 ? 'active' : ''}`} 
+                          onClick={() => { handleBankCategoryChange(0); setSelectedBanks([]); }}
+                        >
+                          전체
+                        </button>
                     </div>
                   </div>
                   <div className="panel-section">
@@ -261,6 +322,55 @@ const SavingsPage = () => {
 
         </div>
       </main>
+
+      {isBankModalOpen && (
+        <Modal isOpen={isBankModalOpen} onClose={handleCloseBankModal} title="은행 선택">
+          <div className="bank-modal-body">
+            <div className="bank-modal-tabs">
+              <button 
+                className={`bank-modal-tab ${modalBankType === 1 ? 'active' : ''}`}
+                onClick={() => setModalBankType(1)}
+              >
+                은행
+              </button>
+              <button 
+                className={`bank-modal-tab ${modalBankType === 2 ? 'active' : ''}`}
+                onClick={() => setModalBankType(2)}
+              >
+                저축은행
+              </button>
+            </div>
+            <div className="bank-modal-header">
+              <label>
+                <input 
+                    type="checkbox" 
+                    onChange={handleSelectAllBanks}
+                    checked={bankOptions.length > 0 && tempSelectedBanks.length === bankOptions.length}
+                /> 
+                모든 은행 선택
+              </label>
+            </div>
+            <div className="bank-grid">
+              {bankOptions.map(bank => (
+                <div 
+                  key={bank.bank_id} 
+                  className={`bank-item ${tempSelectedBanks.includes(bank.bank_name) ? 'active' : ''}`}
+                  onClick={() => handleTempBankSelect(bank.bank_name)}
+                >
+                  <div className="bank-item-logo">
+                    <img src={bank.image_url} alt={bank.bank_name} />
+                  </div>
+                  <span className="bank-item-name">{bank.bank_name}</span>
+                  <div className="bank-item-plus">+</div>
+                </div>
+              ))}
+            </div>
+            <div className="bank-modal-footer">
+              <button className="confirm-button" onClick={handleApplyBankSelection}>확인</button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

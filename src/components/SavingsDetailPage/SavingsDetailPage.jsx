@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import './SavingsDetailPage.css';
 import Header from '../common/Header';
 import { FaLandmark, FaArrowLeft } from 'react-icons/fa';
+import policyAxiosInstance from '../../api/policyAxiosInstance';
+import { normalizeDetail, toCurrency, percentStringToDecimal } from '../../utils/finance.js';
 
 // 상세 페이지에 필요한 정보를 포함하도록 예시 데이터 확장
 const savingsData = [
@@ -36,26 +38,46 @@ const savingsData = [
     // ... (다른 상품 데이터도 이와 유사한 구조로 추가 가능)
 ];
 
-
 const SavingsDetailPage = () => {
     const { productId } = useParams();
     const navigate = useNavigate();
-    const product = savingsData.find(item => item.id === productId);
+    const [loading, setLoading ] = useState(true);
+    const [error, setError ] = useState(null);
+    const [product, setProduct] = useState(null);
 
     const [activeTab, setActiveTab] = useState('info');
     const [depositAmount, setDepositAmount] = useState(10000000);
-    // ✨ 1. 선택된 금리 타입을 관리하는 state 추가 ('max' 또는 'base')
     const [selectedRateType, setSelectedRateType] = useState('max'); 
     const [calculated, setCalculated] = useState({ principal: 0, preTaxInterest: 0, tax: 0, postTaxAmount: 0 });
+
+    // ✅ 여기서 axiosInstance로 직접 API 요청
+    useEffect(() => {
+        let on = true;
+        setLoading(true);
+        setError(null);
+
+        const fetchDetail = async () => {
+            try {
+                const url = `https://policy.youth-fi.com/api/finproduct/${encodeURIComponent(productId)}`;
+                const res = await policyAxiosInstance.get(url);
+                if (on) setProduct(normalizeDetail(res.data));
+            } catch (e) {
+                if (on) setError(e.message || String(e));
+            } finally {
+                if (on) setLoading(false);
+            }
+        };
+
+        fetchDetail();
+        return () => { on = false; };
+    }, [productId]);
 
     useEffect(() => {
         if (product) {
             const principal = depositAmount || 0;
-            // ✨ 2. 선택된 금리 타입에 따라 다른 이율을 적용
-            const rateString = selectedRateType === 'max' ? product.maxRate : product.baseRate;
-            const rate = parseFloat(rateString) / 100;
-            
-            const preTaxInterest = principal * rate;
+            const rate = selectedRateType === 'max' ? product.rates.max : product.rates.base;
+            const months = product.termMonths ?? 12;
+            const preTaxInterest = principal * rate * (months / 12);
             const tax = preTaxInterest * 0.154;
             const postTaxAmount = principal + preTaxInterest - tax;
 
@@ -66,11 +88,11 @@ const SavingsDetailPage = () => {
                 postTaxAmount: postTaxAmount,
             });
         }
-    }, [depositAmount, product, selectedRateType]); // ✨ selectedRateType을 종속성 배열에 추가
+    }, [depositAmount, product, selectedRateType]);
 
-    if (!product) {
-        return <div>상품 정보를 찾을 수 없습니다.</div>;
-    }
+    if (loading) return <div>불러오는 중...</div>;
+    if (error) return <div>오류: {error}</div>;
+    if (!product) return <div>상품 정보를 찾을 수 없습니다.</div>;
 
     return (
         <div className="savings-detail-layout">
@@ -86,7 +108,13 @@ const SavingsDetailPage = () => {
                             <h1 className="product-name-new">{product.product}</h1>
                             <span className="bank-name-new">{product.bank}</span>
                         </div>
-                        <div className="bank-logo-new"><FaLandmark /></div>
+                        <div className="bank-logo-new">
+                        {product.imageUrl ? (
+                            <img src={product.imageUrl} alt={`${product.bank} 로고`} style={{ width: '100%', height: '100%', borderRadius: '50%' }} />
+                        ) : (
+                            <FaLandmark />
+                        )}
+                        </div>
                     </div>
                     <div className="tags-new">
                         {product.tags.map((tag, i) => <span key={i} className="tag">{tag}</span>)}
@@ -94,15 +122,14 @@ const SavingsDetailPage = () => {
                     <div className="rates-new">
                         <div className="rate-item">
                             <span>최고</span>
-                            <strong>연 {product.maxRate}</strong>
+                            <strong>연 {(product.rates.max * 100).toFixed(2)}%</strong>
                         </div>
                         <div className="rate-item">
                             <span>기본</span>
-                            <strong>연 {product.baseRate}</strong>
-                            <small>({product.period}개월, 세전)</small>
+                            <strong>연 {(product.rates.base * 100).toFixed(2)}%</strong>
+                            <small>({product.termMonths}개월, 세전)</small>                        
                         </div>
                     </div>
-                    {/* ✨ 3. 버튼 영역 삭제 */}
                 </div>
 
                 <div className="tab-navigation">
@@ -112,16 +139,14 @@ const SavingsDetailPage = () => {
 
                 {activeTab === 'info' && (
                     <div className="tab-content">
-                        {/* ... (상품 안내 탭 내용은 동일) ... */}
                         <div className="product-info-grid">
                             <div className="info-row"><div className="info-label">기간</div><div className="info-value">{product.details.period}</div></div>
-                            <div className="info-row"><div className="info-label">금액</div><div className="info-value">{product.details.amount}</div></div>
+                            <div className="info-row"><div className="info-label">상품 가이드</div><div className="info-value" dangerouslySetInnerHTML={{ __html: product.details.amount }} /></div>
                             <div className="info-row"><div className="info-label">가입방법</div><div className="info-value">{product.details.method}</div></div>
                             <div className="info-row"><div className="info-label">대상</div><div className="info-value">{product.details.target}</div></div>
-                            <div className="info-row"><div className="info-label">우대조건</div><div className="info-value">{product.details.benefitCondition}</div></div>
+                            <div className="info-row"><div className="info-label">우대조건</div><div className="info-value" dangerouslySetInnerHTML={{ __html: product.details.benefitCondition }} /></div>
                             <div className="info-row"><div className="info-label">이자지급</div><div className="info-value">{product.details.interestPayment}</div></div>
-                            <div className="info-row notice"><div className="info-label">유의</div><div className="info-value">{product.details.notice}</div></div>
-                            <div className="info-row"><div className="info-label">예금자보호</div><div className="info-value">{product.details.protection}</div></div>
+                            <div className="info-row notice"><div className="info-label">유의사항</div><div className="info-value">{product.details.notice}</div></div>
                         </div>
                     </div>
                 )}
@@ -133,7 +158,7 @@ const SavingsDetailPage = () => {
                             <div className="amount-input-wrapper">
                                 <input 
                                     type="text" 
-                                    value={depositAmount.toLocaleString()} 
+                                    value={toCurrency(depositAmount)}
                                     onChange={(e) => {
                                         const value = e.target.value.replace(/,/g, '');
                                         if (!isNaN(value)) {
@@ -144,30 +169,29 @@ const SavingsDetailPage = () => {
                                 <span>원</span>
                             </div>
 
-                            {/* ✨ 4. 금리 버튼에 onClick 핸들러와 active 클래스 조건 추가 */}
                             <div className="rate-options">
                                 <div 
                                     className={`rate-option ${selectedRateType === 'max' ? 'active' : ''}`}
                                     onClick={() => setSelectedRateType('max')}
                                 >
-                                    <span>최고금리</span><strong>{product.maxRate}</strong>
+                                    <span>최고금리</span><strong>{(product.rates.max * 100).toFixed(2)}%</strong>
                                 </div>
                                 <div 
                                     className={`rate-option ${selectedRateType === 'base' ? 'active' : ''}`}
                                     onClick={() => setSelectedRateType('base')}
                                 >
-                                    <span>기본금리</span><strong>{product.baseRate}</strong>
+                                    <span>기본금리</span><strong>{(product.rates.base * 100).toFixed(2)}%</strong>
                                 </div>
                             </div>
                             
                             <div className="calculation-result">
-                                <div className="result-row"><span>원금합계</span><span>{calculated.principal.toLocaleString()}원</span></div>
-                                <div className="result-row"><span>세전이자</span><span className="interest">+ {calculated.preTaxInterest.toLocaleString()}원</span></div>
-                                <div className="result-row"><span>이자과세(15.4%)</span><span className="tax">- {Math.floor(calculated.tax).toLocaleString()}원</span></div>
+                                <div className="result-row"><span>원금합계</span><span className="interest">+ {toCurrency(calculated.preTaxInterest)}원</span></div>
+                                <div className="result-row"><span>세전이자</span><span className="interest">+ {toCurrency(calculated.preTaxInterest)}원</span></div>
+                                <div className="result-row"><span>이자과세(15.4%)</span><span className="tax">- {toCurrency(calculated.tax)}원</span></div>
                             </div>
                             <div className="final-amount">
                                 <span>세후수령액</span>
-                                <strong>{Math.floor(calculated.postTaxAmount).toLocaleString()}원</strong>
+                                <strong>{toCurrency(calculated.postTaxAmount)}원</strong>
                             </div>
                         </div>
 
@@ -176,9 +200,25 @@ const SavingsDetailPage = () => {
                             <table className="rate-table">
                                 <thead><tr><th>기간</th><th>금리</th></tr></thead>
                                 <tbody>
-                                    {product.rateInfo.byPeriod.map((item, i) => (
-                                        <tr key={i}><td>{item.period}</td><td>{item.rate}</td></tr>
-                                    ))}
+                                    {product.rateInfo.byPeriod.map((item, i) => {
+                                        if (product.rateInfo.byPeriod.length === 1) {
+                                            const displayRate = selectedRateType === 'max'
+                                                ? (product.rates.max * 100).toFixed(2)
+                                                : (product.rates.base * 100).toFixed(2);
+                                            return (
+                                                <tr key={i}>
+                                                    <td>{item.period}</td>
+                                                    <td>{displayRate}%</td>
+                                                </tr>
+                                            );
+                                        }
+                                        return (
+                                            <tr key={i}>
+                                                <td>{item.period}</td>
+                                                <td>{parseFloat(item.rate).toFixed(2)}%</td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                             <h4>조건별</h4>

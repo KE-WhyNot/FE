@@ -78,16 +78,21 @@ export const usePoliciesQuery = (
         params.append("specialization", personal["특화분야"]);
       }
 
-      // ✅ 정렬 순서
-      if (sortOrder) {
-        params.append("sort", sortOrder);
-      }
+      // ✅ 정렬 순서 (한글 → API용 sort_by 코드 매핑)
+      const sortMap = {
+        마감임박순: "deadline",
+        최신순: "newest",
+        오래된순: "oldest",
+      };
 
-      // ✅ 최종 URL
+      const sortBy = sortMap[sortOrder] || "deadline"; // 기본값: 마감임박순
+      params.append("sort_by", sortBy);
+
+      // ✅ 최종 URL 생성
       const queryString = params.toString();
       const url = `/api/policy/list?${queryString}`;
 
-      // ✅ 디버깅용 콘솔 출력
+      // ✅ 디버깅용 로그
       console.log("📡 [정책 요청 URL]", decodeURIComponent(url));
 
       // ✅ 실제 요청
@@ -99,10 +104,11 @@ export const usePoliciesQuery = (
         if (err.response && err.response.status === 404) {
           return { list: [], totalCount: 0 };
         }
-        // ✅ 그 외는 진짜 에러
+        // ✅ 그 외는 에러 throw
         throw err;
       }
 
+      // ✅ 데이터 구조 정리
       const result = res.data?.result || {};
       const list = result.youthPolicyList || [];
       const totalCount = result.pagging?.total_count || 0;

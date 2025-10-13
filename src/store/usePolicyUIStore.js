@@ -7,7 +7,7 @@ const usePolicyUIStore = create((set) => ({
   pageSize: 12,
 
   // ✅ 정렬 상태
-  sortOrder: "관련도순",
+  sortOrder: "마감임박순",
   isSortDropdownOpen: false,
 
   // ✅ 필터 상태
@@ -41,7 +41,7 @@ const usePolicyUIStore = create((set) => ({
       selectedFilters: { categories: {}, personal: {} },
       appliedFilters: { categories: {}, personal: {} },
       activeFilter: null,
-      sortOrder: "관련도순", // ⚙️ 정렬도 초기화 (원하면 삭제 가능)
+      sortOrder: "마감임박순", // ⚙️ 정렬도 초기화 (원하면 삭제 가능)
       pageNum: 1,
     }),
 }));

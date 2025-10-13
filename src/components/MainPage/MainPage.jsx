@@ -18,8 +18,8 @@ const MainPage = () => {
   // ✅ 최신 정책 3개 불러오기
   const {
     data: policies,
-    isLoading,
-    isError,
+    isLoading: isPoliciesLoading,
+    isError: isPoliciesError,
   } = useQuery({
     queryKey: ["latestPolicies"],
     queryFn: async () => {
@@ -29,6 +29,39 @@ const MainPage = () => {
       return res.data?.result?.youthPolicyList || [];
     },
   });
+
+  // ✅ 예적금 3개 불러오기
+const {
+  data: finProducts,
+  isLoading: isFinLoading,
+  isError: isFinError,
+} = useQuery({
+  queryKey: ["finProducts"],
+  queryFn: async () => {
+    const res = await policyAxios.get("/api/finproduct/list", {
+      params: {
+        page_num: 1,
+        page_size: 3,
+        banks: [92, 94], 
+        interest_rate_sort: "include_bonus",
+      },
+
+      paramsSerializer: (params) => {
+        return Object.keys(params)
+          .map((key) => {
+            const value = params[key];
+            if (Array.isArray(value)) {
+              return value.map((v) => `${key}=${encodeURIComponent(v)}`).join("&");
+            }
+            return `${key}=${encodeURIComponent(value)}`;
+          })
+          .join("&");
+      },
+    });
+
+    return res.data?.result?.finProductList || [];
+  },
+});
 
   // ✅ 카테고리별 아이콘 매핑
   const categoryIcons = {
@@ -109,9 +142,9 @@ const MainPage = () => {
               <Link to="/policy">자세히보기 &gt;</Link>
             </div>
             <div className="card-content">
-              {isLoading ? (
+              {isPoliciesLoading ? (
                 <p style={{ textAlign: "center" }}>불러오는 중...</p>
-              ) : isError ? (
+              ) : isPoliciesError ? (
                 <p style={{ textAlign: "center", color: "red" }}>
                   데이터를 불러오지 못했습니다.
                 </p>
@@ -120,7 +153,7 @@ const MainPage = () => {
                   {policies.map((policy) => {
                     const icon = categoryIcons[policy.category_large] || (
                       <FaUsers />
-                    ); // ✅ 기본값 설정
+                    );
                     const isUrgent =
                       policy.period_apply?.includes("~") &&
                       (() => {
@@ -163,29 +196,54 @@ const MainPage = () => {
             </div>
           </div>
 
-          {/* --- 예적금 카드 --- */}
+          {/* ✅ 예적금 카드 (API 연동 버전) */}
           <div className="info-card">
             <div className="card-header">
               <h3>예·적금</h3>
               <Link to="/savings">자세히보기 &gt;</Link>
             </div>
             <div className="card-content">
-              <ul className="savings-list">
-                <li>
-                  <div className="item-icon bank-icon">
-                    <FaLandmark />
-                  </div>
-                  <div className="item-details">
-                    <span className="item-title">Sh첫만남우대예금</span>
-                    <span className="item-source">SH수협은행</span>
-                  </div>
-                  <div className="item-interest">
-                    <span className="rate-label">최고</span>
-                    <span className="rate-value">2.90%</span>
-                    <span className="rate-base">기본 1.85%</span>
-                  </div>
-                </li>
-              </ul>
+              {isFinLoading ? (
+                <p style={{ textAlign: "center" }}>불러오는 중...</p>
+              ) : isFinError ? (
+                <p style={{ textAlign: "center", color: "red" }}>
+                  데이터를 불러오지 못했습니다.
+                </p>
+              ) : finProducts.length === 0 ? (
+                <p style={{ textAlign: "center" }}>예적금 상품이 없습니다.</p>
+              ) : (
+                <ul className="savings-list">
+                  {finProducts.map((product) => (
+                    <li key={product.finproduct_id}>
+                      <div className="item-icon bank-icon">
+                        <img
+                          src={product.image_url}
+                          alt={product.bank_name}
+                          style={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: "50%",
+                            objectFit: "contain",
+                          }}
+                        />
+                      </div>
+                      <div className="item-details">
+                        <span className="item-title">{product.product_name}</span>
+                        <span className="item-source">{product.bank_name}</span>
+                      </div>
+                      <div className="item-interest">
+                        <span className="rate-label">최고</span>
+                        <span className="rate-value">
+                          {product.max_interest_rate.toFixed(2)}%
+                        </span>
+                        <span className="rate-base">
+                          기본 {product.min_interest_rate.toFixed(2)}%
+                        </span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 

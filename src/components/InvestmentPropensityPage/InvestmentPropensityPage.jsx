@@ -21,7 +21,7 @@ const InvestmentPropensityPage = () => {
     {
       id: 'budget',
       question: '1. 투자 예산',
-      options: ['천원', '만원', '십만원', '백만원', '천만원'],
+      options: ['50만원 이하', '100만원 이하', '200만원 아하', '500만원 이하', '1000만원 이하'],
       type: 'radio',
     },
     {

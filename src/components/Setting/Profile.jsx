@@ -128,11 +128,15 @@ const Profile = () => {
   };
 
   // ✅ 날짜 선택 시 YYYY-MM-DD 형식으로 저장
-  const handleDateSelect = (date) => {
-    const formatted = date.toISOString().split("T")[0];
-    setBirthDate(formatted);
-    setShowCalendar(false);
-  };
+const handleDateSelect = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const formatted = `${year}-${month}-${day}`;
+  setBirthDate(formatted);
+  setShowCalendar(false);
+};
+
 
   if (loading) {
     return <p>로딩 중...</p>;

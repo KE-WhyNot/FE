@@ -139,7 +139,6 @@ npm run build
 ## 📈 향후 계획
 
 - [ ] 실시간 주가 WebSocket 반영  
-- [ ] 사용자별 관심 종목 저장 (DB 연동)  
 - [ ] 알림 푸시(Push Notification) 기능  
 - [ ] 모바일 UI 최적화  
 - [ ] 다크모드 및 사용자 설정 페이지  

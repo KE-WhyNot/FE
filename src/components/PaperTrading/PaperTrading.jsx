@@ -106,13 +106,11 @@ const PaperTrading = () => {
             <div className="market-buttons">
               <button onClick={() => setActiveMarket("KOSPI")} className={activeMarket === "KOSPI" ? "active" : ""}>KOSPI</button>
               <button onClick={() => setActiveMarket("KOSDAQ")} className={activeMarket === "KOSDAQ" ? "active" : ""}>KOSDAQ</button>
-              <button>NASDAQ</button>
-              <button>S&P500</button>
             </div>
             <div className="chart-tabs">
-              <button className="active">1D</button>
-              <button>5D</button>
-              <button>1M</button>
+              <button className="active">일</button>
+              <button>주</button>
+              <button>월</button>
             </div>
           </div>
           <div className="line-chart-container">

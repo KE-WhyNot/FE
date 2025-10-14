@@ -27,19 +27,27 @@ const getIconForType = (type) => {
 const Notification = () => {
   const [page, setPage] = useState(0);
 
-  const { user } = useAuthStore();
-  const userId = user?.id || 1; // ✅ fallback
+  const { user, isAuthenticated } = useAuthStore();
+  const userId = user?.id ?? user?.userId ?? null; // ✅ id/userId 모두 대응
 
-  const { notifications, totalPages, loading, fetchNotifications, markAsRead } =
-    useNotificationStore();
+  const {
+    notifications,
+    totalPages,
+    loading,
+    fetchNotifications,
+    markAsRead,
+  } = useNotificationStore();
 
-  // ✅ 페이지 변경 시 자동 새로고침
+  // ✅ 유저 정보가 준비된 뒤에만 요청 보내기
   useEffect(() => {
-    fetchNotifications(userId, page, 10);
-  }, [userId, page, fetchNotifications]);
+    if (!isAuthenticated || !userId) return;
+    console.log("📩 알림 페이지 요청:", { userId, page });
+    fetchNotifications(userId, page, 10); // ✅ size=10으로 요청
+  }, [isAuthenticated, userId, page, fetchNotifications]);
 
   // ✅ 알림 클릭 시 읽음 처리
   const handleMarkAsRead = async (id) => {
+    if (!userId) return;
     await markAsRead(userId, id);
   };
 
@@ -77,7 +85,7 @@ const Notification = () => {
       )}
 
       {/* ✅ 페이지네이션 */}
-      {totalPages > 1 && (
+      {totalPages && totalPages > 1 && (
         <div className="pagination">
           <button onClick={handlePrevPage} disabled={page === 0}>
             <FaChevronLeft /> 이전

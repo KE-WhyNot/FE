@@ -13,6 +13,7 @@ import SignupPage from "./components/SignupPage/SignupPage";
 import PaperTrading from "./components/PaperTrading/PaperTrading";
 import SettingLayout from "./components/Setting/SettingLayout";
 import Profile from "./components/Setting/Profile";
+import Investment from "./components/Setting/Investment";
 import Settings from "./components/Setting/SettingPage";
 import Notification from "./components/Setting/Notification";
 import SavingsPage from "./components/SavingsPage/SavingsPage";
@@ -149,7 +150,7 @@ function App() {
             <Route path="profile" element={<Profile />} />
             <Route path="notification" element={<Notification />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="investment" element={<InvestmentPropensityPage />} />
+            <Route path="investment" element={<Investment />} />
           </Route>
 
           {/* ✅ PaperTrading 관련 페이지 (DashboardLayout으로 감쌈) */}

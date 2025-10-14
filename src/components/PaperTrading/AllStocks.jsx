@@ -239,9 +239,10 @@ const AllStocks = () => {
               </button>
             </div>
             <div className="chart-tabs">
-              <button className="active">1일</button>
-              <button>1주</button>
-              <button>1달</button>
+              <button className="active">일</button>
+              <button>주</button>
+              <button>월</button>
+              <button>년</button>
             </div>
           </div>
 

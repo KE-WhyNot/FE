@@ -6,38 +6,6 @@ import { FaLandmark, FaArrowLeft } from 'react-icons/fa';
 import policyAxiosInstance from '../../api/policyAxiosInstance';
 import { normalizeDetail, toCurrency, percentStringToDecimal } from '../../utils/finance.js';
 
-// 상세 페이지에 필요한 정보를 포함하도록 예시 데이터 확장
-const savingsData = [
-    { 
-        id: 'ad8c6895fdfa41f3b7a384f9abc78ab8', 
-        bank: 'SH수협은행', 
-        product: 'Sh첫만남우대예금', 
-        tags: ['방문없이 가입', '누구나가입'], 
-        maxRate: '2.80%', 
-        baseRate: '1.75%', 
-        period: 12, 
-        details: {
-            period: '1년',
-            amount: '100만원 이상 3,000만원 이하',
-            method: '비대면(인터넷뱅킹, 스마트폰뱅킹)',
-            target: '실명의 개인(1인 1계좌)',
-            benefitCondition: '첫거래',
-            interestPayment: '만기일시지급: 해지 요청 시 이자를 지급',
-            notice: '만기 전 해지할 경우 약정 금리보다 낮은 중도해지금리가 적용됩니다.',
-            protection: '이 예금은 예금자보호법에 따라 원금과 소정의 이자를 합하여 1인당 "5천만원까지"(SH수협은행의 여타 보호 상품과 합산) 보호됩니다.',
-        },
-        rateInfo: {
-            byPeriod: [{ period: '12개월', rate: '1.750%' }],
-            byCondition: [
-                { condition: '수협은행 예·적금(입출금이 자유로운 예금 제외) 첫거래 고객(신규 시점)', benefit: '최대 연 1.05%p의 우대금리를 만기해지 시 제공' },
-                { condition: '개인(신용)정보 수집·이용 동의서(상품서비스 안내 등)에 상품서비스 안내수단 전체 동의한 경우(신규 시 확정)', benefit: '0.05%' },
-                { condition: '이 예금 신규일부터 만기 전일까지 당행 ‘스마트폰뱅킹의 상품 알리기’를 통해 이 상품 추천 시(만기해지 시 확정)', benefit: '0.8%' },
-            ],
-        }
-    },
-    // ... (다른 상품 데이터도 이와 유사한 구조로 추가 가능)
-];
-
 const SavingsDetailPage = () => {
     const { productId } = useParams();
     const navigate = useNavigate();

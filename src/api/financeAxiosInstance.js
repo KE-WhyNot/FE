@@ -2,18 +2,29 @@
 import axios from "axios";
 
 const financeAxios = axios.create({
-  baseURL: "https://finance.youth-fi.com", // ✅ 금융 API 기본 주소
+  baseURL: "https://finance.youth-fi.com",
   headers: {
     "Content-Type": "application/json",
     accept: "application/json",
   },
-  withCredentials: false, // ✅ 쿠키 불필요 (필요시 true로 변경)
+  withCredentials: true, // ✅ 중요: CORS 인증 포함
 });
 
-// ✅ 요청/응답 인터셉터 (옵션)
 financeAxios.interceptors.request.use(
   (config) => {
     console.log("📡 [Finance API 요청]", config.url);
+
+    // ✅ 필요한 인증 헤더 추가 (있을 경우만)
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const userId = localStorage.getItem("userId");
+    if (userId) {
+      config.headers["X-User-Id"] = userId;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -22,7 +33,7 @@ financeAxios.interceptors.request.use(
 financeAxios.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("❌ [Finance API 오류]", error);
+    console.error("❌ [Finance API 오류]", error.response || error);
     return Promise.reject(error);
   }
 );

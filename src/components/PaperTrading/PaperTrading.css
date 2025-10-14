@@ -269,3 +269,13 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.line-chart-container {
+  position: relative;
+  overflow: visible !important; /* 툴팁 짤림 방지 */
+  cursor: crosshair;
+}
+
+.nivo-tooltip {
+  display: none !important; /* Nivo 기본 툴팁 비활성화 */
+}

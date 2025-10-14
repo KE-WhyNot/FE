@@ -15,7 +15,7 @@ const SavingsDetailPage = () => {
 
     const [activeTab, setActiveTab] = useState('info');
     const [depositAmount, setDepositAmount] = useState(10000000);
-    const [selectedRateType, setSelectedRateType] = useState('max'); 
+    const [selectedRateType, setSelectedRateType] = useState('max');
     const [calculated, setCalculated] = useState({ principal: 0, preTaxInterest: 0, tax: 0, postTaxAmount: 0 });
 
     // ✅ 여기서 axiosInstance로 직접 API 요청
@@ -62,6 +62,11 @@ const SavingsDetailPage = () => {
     if (error) return <div>오류: {error}</div>;
     if (!product) return <div>상품 정보를 찾을 수 없습니다.</div>;
 
+    const ratesToDisplay = [
+      { label: '최고', value: product.rates.max },
+      { label: '기본', value: product.rates.base, term: product.termMonths },
+    ];
+
     return (
         <div className="savings-detail-layout">
             <Header />
@@ -88,15 +93,13 @@ const SavingsDetailPage = () => {
                         {product.tags.map((tag, i) => <span key={i} className="tag">{tag}</span>)}
                     </div>
                     <div className="rates-new">
-                        <div className="rate-item">
-                            <span>최고</span>
-                            <strong>연 {(product.rates.max * 100).toFixed(2)}%</strong>
-                        </div>
-                        <div className="rate-item">
-                            <span>기본</span>
-                            <strong>연 {(product.rates.base * 100).toFixed(2)}%</strong>
-                            <small>({product.termMonths}개월, 세전)</small>                        
-                        </div>
+                        {ratesToDisplay.map(rateInfo => (
+                            <div className="rate-item" key={rateInfo.label}>
+                                <span>{rateInfo.label}</span>
+                                <strong>연 {(rateInfo.value * 100).toFixed(2)}%</strong>
+                                {rateInfo.term && <small>({rateInfo.term}개월, 세전)</small>}
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -166,27 +169,15 @@ const SavingsDetailPage = () => {
                         <div className="rate-details">
                             <h4>기간별 금리</h4>
                             <table className="rate-table">
-                                <thead><tr><th>기간</th><th>금리</th></tr></thead>
+                                <thead><tr><th>기간</th><th>기본 금리</th><th>최고 금리</th></tr></thead>
                                 <tbody>
-                                    {product.rateInfo.byPeriod.map((item, i) => {
-                                        if (product.rateInfo.byPeriod.length === 1) {
-                                            const displayRate = selectedRateType === 'max'
-                                                ? (product.rates.max * 100).toFixed(2)
-                                                : (product.rates.base * 100).toFixed(2);
-                                            return (
-                                                <tr key={i}>
-                                                    <td>{item.period}</td>
-                                                    <td>{displayRate}%</td>
-                                                </tr>
-                                            );
-                                        }
-                                        return (
-                                            <tr key={i}>
-                                                <td>{item.period}</td>
-                                                <td>{parseFloat(item.rate).toFixed(2)}%</td>
-                                            </tr>
-                                        );
-                                    })}
+                                    {product.rateInfo.byPeriod.map((item, i) => (
+                                        <tr key={i}>
+                                            <td>{item.period}</td>
+                                            <td>{parseFloat(item.base_rate).toFixed(2)}%</td>
+                                            <td>{parseFloat(item.max_rate).toFixed(2)}%</td>
+                                        </tr>
+                                    ))}
                                 </tbody>
                             </table>
                             <h4>조건별</h4>

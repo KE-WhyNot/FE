@@ -69,7 +69,7 @@ const SavingsPage = () => {
                 const response = await api.get('/api/finproduct/filter/bank', {
                     params: { type: modalBankType }
                 });
-                setBankOptions(response.data.result || []);
+                setBankOptions(response.data || []);
             } catch (error) {
                 console.error("Failed to fetch bank options:", error);
                 setBankOptions([]);
@@ -153,7 +153,7 @@ const SavingsPage = () => {
     };
     const handleProductTypeApply = () => { setIsProductTypeFilterOpen(false); };
     
-    const productTypeOptions = ['특판', '방문없이 가입', '누구나가입'];
+    const productTypeOptions = ['방문없이 가입', '누구나가입'];
 
     const handleBenefitChange = (benefit) => { setSelectedBenefits(prev => prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]); setCurrentPage(1); };
     const handleBenefitReset = () => { setSelectedBenefits([]); };
@@ -173,17 +173,17 @@ const SavingsPage = () => {
         setIsBankModalOpen(false);
     };
 
-    const handleTempBankSelect = (bankName) => {
+    const handleTempBankSelect = (bankNickname) => {
         setTempSelectedBanks(prev => 
-            prev.includes(bankName) 
-            ? prev.filter(b => b !== bankName) 
-            : [...prev, bankName]
+            prev.includes(bankNickname) 
+            ? prev.filter(b => b !== bankNickname) 
+            : [...prev, bankNickname]
         );
     };
 
     const handleSelectAllBanks = (e) => {
         if (e.target.checked) {
-            setTempSelectedBanks(bankOptions.map(b => b.bank_name));
+            setTempSelectedBanks(bankOptions.map(b => b.nickname));
         } else {
             setTempSelectedBanks([]);
         }
@@ -353,14 +353,14 @@ const SavingsPage = () => {
             <div className="bank-grid">
               {bankOptions.map(bank => (
                 <div 
-                  key={bank.bank_id} 
-                  className={`bank-item ${tempSelectedBanks.includes(bank.bank_name) ? 'active' : ''}`}
-                  onClick={() => handleTempBankSelect(bank.bank_name)}
+                  key={bank.id} 
+                  className={`bank-item ${tempSelectedBanks.includes(bank.nickname) ? 'active' : ''}`}
+                  onClick={() => handleTempBankSelect(bank.nickname)}
                 >
                   <div className="bank-item-logo">
-                    <img src={bank.image_url} alt={bank.bank_name} />
+                    <img src={bank.image_url} alt={bank.kor_co_nm} />
                   </div>
-                  <span className="bank-item-name">{bank.bank_name}</span>
+                  <span className="bank-item-name">{bank.nickname}</span>
                   <div className="bank-item-plus">+</div>
                 </div>
               ))}

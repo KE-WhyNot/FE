@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './InvestmentPropensityPage.css';
+import './LoadingSpinner.css'; // 로딩 스피너 CSS 파일 import
 import Header from '../common/Header';
 
 const InvestmentPropensityPage = () => {
@@ -13,6 +14,7 @@ const InvestmentPropensityPage = () => {
     profit: '',
   });
   const [result, setResult] = useState('');
+  const [isNavigating, setIsNavigating] = useState(false); // 페이지 이동 로딩 상태 추가
   const navigate = useNavigate();
   const location = useLocation();
   const showHeader = !location.pathname.startsWith('/setting');
@@ -28,10 +30,7 @@ const InvestmentPropensityPage = () => {
       id: 'sectors',
       question: '2. 관심 종목 (최소 3개 선택)',
       options: [
-        '전기전자', '자동차', '철강금속', '화학', '서비스업', '통신업', 
-        '금융업', '증권', '보험', '건설업', '기계', '전기가스업', 
-        '의약품', '섬유의복', '음식료품', '유통업', '운수창고', 
-        '운수장비(조선)', '종이목재', '비금속광물', '은행', '기타제조'
+        '전기·전자', '제약', 'IT 서비스', '화학', '금속', '기타금융', '건설', '기계·장비', '운송장비·부품'
       ],
       type: 'checkbox',
     },
@@ -75,27 +74,26 @@ const InvestmentPropensityPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // ✨ 1. 관심 종목 갯수 먼저 확인
     if (answers.sectors.length < 3) {
       alert('관심 종목은 최소 3개 이상 선택해야 합니다.');
       return;
     }
 
-    const isFormValid = 
+    const isFormValid =
       answers.budget &&
       answers.goal &&
       answers.knowledge &&
       answers.loss &&
       answers.profit;
 
-    // ✨ 2. 나머지 항목 확인
     if (!isFormValid) {
       alert('모든 질문에 답변해주세요.');
       return;
     }
-    
+
+    // 점수 계산 및 결과 설정 (로딩 없이 즉시)
     let score = 0;
-    score += ['천원', '만원', '십만원', '백만원', '천만원'].indexOf(answers.budget);
+    score += ['50만원 이하', '100만원 이하', '200만원 아하', '500만원 이하', '1000만원 이하'].indexOf(answers.budget);
     score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(answers.knowledge);
     score += ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'].indexOf(answers.loss);
     score += ['150%', '200%', '250%', '300% 이상'].indexOf(answers.profit);
@@ -106,21 +104,33 @@ const InvestmentPropensityPage = () => {
     else if (score <= 16) setResult('적극투자형');
     else setResult('공격투자형');
   };
-  
-  // (이하 JSX 코드는 이전과 동일)
+
+  // 포트폴리오 페이지로 이동하는 함수
+  const handleNavigateToPortfolio = () => {
+    setIsNavigating(true);
+    setTimeout(() => {
+      navigate('/portfolio-main');
+    }, 1500); // 1.5초 후 페이지 이동
+  };
+
   if (result) {
     return (
       <div className="propensity-page-layout">
+        {isNavigating && (
+            <div className="loading-overlay">
+                <div className="loading-spinner"></div>
+            </div>
+        )}
         {showHeader && <Header />}
         <main className="propensity-content">
           <div className="result-container">
             <h1>분석 결과</h1>
             <p>당신의 투자 성향은 <strong>{result}</strong>입니다.</p>
-            <button 
-              className="submit-button" 
-              onClick={() => navigate('/portfolio-main')}
+            <button
+              className="submit-button"
+              onClick={handleNavigateToPortfolio}
             >
-              내 포트폴리오 확인하기
+              AI에게 내 포트폴리오 분석 요청하기
             </button>
           </div>
         </main>

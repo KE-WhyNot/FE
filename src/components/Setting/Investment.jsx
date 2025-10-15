@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Investment.css';
 import Header from '../common/Header';
-import financeAxios from '../../api/financeAxiosInstance'; // ✅ 추가
+import financeAxios from '../../api/financeAxiosInstance';
+import useAuthStore from '../../store/useAuthStore'; // ✅ 추가 (유저 정보 가져오기)
 
 const Investment = () => {
   const [answers, setAnswers] = useState({
@@ -18,6 +19,10 @@ const Investment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const showHeader = !location.pathname.startsWith('/setting');
+
+  // ✅ 로그인 유저 정보
+  const { user, isAuthenticated } = useAuthStore();
+  const userId = isAuthenticated ? user?.id ?? user?.userId ?? 'unknown_user' : 'guest';
 
   const questions = [
     {
@@ -74,7 +79,7 @@ const Investment = () => {
     setAnswers({ ...answers, sectors: newSectors });
   };
 
-  // ✅ 서버에 매핑될 ENUM 값 변환 로직
+  // ✅ 서버 ENUM 매핑
   const mapToServerEnum = {
     investmentProfile: {
       안정형: 'CONSERVATIVE',
@@ -133,7 +138,7 @@ const Investment = () => {
       return;
     }
 
-    // 투자 성향 계산 (기존 로직 그대로)
+    // 투자 성향 계산
     let score = 0;
     score += ['50만원 이하', '100만원 이하', '200만원 이하', '500만원 이하', '1000만원 이하'].indexOf(answers.budget);
     score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(answers.knowledge);
@@ -149,21 +154,25 @@ const Investment = () => {
 
     setResult(profile);
 
-    // ✅ PATCH 요청 전송
+    // ✅ PATCH 요청 (X-User-Id 포함)
     try {
       const payload = {
         investmentProfile: mapToServerEnum.investmentProfile[profile],
-        availableAssets: 15000000, // ⚙️ 예시값 (필요시 예산에 따라 계산 가능)
+        availableAssets: 15000000,
         investmentGoal: mapToServerEnum.investmentGoal[answers.goal],
         lossTolerance: mapToServerEnum.lossTolerance[answers.loss],
         financialKnowledge: mapToServerEnum.financialKnowledge[answers.knowledge],
         expectedProfit: mapToServerEnum.expectedProfit[answers.profit],
-        interestedSectorNames: answers.sectors, // ✅ 사용자가 선택한 종목명 배열
+        interestedSectorNames: answers.sectors,
       };
 
       console.log("📤 투자 성향 전송 데이터:", payload);
 
-      await financeAxios.patch("/api/user/investment-profile/my", payload);
+      await financeAxios.patch("/api/user/investment-profile/my", payload, {
+        headers: {
+          "X-User-Id": userId, // ✅ 여기서 헤더에 추가
+        },
+      });
 
       console.log("✅ 투자 성향 프로필 업데이트 완료");
     } catch (err) {

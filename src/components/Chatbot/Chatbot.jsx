@@ -5,7 +5,7 @@ import chatbotAvatar from "../../assets/images/chatbot.png";
 import financeAxios from "../../api/financeAxiosInstance"; // ✅ 금융 API axios 인스턴스
 import useAuthStore from "../../store/useAuthStore"; // ✅ 로그인 유저 정보 (있다면)
 
-// ✅ 세션 ID 생성 (간단히 고유값으로)
+// ✅ 세션 ID 생성 (고유값 보존)
 const getSessionId = () => {
   if (!sessionStorage.getItem("chat_session_id")) {
     sessionStorage.setItem("chat_session_id", Date.now().toString());
@@ -25,7 +25,13 @@ const Chatbot = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
 
   const { user, isAuthenticated } = useAuthStore();
-  const userId = isAuthenticated ? user?.id ?? user?.userId ?? "unknown_user" : "guest";
+
+  // ✅ 유저 ID 확보 (로그인 여부 고려)
+  const userId =
+    isAuthenticated && user
+      ? user.id || user.userId || user.username || "unknown_user"
+      : "guest";
+
   const sessionId = getSessionId();
 
   // ✅ 메시지 전송 함수
@@ -40,7 +46,10 @@ const Chatbot = ({ onClose }) => {
     setLoading(true);
 
     try {
-      // ✅ API 요청
+      // ✅ 요청 전 localStorage에 userId 저장 (interceptor가 읽어감)
+      localStorage.setItem("userId", userId);
+
+      // ✅ API 요청 본문
       const payload = {
         message: input,
         user_id: userId,
@@ -49,9 +58,8 @@ const Chatbot = ({ onClose }) => {
 
       console.log("📡 [Chat 요청 전송]", payload);
 
-      const res = await financeAxios.post("/api/ai/chat", payload, {
-        headers: { "X-User-Id": userId },
-      });
+      // ✅ 요청
+      const res = await financeAxios.post("/api/ai/chat", payload);
       const data = res.data?.result;
 
       console.log("🤖 [Chat 응답 수신]", data);
@@ -61,7 +69,7 @@ const Chatbot = ({ onClose }) => {
           ? data.reply_text
           : "죄송합니다, 응답을 처리할 수 없습니다.";
 
-      // ✅ 봇 응답 메시지 추가
+      // ✅ 봇 응답 추가
       setMessages((prev) => [
         ...prev,
         {

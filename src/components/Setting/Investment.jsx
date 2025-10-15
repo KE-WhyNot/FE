@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './Investment.css';
 import Header from '../common/Header';
 import financeAxios from '../../api/financeAxiosInstance';
-import useAuthStore from '../../store/useAuthStore'; // ✅ 추가 (유저 정보 가져오기)
+import useAuthStore from '../../store/useAuthStore'; // ✅ 로그인 유저 정보 가져오기
 
 const Investment = () => {
   const [answers, setAnswers] = useState({
@@ -89,7 +89,7 @@ const Investment = () => {
       공격투자형: 'VERY_AGGRESSIVE',
     },
     investmentGoal: {
-      학비: 'TUITION',
+      학비: 'EDUCATION', // ✅ 서버 기준으로 수정 (EDUCATION)
       생활비: 'LIVING',
       주택마련: 'HOUSE_PURCHASE',
       자산증식: 'ASSET_GROWTH',
@@ -154,11 +154,11 @@ const Investment = () => {
 
     setResult(profile);
 
-    // ✅ PATCH 요청 (X-User-Id 포함)
+    // ✅ POST 요청 (X-User-Id 포함)
     try {
       const payload = {
         investmentProfile: mapToServerEnum.investmentProfile[profile],
-        availableAssets: 15000000,
+        availableAssets: 10000000, // ✅ 예시값
         investmentGoal: mapToServerEnum.investmentGoal[answers.goal],
         lossTolerance: mapToServerEnum.lossTolerance[answers.loss],
         financialKnowledge: mapToServerEnum.financialKnowledge[answers.knowledge],
@@ -168,13 +168,14 @@ const Investment = () => {
 
       console.log("📤 투자 성향 전송 데이터:", payload);
 
-      await financeAxios.patch("/api/user/investment-profile/my", payload, {
+      await financeAxios.post("/api/user/investment-profile/complete", payload, {
         headers: {
-          "X-User-Id": userId, // ✅ 여기서 헤더에 추가
+          "X-User-Id": userId, // ✅ 백엔드 요구사항
+          "Content-Type": "application/json",
         },
       });
 
-      console.log("✅ 투자 성향 프로필 업데이트 완료");
+      console.log("✅ 투자 성향 프로필 저장 완료");
     } catch (err) {
       console.error("❌ 투자 성향 저장 실패:", err);
       alert("투자 성향 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");

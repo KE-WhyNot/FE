@@ -1,26 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import * as echarts from "echarts";
 import "./AllStocks.css";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
+import financeAxios from "../../api/financeAxiosInstance";
 
-// --- Mock Data 생성 ---
-const generateMockData = (count) => {
-  const data = [];
-  let date = new Date(2025, 7, 1);
-  let close = 80000;
-  for (let i = 0; i < count; i++) {
-    date.setDate(date.getDate() + 1);
-    const open = close + (Math.random() - 0.5) * 2000;
-    const high = Math.max(open, close) + Math.random() * 1000;
-    const low = Math.min(open, close) - Math.random() * 1000;
-    close = low + Math.random() * (high - low);
-    const volume = 1000000 + Math.random() * 2000000;
-    data.push({ date: new Date(date), open, high, low, close, volume });
-  }
-  return data;
-};
-
-// 단순 이동평균선 계산
+// --- 단순 이동평균선 계산 ---
 const calculateSMA = (data, windowSize) => {
   const result = [];
   for (let i = 0; i < data.length; i++) {
@@ -38,52 +22,73 @@ const calculateSMA = (data, windowSize) => {
 
 const AllStocks = () => {
   const [orderType, setOrderType] = useState("buy");
-  const [price, setPrice] = useState(89500);
+  const [price, setPrice] = useState(0);
   const [quantity, setQuantity] = useState(0);
   const [isFavorite, setIsFavorite] = useState(false);
-
-  // 실시간 주가 (3초마다 변동)
-  const [livePrice, setLivePrice] = useState(89500);
-  const [liveChange, setLiveChange] = useState(0.0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const randomChange = (Math.random() - 0.5) * 500;
-      setLivePrice((prev) => {
-        const newPrice = Math.max(50000, prev + randomChange);
-        setLiveChange(((newPrice - prev) / prev) * 100);
-        return newPrice;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [livePrice, setLivePrice] = useState(0);
+  const [liveChange, setLiveChange] = useState(0);
+  const [period, setPeriod] = useState("minute"); // ✅ 분 / 일 / 월 / 년
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
 
-  // 데이터 생성 및 가공
-  const data = useMemo(() => generateMockData(150), []);
-  const dates = data.map((d) => d.date.toISOString().slice(0, 10));
+  const stockId = "005930"; // 삼성전자
 
-  // ✅ 반드시 ECharts 규격: [open, close, low, high]
-  const values = data.map((d) => [d.open, d.close, d.low, d.high]);
+  /** ✅ API 호출 */
+  useEffect(() => {
+    const fetchStockData = async () => {
+      try {
+        setLoading(true);
+        const res = await financeAxios.get(`/api/stock/chart/${stockId}/${period}`);
+        const candles = res.data?.result?.candles || [];
 
-  const volumes = data.map((d) => d.volume);
+        const parsed = candles.map((c) => ({
+          date: c.date,
+          time: c.time || "",
+          open: Number(c.open),
+          close: Number(c.close),
+          low: Number(c.low),
+          high: Number(c.high),
+          volume: Number(c.volume),
+        }));
 
+        const sorted = [...parsed].sort((a, b) => new Date(a.date) - new Date(b.date));
+        setData(sorted);
+        setPrice(sorted[sorted.length - 1]?.close || 0);
+        setLivePrice(sorted[sorted.length - 1]?.close || 0);
+      } catch (error) {
+        console.error("❌ 주식 데이터 불러오기 실패:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStockData();
+  }, [stockId, period]);
+
+  /** SMA 계산 */
   const sma5 = useMemo(() => calculateSMA(data, 5), [data]);
   const sma20 = useMemo(() => calculateSMA(data, 20), [data]);
   const sma60 = useMemo(() => calculateSMA(data, 60), [data]);
 
-  const latestData = data[data.length - 1];
-  const prevData = data[data.length - 2];
-  const change = latestData.close - prevData.close;
-  const changePct = ((change / prevData.close) * 100).toFixed(2);
-  const colorClass = change > 0 ? "positive" : change < 0 ? "negative" : "neutral";
-  const dayOfWeek = ["일", "월", "화", "수", "목", "금", "토"][latestData.date.getDay()];
+  const dates = data.map((d) => (period === "minute" ? `${d.date} ${d.time}` : d.date));
+  const values = data.map((d) => [d.open, d.close, d.low, d.high]);
+  const volumes = data.map((d) => d.volume);
 
-  /** 차트 초기화 및 업데이트 */
+  const latestData = data[data.length - 1];
+  const prevData = data[data.length - 2] || latestData;
+  const change = latestData ? latestData.close - prevData.close : 0;
+  const changePct = prevData?.close ? ((change / prevData.close) * 100).toFixed(2) : "0.00";
+  const colorClass = change > 0 ? "positive" : change < 0 ? "negative" : "neutral";
+  const dayOfWeek = latestData
+    ? ["일", "월", "화", "수", "목", "금", "토"][
+        new Date(latestData.date).getDay()
+      ]
+    : "";
+
+  /** ✅ 차트 렌더링 */
   useEffect(() => {
-    if (!chartRef.current) return;
+    if (!chartRef.current || data.length === 0) return;
 
     if (chartInstance.current) chartInstance.current.dispose();
     chartInstance.current = echarts.init(chartRef.current);
@@ -97,21 +102,23 @@ const AllStocks = () => {
         borderColor: "#ddd",
         borderWidth: 1,
         textStyle: { color: "#333", fontSize: 12 },
-        // ✅ candle.value(배열)를 사용하고, [open, close, low, high] 순서로 읽는다
         formatter: function (params) {
+          // params에서 '캔들차트'를 우선 찾습니다.
           const candle = params.find((p) => p.seriesName === "캔들차트");
           const sma5P = params.find((p) => p.seriesName === "SMA5");
           const sma20P = params.find((p) => p.seriesName === "SMA20");
-          const sma60P = params.find((p) => p.seriesName === "SMA60");
 
           if (!candle || !Array.isArray(candle.value)) return "";
 
-          const [open, close, low, high] = candle.value; // ← 순서 유지
+          const index = candle.dataIndex; 
+          const volumeValue = volumes[index];
+          
+          const [, open, close, low, high] = candle.value.map(Number);
           const date = candle.axisValue;
 
           const fmt = (n) =>
             (typeof n === "number" ? n : Number(n)).toLocaleString(undefined, {
-              maximumFractionDigits: 2,
+              maximumFractionDigits: 0,
             });
 
           return `
@@ -121,9 +128,10 @@ const AllStocks = () => {
               <div>📉 종가: ${fmt(close)}</div>
               <div>🔺 고가: ${fmt(high)}</div>
               <div>🔻 저가: ${fmt(low)}</div>
-              ${sma5P?.data && sma5P.data !== "-" ? `<div style="color:#6BA583;">단기 이동평균선(5): ${fmt(sma5P.data)}</div>` : ""}
-              ${sma20P?.data && sma20P.data !== "-" ? `<div style="color:#FFC658;">중기 이동평균선(20): ${fmt(sma20P.data)}</div>` : ""}
-              ${sma60P?.data && sma60P.data !== "-" ? `<div style="color:#E4B3B3;">장기 이동평균선(60): ${fmt(sma60P.data)}</div>` : ""}
+              ${volumeValue !== undefined ? `<div>📊 거래량: ${fmt(volumeValue)}</div>` : ""}
+
+              ${sma5P?.data && sma5P.data !== "-" ? `<div style="color:#6BA583; margin-top:6px;">SMA5: ${fmt(sma5P.data)}</div>` : ""}
+              ${sma20P?.data && sma20P.data !== "-" ? `<div style="color:#FFC658;">SMA20: ${fmt(sma20P.data)}</div>` : ""}
             </div>
           `;
         },
@@ -138,6 +146,11 @@ const AllStocks = () => {
           data: dates,
           boundaryGap: false,
           axisLine: { lineStyle: { color: "#ccc" } },
+          axisLabel: {
+            formatter: function (val) {
+              return period === "minute" ? val.slice(5) : val;
+            },
+          },
         },
         { type: "category", gridIndex: 1, data: dates, show: false },
       ],
@@ -174,14 +187,6 @@ const AllStocks = () => {
           lineStyle: { width: 1, color: "#FFC658" },
         },
         {
-          name: "SMA60",
-          type: "line",
-          data: sma60,
-          smooth: true,
-          showSymbol: false,
-          lineStyle: { width: 1, color: "#E4B3B3" },
-        },
-        {
           name: "거래량",
           type: "bar",
           xAxisIndex: 1,
@@ -205,9 +210,9 @@ const AllStocks = () => {
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
-      chartInstance.current.dispose();
+      chartInstance.current?.dispose();
     };
-  }, [data, sma5, sma20, sma60, dates, values, volumes]);
+  }, [data, sma5, sma20, period]);
 
   /** 관심 토글 */
   const handleToggleFavorite = useCallback(() => {
@@ -215,9 +220,8 @@ const AllStocks = () => {
     alert(isFavorite ? "관심 종목에서 해제되었습니다." : "관심 종목으로 추가되었습니다!");
   }, [isFavorite]);
 
-  // 임시 호가 데이터
-  const sellOrders = [89700, 89600, 89500, 89400, 89300];
-  const buyOrders = [89200, 89100, 89000, 88900, 88800];
+  const sellOrders = [92700, 92600, 92500, 92400, 92300];
+  const buyOrders = [92200, 92100, 92000, 91900, 91800];
 
   return (
     <div className="all-stocks-container">
@@ -229,96 +233,129 @@ const AllStocks = () => {
         />
       </div>
 
-      <div className="stock-detail-grid">
-        <div className="chart-section widget">
-          <div className="widget-header">
-            <div className="stock-title-container">
-              <h3>삼성전자</h3>
-              <button onClick={handleToggleFavorite} className="favorite-toggle-btn">
-                {isFavorite ? <AiFillHeart className="is-favorite" /> : <AiOutlineHeart />}
+      {loading ? (
+        <p className="loading-text">데이터 불러오는 중...</p>
+      ) : (
+        <div className="stock-detail-grid">
+          <div className="chart-section widget">
+            <div className="widget-header">
+              <div className="stock-title-container">
+                <h3>삼성전자 (005930)</h3>
+                <button onClick={handleToggleFavorite} className="favorite-toggle-btn">
+                  {isFavorite ? <AiFillHeart className="is-favorite" /> : <AiOutlineHeart />}
+                </button>
+              </div>
+              <div className="chart-tabs">
+                {["minute", "daily", "monthly", "yearly"].map((p) => (
+                  <button
+                    key={p}
+                    className={period === p ? "active" : ""}
+                    onClick={() => setPeriod(p)}
+                  >
+                    {p === "minute"
+                      ? "분"
+                      : p === "daily"
+                      ? "일"
+                      : p === "monthly"
+                      ? "월"
+                      : "년"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="chart-info-header detailed">
+              <span>
+                {latestData?.date}({dayOfWeek})
+              </span>
+              <span className={colorClass}>
+                종가 {latestData?.close?.toLocaleString()} ({changePct}%)
+              </span>
+              <span className={liveChange >= 0 ? "positive" : "negative"}>
+                현재가 {livePrice.toLocaleString()}원 ({liveChange.toFixed(2)}%)
+              </span>
+            </div>
+
+            <div ref={chartRef} style={{ width: "100%", height: 450 }}></div>
+          </div>
+
+          <aside className="order-panel">
+            <div className="widget">
+              <h3 className="order-title">주식 주문</h3>
+              <div className="stock-id">
+                <div className="stock-logo-small"></div>
+                <span>삼성전자</span>
+              </div>
+
+              <div className="order-tabs">
+                <button
+                  onClick={() => setOrderType("buy")}
+                  className={orderType === "buy" ? "active" : ""}
+                >
+                  매수
+                </button>
+                <button
+                  onClick={() => setOrderType("sell")}
+                  className={orderType === "sell" ? "active" : ""}
+                >
+                  매도
+                </button>
+              </div>
+
+              <div className="order-book">
+                {sellOrders.map((p, i) => (
+                  <div key={i} className="order-row sell">
+                    <span>매도 {5 - i}</span>
+                    <span>{p.toLocaleString()}원</span>
+                  </div>
+                ))}
+                <div className="divider"></div>
+                {buyOrders.map((p, i) => (
+                  <div key={i} className="order-row buy">
+                    <span>매수 {i + 1}</span>
+                    <span>{p.toLocaleString()}원</span>
+                  </div>
+                ))}
+              </div>
+
+              <div className="order-form">
+                <div className="form-group">
+                  <label>가격</label>
+                  <input
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(Number(e.target.value))}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>수량</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={quantity}
+                    onChange={(e) =>
+                      setQuantity(Math.max(0, Number(e.target.value)))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="order-summary">
+                <div>
+                  <span>총액</span>
+                  <span className="total-amount">
+                    {(price * quantity).toLocaleString()} 원
+                  </span>
+                </div>
+              </div>
+
+              <button className={`order-button ${orderType}`}>
+                {orderType === "buy" ? "매수" : "매도"}
               </button>
             </div>
-            <div className="chart-tabs">
-              <button className="active">일</button>
-              <button>주</button>
-              <button>월</button>
-              <button>년</button>
-            </div>
-          </div>
-
-          <div className="chart-info-header detailed">
-            <span>{latestData.date.toISOString().slice(0, 10)}({dayOfWeek})</span>
-            <span className={colorClass}>
-              종가 {latestData.close.toLocaleString()} ({changePct}%)
-            </span>
-            <span className={liveChange >= 0 ? "positive" : "negative"}>
-              현재가 {livePrice.toLocaleString()}원 ({liveChange.toFixed(2)}%)
-            </span>
-          </div>
-
-          <div ref={chartRef} style={{ width: "100%", height: 450 }}></div>
+          </aside>
         </div>
-
-        <aside className="order-panel">
-          <div className="widget">
-            <h3 className="order-title">주식 주문</h3>
-            <div className="stock-id">
-              <div className="stock-logo-small"></div>
-              <span>삼성전자</span>
-            </div>
-
-            <div className="order-tabs">
-              <button onClick={() => setOrderType("buy")} className={orderType === "buy" ? "active" : ""}>
-                매수
-              </button>
-              <button onClick={() => setOrderType("sell")} className={orderType === "sell" ? "active" : ""}>
-                매도
-              </button>
-            </div>
-
-            <div className="order-book">
-              {sellOrders.map((p, i) => (
-                <div key={i} className="order-row sell">
-                  <span>매도 {5 - i}</span>
-                  <span>{p.toLocaleString()}원</span>
-                </div>
-              ))}
-              <div className="divider"></div>
-              {buyOrders.map((p, i) => (
-                <div key={i} className="order-row buy">
-                  <span>매수 {i + 1}</span>
-                  <span>{p.toLocaleString()}원</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="order-form">
-              <div className="form-group">
-                <label>가격</label>
-                <input type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} />
-              </div>
-              <div className="form-group">
-                <label>수량</label>
-                <input
-                  type="number"
-                  min="0"
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(0, Number(e.target.value)))}
-                />
-              </div>
-            </div>
-
-            <div className="order-summary">
-              <div>
-                <span>총액</span>
-                <span className="total-amount">{(price * quantity).toLocaleString()} 원</span>
-              </div>
-            </div>
-
-            <button className={`order-button ${orderType}`}>{orderType === "buy" ? "매수" : "매도"}</button>
-          </div>
-        </aside>
-      </div>
+      )}
     </div>
   );
 };

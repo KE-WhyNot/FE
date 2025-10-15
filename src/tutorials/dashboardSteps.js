@@ -1,6 +1,6 @@
 export const dashboardSteps = [
   {
-    target: '.chart-widget', // CSS 선택자로 설명할 대상 지정
+    target: '.chart-widget',
     content: '이곳에서는 KOSPI, KOSDAQ 등 주요 시장의 실시간 차트를 확인할 수 있습니다.',
   },
   {
@@ -8,8 +8,12 @@ export const dashboardSteps = [
     content: '관심 있는 종목을 추가하고 현재가를 실시간으로 추적해 보세요.',
   },
   {
+    target: '.ranking-widget',
+    content: '이곳에서는 사용자들의 수익률 랭킹을 볼 수 있습니다. 상위 10명 중 4명이 표시되며, 스크롤로 나머지를 볼 수 있습니다.',
+  },
+  {
     target: '.holdings-widget',
-    content: '현재 보유 중인 국내 및 해외 주식의 총 자산과 현황을 요약해서 보여줍니다.',
+    content: '현재 보유 중인 국내 주식의 총 자산과 현황을 요약해서 보여줍니다.',
   },
   {
     target: '.transaction-widget',

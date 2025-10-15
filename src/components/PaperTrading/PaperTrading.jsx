@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./PaperTrading.css";
 import { ResponsiveLine } from "@nivo/line";
 import { useNavigate } from "react-router-dom";
-import { IoIosArrowForward } from "react-icons/io";
 import Modal from "../../components/common/Modal";
 import financeAxios from "../../api/financeAxiosInstance";
 import useAuthStore from "../../store/useAuthStore";
@@ -68,6 +67,7 @@ const PaperTrading = () => {
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(false);
   const [ranking, setRanking] = useState([]);
+  const [myRank, setMyRank] = useState({});
   const [tooltipInfo, setTooltipInfo] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
@@ -83,6 +83,12 @@ const PaperTrading = () => {
 
   // ✅ 거래 내역
   const [transactions, setTransactions] = useState([]);
+
+  // ✅ 보유 종목
+  const [holdings, setHoldings] = useState([]);
+  const [totalValue, setTotalValue] = useState(0);
+  const [totalProfit, setTotalProfit] = useState(0);
+  const [totalRate, setTotalRate] = useState(0);
 
   // ✅ 금융 데이터 불러오기
   useEffect(() => {
@@ -126,68 +132,72 @@ const PaperTrading = () => {
     fetchMarketData();
   }, [activeMarket, activePeriod]);
 
-// ✅ 관심 종목 불러오기
-const fetchWatchlist = async () => {
-  try {
-    const userId = user?.id ?? user?.userId ?? "guest";
+  // ✅ 관심 종목 불러오기
+  const fetchWatchlist = async () => {
+    try {
+      const userId = user?.id ?? user?.userId ?? "guest";
 
-    // 1️⃣ 기본 관심 종목 리스트 가져오기
-    const res = await financeAxios.get("/api/user/interest-stocks", {
-      headers: { "X-User-Id": userId },
-    });
+      const res = await financeAxios.get("/api/user/interest-stocks", {
+        headers: { "X-User-Id": userId },
+      });
 
-    const baseList = res.data?.result || [];
+      const baseList = res.data?.result || [];
 
-    // 2️⃣ 각 종목의 이미지 정보 요청
-    const enrichedList = await Promise.all(
-      baseList.map(async (item) => {
-        try {
-          const detailRes = await financeAxios.get(
-            `/api/stock/list/${item.stockId}`,
-            { headers: { "X-User-Id": userId } }
-          );
-          const detail = detailRes.data?.result;
-          return {
-            ...item,
-            stockImage: detail?.stockImage || null,
-          };
-        } catch (err) {
-          console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
-          return { ...item, stockImage: null };
-        }
-      })
-    );
+      const enrichedList = await Promise.all(
+        baseList.map(async (item) => {
+          try {
+            const detailRes = await financeAxios.get(
+              `/api/stock/list/${item.stockId}`,
+              { headers: { "X-User-Id": userId } }
+            );
+            const detail = detailRes.data?.result;
+            return {
+              ...item,
+              stockImage: detail?.stockImage || null,
+            };
+          } catch (err) {
+            console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
+            return { ...item, stockImage: null };
+          }
+        })
+      );
 
-    // 3️⃣ 최신순 정렬
-    const sorted = enrichedList.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
+      const sorted = enrichedList.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
 
-    setWatchlist(sorted);
-    setWatchlistHasNext(sorted.length >= 10);
-  } catch (e) {
-    console.error("❌ 관심 종목 불러오기 실패:", e);
-  }
-};
-
-
+      setWatchlist(sorted);
+      setWatchlistHasNext(sorted.length >= 10);
+    } catch (e) {
+      console.error("❌ 관심 종목 불러오기 실패:", e);
+    }
+  };
 
   useEffect(() => {
     fetchWatchlist();
   }, []);
 
-  // ✅ 수익률 랭킹 불러오기
+  // ✅ 상위 10명 & 내 랭킹 불러오기
+  const fetchTop10Ranking = async () => {
+    try {
+      const userId = user?.id ?? user?.userId ?? "guest";
+      const [topRes, myRes] = await Promise.all([
+        financeAxios.get("https://notify.youth-fi.com/api/ranking/top10", {
+          headers: { "X-User-Id": userId },
+        }),
+        financeAxios.get("https://notify.youth-fi.com/api/ranking/myrank", {
+          headers: { "X-User-Id": userId },
+        }),
+      ]);
+      setRanking(topRes.data || []);
+      setMyRank(myRes.data || {});
+    } catch (e) {
+      console.error("❌ 랭킹 불러오기 실패:", e);
+    }
+  };
+
   useEffect(() => {
-    const fetchRanking = async () => {
-      try {
-        const res = await financeAxios.get("/api/user/profit-ranking");
-        const ranks = res.data?.result || [];
-        setRanking(ranks);
-      } catch (e) {
-        console.error("❌ 수익률 랭킹 로드 실패:", e);
-      }
-    };
-    fetchRanking();
+    fetchTop10Ranking();
   }, []);
 
   // ✅ 거래 내역 불러오기
@@ -206,6 +216,64 @@ const fetchWatchlist = async () => {
     fetchTransactions();
   }, []);
 
+// ✅ 보유 종목 불러오기 (이미지 + 현재가 + 수익률 계산 포함)
+const fetchHoldings = async () => {
+  try {
+    // 1️⃣ 기본 보유 종목 목록
+    const res = await financeAxios.get("https://finance.youth-fi.com/api/user/holdings");
+    const list = res.data?.result || [];
+
+    // 2️⃣ 각 종목에 대해 이미지 + 현재가 + 수익률 계산
+    const enriched = await Promise.all(
+      list.map(async (h) => {
+        try {
+          // 🏦 현재가 불러오기
+          const priceRes = await financeAxios.post("/api/stock/current-price", {
+            marketCode: "J",
+            stockCode: h.stockId,
+          });
+          const current = Number(priceRes.data?.result?.stckPrpr || 0);
+          const change = current - h.avgPrice;
+          const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
+
+          // 🖼️ 종목 이미지 불러오기
+          const infoRes = await financeAxios.get(`/api/stock/list/${h.stockId}`);
+          const info = infoRes.data?.result;
+
+          return {
+            ...h,
+            currentPrice: current,
+            change,
+            rate,
+            stockImage: info?.stockImage || null,
+            sectorName: info?.sectorName || "",
+          };
+        } catch (err) {
+          console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
+          return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
+        }
+      })
+    );
+
+    // 3️⃣ 총자산 / 총수익률 계산
+    const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
+    const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
+    const profit = value - cost;
+    const rate = cost ? (profit / cost) * 100 : 0;
+
+    setHoldings(enriched);
+    setTotalValue(value);
+    setTotalProfit(profit);
+    setTotalRate(rate);
+  } catch (e) {
+    console.error("❌ 보유 종목 불러오기 실패:", e);
+  }
+};
+
+useEffect(() => {
+  fetchHoldings();
+}, []);
+
   // ✅ X축 포맷
   const formatXAxisDate = (dateStr) => {
     if (!dateStr) return "";
@@ -223,9 +291,6 @@ const fetchWatchlist = async () => {
       {/* 헤더 */}
       <div className="dashboard-header">
         <h2>내 주식</h2>
-        <div className="header-actions">
-          <input type="text" placeholder="주식 검색" className="stock-search" />
-        </div>
       </div>
 
       {/* ✅ 3열 2행 그리드 */}
@@ -319,34 +384,32 @@ const fetchWatchlist = async () => {
           </div>
 
           {/* --- 관심 종목 --- */}
-<div className="widget watchlist-widget">
-  <div className="widget-header">
-    <h3>관심 종목</h3>
-    <button className="add-button" onClick={() => setWatchlistModalOpen(true)}>+</button>
-  </div>
+          <div className="widget watchlist-widget">
+            <div className="widget-header">
+              <h3>관심 종목</h3>
+              <button className="add-button" onClick={() => setWatchlistModalOpen(true)}>+</button>
+            </div>
 
-  <div className="watchlist-list">
-    {watchlist.length > 0 ? (
-      watchlist.slice(0, 5).map((stock) => (
-        <div key={stock.interestStockId} className="stock-item">
-          {stock.stockImage ? (
-            <img src={stock.stockImage} alt={stock.stockName} className="stock-logo-img" />
-          ) : (
-            <div className="stock-logo-fallback">{stock.stockName[0]}</div>
-          )}
-          <div className="stock-info">
-            <span className="stock-name">{stock.stockName}</span>
-            <small className="sector-name">{stock.sectorName}</small>
+            <div className="watchlist-list">
+              {watchlist.length > 0 ? (
+                watchlist.slice(0, 5).map((stock) => (
+                  <div key={stock.interestStockId} className="stock-item">
+                    {stock.stockImage ? (
+                      <img src={stock.stockImage} alt={stock.stockName} className="stock-logo-img" />
+                    ) : (
+                      <div className="stock-logo-fallback">{stock.stockName[0]}</div>
+                    )}
+                    <div className="stock-info">
+                      <span className="stock-name">{stock.stockName}</span>
+                      <small className="sector-name">{stock.sectorName}</small>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="loading-text">관심 종목이 없습니다.</p>
+              )}
+            </div>
           </div>
-        </div>
-      ))
-    ) : (
-      <p className="loading-text">관심 종목이 없습니다.</p>
-    )}
-  </div>
-</div>
-
-
 
           {/* --- 수익률 랭킹 --- */}
           <div className="widget ranking-widget">
@@ -354,15 +417,16 @@ const fetchWatchlist = async () => {
               <h3>수익률 랭킹</h3>
               <button className="add-button" onClick={() => setRankingModalOpen(true)}>+</button>
             </div>
-            <div className="ranking-list">
+
+            <div className="ranking-list scrollable">
               {ranking.length > 0 ? (
-                ranking.slice(0, 5).map((r, idx) => (
+                ranking.slice(0, 10).map((r) => (
                   <div
                     key={r.userId}
-                    className={`ranking-item ${user?.id === r.userId ? "highlight" : ""}`}
+                    className={`ranking-item ${r.rankNo <= 3 ? `top${r.rankNo}` : ""}`}
                   >
-                    <span>{idx + 1}</span>
-                    <span>{r.userId}</span>
+                    <span>{r.rankNo}</span>
+                    <span>{r.userId || "익명"}</span>
                     <span className={r.profitRate >= 0 ? "positive" : "negative"}>
                       {r.profitRate.toFixed(2)}%
                     </span>
@@ -372,67 +436,133 @@ const fetchWatchlist = async () => {
                 <p className="loading-text">랭킹 데이터 없음</p>
               )}
             </div>
+
+            <div className="my-rank">
+              {myRank?.rankNo ? (
+                <>
+                  <span>내 순위: <strong>{myRank.rankNo}위</strong></span>{" "}
+                  <span className={myRank.profitRate >= 0 ? "positive" : "negative"}>
+                    {myRank.profitRate.toFixed(2)}%
+                  </span>
+                </>
+              ) : (
+                <span>랭킹 정보 없음</span>
+              )}
+            </div>
           </div>
         </div>
 
         {/* --- 두 번째 줄 --- */}
         <div className="row-grid">
-          {/* 내 종목 보기 */}
+          {/* ✅ 내 종목 보기 (사진처럼) */}
           <div className="widget holdings-widget">
             <div className="widget-header clickable" onClick={() => setHoldingsModalOpen(true)}>
-              <h3>내 종목 보기 <IoIosArrowForward /></h3>
+              <h3>내 종목보기 &gt;</h3>
             </div>
-            <div className="total-assets">
-              <h2>0원</h2>
-              <span className="neutral">+0원 (0%)</span>
+
+            <div className="holdings-summary">
+              <h2>{totalValue.toLocaleString()}원</h2>
+              <p className={totalProfit >= 0 ? "positive" : "negative"}>
+                {totalProfit >= 0 ? "+" : ""}
+                {totalProfit.toLocaleString()}원 ({totalRate.toFixed(1)}%)
+              </p>
+            </div>
+
+                        <div className="holdings-list">
+              {holdings.length > 0 ? (
+                holdings.slice(0, 4).map((h) => (
+                  <div key={h.userStockId} className="holding-row">
+                    <div className="holding-left">
+                      {h.stockImage ? (
+                        <img
+                          src={h.stockImage}
+                          alt={h.stockName}
+                          className="holding-logo"
+                        />
+                      ) : (
+                        <div className="holding-logo-fallback">
+                          {h.stockName[0]}
+                        </div>
+                      )}
+                      <div className="holding-info">
+                        <span className="name">{h.stockName}</span>
+                        <span className="quantity">{h.holdingQuantity}주</span>
+                      </div>
+                    </div>
+                    <div className="holding-right">
+                      <span className="price">
+                        {h.currentPrice.toLocaleString()}원
+                      </span>
+                      <span className={h.change >= 0 ? "positive" : "negative"}>
+                        {h.change >= 0 ? "+" : ""}
+                        {h.change.toLocaleString()}원 ({h.rate.toFixed(1)}%)
+                      </span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="loading-text">보유 종목이 없습니다.</p>
+              )}
             </div>
           </div>
 
           {/* 거래 내역 */}
-<div className="widget transaction-widget">
-  <div className="widget-header">
-    <h3>거래 내역</h3>
-    <button className="add-button" onClick={() => setTransactionsModalOpen(true)}>+</button>
-  </div>
-
-  {transactions.length > 0 ? (
-    <div className="transaction-list">
-      {transactions.slice(0, 5).map((tx) => {
-        const date = new Date(tx.executedAt);
-        const month = date.getMonth() + 1;
-        const day = date.getDate();
-        const hour = String(date.getHours()).padStart(2, "0");
-        const minute = String(date.getMinutes()).padStart(2, "0");
-
-        const isBuy = tx.executionType === "BUY";
-        const sign = isBuy ? "-" : "+";
-        const profitClass = isBuy ? "buy" : "sell";
-
-        return (
-          <div key={tx.executionId} className={`transaction-item ${profitClass}`}>
-            <div className="tx-left">
-              <div className="tx-date">{`${month}.${day}`}</div>
-              <div className="tx-name">{tx.stockName} {tx.quantity}주</div>
-              <div className="tx-subinfo">
-                {hour}:{minute} | {isBuy ? "구매" : "판매"}
-              </div>
+          <div className="widget transaction-widget">
+            <div className="widget-header">
+              <h3>거래 내역</h3>
+              <button
+                className="add-button"
+                onClick={() => setTransactionsModalOpen(true)}
+              >
+                +
+              </button>
             </div>
 
-            <div className="tx-right">
-              <div className={`tx-amount ${profitClass}`}>
-                {sign}{tx.totalAmount.toLocaleString()}원
+            {transactions.length > 0 ? (
+              <div className="transaction-list">
+                {transactions.slice(0, 5).map((tx) => {
+                  const date = new Date(tx.executedAt);
+                  const month = date.getMonth() + 1;
+                  const day = date.getDate();
+                  const hour = String(date.getHours()).padStart(2, "0");
+                  const minute = String(date.getMinutes()).padStart(2, "0");
+
+                  const isBuy = tx.executionType === "BUY";
+                  const sign = isBuy ? "-" : "+";
+                  const profitClass = isBuy ? "buy" : "sell";
+
+                  return (
+                    <div
+                      key={tx.executionId}
+                      className={`transaction-item ${profitClass}`}
+                    >
+                      <div className="tx-left">
+                        <div className="tx-date">{`${month}.${day}`}</div>
+                        <div className="tx-name">
+                          {tx.stockName} {tx.quantity}주
+                        </div>
+                        <div className="tx-subinfo">
+                          {hour}:{minute} | {isBuy ? "구매" : "판매"}
+                        </div>
+                      </div>
+
+                      <div className="tx-right">
+                        <div className={`tx-amount ${profitClass}`}>
+                          {sign}
+                          {tx.totalAmount.toLocaleString()}원
+                        </div>
+                        <div className="tx-price">
+                          {tx.price.toLocaleString()}원
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="tx-price">{tx.price.toLocaleString()}원</div>
-            </div>
+            ) : (
+              <p className="loading-text">거래 내역이 없습니다.</p>
+            )}
           </div>
-        );
-      })}
-    </div>
-  ) : (
-    <p className="loading-text">거래 내역이 없습니다.</p>
-  )}
-</div>
-
 
           {/* 투자 현황 */}
           <div className="widget portfolio-widget">
@@ -447,44 +577,48 @@ const fetchWatchlist = async () => {
       </div>
 
       {/* --- 관심종목 모달 --- */}
-<Modal
-  isOpen={isWatchlistModalOpen}
-  onClose={() => setWatchlistModalOpen(false)}
-  title="전체 관심 종목"
->
-  <div className="watchlist-modal-list">
-    {watchlist.length > 0 ? (
-      watchlist.slice(0, watchlistPage * 10).map((stock) => (
-        <div key={stock.interestStockId} className="stock-item">
-          {stock.stockImage ? (
-            <img src={stock.stockImage} alt={stock.stockName} className="stock-logo-img" />
-          ) : (
-            <div className="stock-logo-fallback">{stock.stockName[0]}</div>
-          )}
-          <div className="stock-info">
-            <span className="stock-name">{stock.stockName}</span>
-            <small className="sector-name">{stock.sectorName}</small>
-          </div>
-          <span className="created-date">
-            {new Date(stock.createdAt).toLocaleDateString("ko-KR")}
-          </span>
-        </div>
-      ))
-    ) : (
-      <p className="loading-text">관심 종목이 없습니다.</p>
-    )}
-    {watchlistHasNext && watchlist.length > watchlistPage * 10 && (
-      <button
-        className="next-page-button"
-        onClick={() => setWatchlistPage((prev) => prev + 1)}
+      <Modal
+        isOpen={isWatchlistModalOpen}
+        onClose={() => setWatchlistModalOpen(false)}
+        title="전체 관심 종목"
       >
-        다음 페이지
-      </button>
-    )}
-  </div>
-</Modal>
-
-
+        <div className="watchlist-modal-list">
+          {watchlist.length > 0 ? (
+            watchlist.slice(0, watchlistPage * 10).map((stock) => (
+              <div key={stock.interestStockId} className="stock-item">
+                {stock.stockImage ? (
+                  <img
+                    src={stock.stockImage}
+                    alt={stock.stockName}
+                    className="stock-logo-img"
+                  />
+                ) : (
+                  <div className="stock-logo-fallback">
+                    {stock.stockName[0]}
+                  </div>
+                )}
+                <div className="stock-info">
+                  <span className="stock-name">{stock.stockName}</span>
+                  <small className="sector-name">{stock.sectorName}</small>
+                </div>
+                <span className="created-date">
+                  {new Date(stock.createdAt).toLocaleDateString("ko-KR")}
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="loading-text">관심 종목이 없습니다.</p>
+          )}
+          {watchlistHasNext && watchlist.length > watchlistPage * 10 && (
+            <button
+              className="next-page-button"
+              onClick={() => setWatchlistPage((prev) => prev + 1)}
+            >
+              다음 페이지
+            </button>
+          )}
+        </div>
+      </Modal>
 
       {/* --- 거래 내역 모달 --- */}
       <Modal
@@ -498,7 +632,11 @@ const fetchWatchlist = async () => {
               <div key={tx.executionId} className="transaction-item">
                 <span>{formatDate(tx.executedAt)}</span>
                 <span>{tx.stockName}</span>
-                <span className={tx.executionType === "BUY" ? "buy" : "sell"}>
+                <span
+                  className={
+                    tx.executionType === "BUY" ? "buy" : "sell"
+                  }
+                >
                   {tx.executionType === "BUY" ? "매수" : "매도"}
                 </span>
                 <span>{tx.quantity}주</span>
@@ -514,15 +652,33 @@ const fetchWatchlist = async () => {
         )}
       </Modal>
 
-      {/* --- 나머지 모달 --- */}
+      {/* --- 전체 보유 종목 모달 --- */}
       <Modal
         isOpen={isHoldingsModalOpen}
         onClose={() => setHoldingsModalOpen(false)}
         title="전체 보유 종목"
       >
-        <p>추후 기능 예정</p>
+        <div className="holdings-modal-list">
+          {holdings.length > 0 ? (
+            holdings.map((h) => (
+              <div key={h.userStockId} className="holding-item">
+                <span className="stock-name">{h.stockName}</span>
+                <span className="quantity">{h.holdingQuantity}주</span>
+                <span className="avg-price">
+                  {h.avgPrice.toLocaleString()}원
+                </span>
+                <span className="current-price">
+                  {h.currentPrice.toLocaleString()}원
+                </span>
+              </div>
+            ))
+          ) : (
+            <p className="loading-text">보유 종목이 없습니다.</p>
+          )}
+        </div>
       </Modal>
 
+      {/* --- 전체 수익률 랭킹 모달 --- */}
       <Modal
         isOpen={isRankingModalOpen}
         onClose={() => setRankingModalOpen(false)}
@@ -532,7 +688,9 @@ const fetchWatchlist = async () => {
           {ranking.map((r, idx) => (
             <div
               key={r.userId}
-              className={`ranking-item ${user?.id === r.userId ? "highlight" : ""}`}
+              className={`ranking-item ${
+                user?.id === r.userId ? "highlight" : ""
+              }`}
             >
               <span>{idx + 1}</span>
               <span>{r.userId}</span>

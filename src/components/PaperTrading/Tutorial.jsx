@@ -58,19 +58,17 @@ const Tutorial = ({ steps, onFinish }) => {
     }
   }, [currentStep, steps]);
 
-  // ✨ 여기가 핵심 수정 부분입니다.
+  // ✨ 말풍선 페이드아웃 후 다음 단계로 이동
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      // 1. 현재 말풍선을 투명하게 만들어 먼저 사라지는 효과를 줍니다.
       setStyles(prev => ({
         ...prev,
         tooltip: { ...prev.tooltip, opacity: 0 }
       }));
 
-      // 2. 사라지는 애니메이션 시간(300ms)만큼 기다린 후, 다음 스텝으로 넘어갑니다.
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
-      }, 300); // CSS transition 시간과 일치시키는 것이 좋습니다.
+      }, 300);
       
     } else {
       onFinish();

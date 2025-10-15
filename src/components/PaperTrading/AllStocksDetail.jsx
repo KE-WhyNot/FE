@@ -1,4 +1,3 @@
-// src/pages/AllStocks/AllStocksDetail.jsx
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import * as echarts from "echarts";
@@ -35,14 +34,23 @@ const AllStocksDetail = () => {
   const [loading, setLoading] = useState(true);
   const chartRef = useRef(null);
   const chartInstance = useRef(null);
+  const [balance, setBalance] = useState(0);
+
+  /** ✅ 잔고 불러오기 함수 */
+  const fetchBalance = useCallback(async () => {
+    try {
+      const res = await financeAxios.get(`/api/user/balance`);
+      setBalance(res.data?.result?.balance || 0);
+    } catch (error) {
+      console.error("❌ 잔고 불러오기 실패:", error);
+    }
+  }, []);
 
   /** ✅ 종목 정보 불러오기 */
   useEffect(() => {
     const fetchStockInfo = async () => {
       try {
-        const res = await financeAxios.get(`/api/stock/list/${stockId}`, {
-          headers: { "X-User-Id": "testuser124" },
-        });
+        const res = await financeAxios.get(`/api/stock/list/${stockId}`);
         setStockInfo(res.data?.result);
       } catch (error) {
         console.error("❌ 종목 정보 불러오기 실패:", error);
@@ -50,6 +58,29 @@ const AllStocksDetail = () => {
     };
     fetchStockInfo();
   }, [stockId]);
+
+  /** ✅ 현재가 불러오기 (가격 수정 불가) */
+  useEffect(() => {
+    const fetchCurrentPrice = async () => {
+      try {
+        const res = await financeAxios.post(`/api/stock/current-price`, {
+          marketCode: "J",
+          stockCode: stockId,
+        });
+        const current = res.data?.result?.stckPrpr || 0;
+        setPrice(current);
+        setLivePrice(current);
+      } catch (error) {
+        console.error("❌ 현재가 불러오기 실패:", error);
+      }
+    };
+    fetchCurrentPrice();
+  }, [stockId]);
+
+  /** ✅ 초기 잔고 불러오기 */
+  useEffect(() => {
+    fetchBalance();
+  }, [fetchBalance]);
 
   /** ✅ 차트 데이터 불러오기 */
   useEffect(() => {
@@ -70,8 +101,6 @@ const AllStocksDetail = () => {
 
         const sorted = [...parsed].sort((a, b) => new Date(a.date) - new Date(b.date));
         setData(sorted);
-        setPrice(sorted[sorted.length - 1]?.close || 0);
-        setLivePrice(sorted[sorted.length - 1]?.close || 0);
       } catch (error) {
         console.error("❌ 차트 데이터 불러오기 실패:", error);
       } finally {
@@ -80,6 +109,37 @@ const AllStocksDetail = () => {
     };
     fetchStockData();
   }, [stockId, period]);
+
+  /** ✅ 관심 종목 여부 확인 */
+  useEffect(() => {
+    const checkFavorite = async () => {
+      try {
+        const res = await financeAxios.get(`/api/user/interest-stocks/check?stockId=${stockId}`);
+        setIsFavorite(res.data?.result === true);
+      } catch (error) {
+        console.error("❌ 관심 종목 확인 실패:", error);
+      }
+    };
+    checkFavorite();
+  }, [stockId]);
+
+  /** ✅ 관심 토글 */
+  const handleToggleFavorite = useCallback(async () => {
+    try {
+      if (isFavorite) {
+        await financeAxios.delete("/api/user/interest-stocks", { data: { stockId } });
+        setIsFavorite(false);
+        alert("관심 종목에서 해제되었습니다.");
+      } else {
+        await financeAxios.post("/api/user/interest-stocks", { stockId });
+        setIsFavorite(true);
+        alert("관심 종목에 추가되었습니다!");
+      }
+    } catch (error) {
+      console.error("❌ 관심 종목 변경 실패:", error);
+      alert("관심 종목 처리 중 오류가 발생했습니다.");
+    }
+  }, [isFavorite, stockId]);
 
   /** ✅ SMA 계산 */
   const sma5 = useMemo(() => calculateSMA(data, 5), [data]);
@@ -180,11 +240,32 @@ const AllStocksDetail = () => {
     };
   }, [data, sma5, sma20, period]);
 
-  /** ✅ 관심 토글 */
-  const handleToggleFavorite = useCallback(() => {
-    setIsFavorite((prev) => !prev);
-    alert(isFavorite ? "관심 종목 해제" : "관심 종목 추가!");
-  }, [isFavorite]);
+  /** ✅ 매수 / 매도 요청 */
+  const handleOrder = async () => {
+    if (!quantity || quantity <= 0) return alert("수량을 입력하세요.");
+    const endpoint =
+      orderType === "buy"
+        ? "/api/user/trading/buy"
+        : "/api/user/trading/sell";
+
+    try {
+      const res = await financeAxios.post(endpoint, {
+        stockId,
+        marketCode: "J",
+        quantity,
+      });
+
+      if (res.data?.code === "COMMON200") {
+        alert(`${orderType === "buy" ? "매수" : "매도"} 주문이 완료되었습니다.`);
+        await fetchBalance(); // ✅ 주문 성공 후 잔고 즉시 갱신
+      } else {
+        alert("요청은 완료되었지만 응답 코드가 예상과 다릅니다.");
+      }
+    } catch (error) {
+      console.error("❌ 주문 실패:", error);
+      alert("주문 처리 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="all-stocks-container">
@@ -195,6 +276,13 @@ const AllStocksDetail = () => {
           <div className="chart-section widget">
             <div className="widget-header">
               <div className="stock-title-container">
+                {stockInfo.stockImage && (
+                  <img
+                    src={stockInfo.stockImage}
+                    alt={`${stockInfo.stockName} 로고`}
+                    className="stock-logo-icon"
+                  />
+                )}
                 <h3>
                   {stockInfo.stockName} ({stockInfo.stockId})
                 </h3>
@@ -247,10 +335,6 @@ const AllStocksDetail = () => {
           <aside className="order-panel">
             <div className="widget">
               <h3 className="order-title">주식 주문</h3>
-              <div className="stock-id">
-                <div className="stock-logo-small"></div>
-                <span>{stockInfo.stockName}</span>
-              </div>
 
               <div className="order-tabs">
                 <button
@@ -267,14 +351,14 @@ const AllStocksDetail = () => {
                 </button>
               </div>
 
+              <div className="balance-display">
+                내 잔고: <strong>{balance.toLocaleString()} 원</strong>
+              </div>
+
               <div className="order-form">
                 <div className="form-group">
                   <label>가격</label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(Number(e.target.value))}
-                  />
+                  <input type="number" value={price} readOnly />
                 </div>
                 <div className="form-group">
                   <label>수량</label>
@@ -298,7 +382,10 @@ const AllStocksDetail = () => {
                 </div>
               </div>
 
-              <button className={`order-button ${orderType}`}>
+              <button
+                className={`order-button ${orderType}`}
+                onClick={handleOrder}
+              >
                 {orderType === "buy" ? "매수" : "매도"}
               </button>
             </div>

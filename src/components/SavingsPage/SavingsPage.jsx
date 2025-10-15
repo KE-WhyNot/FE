@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import './SavingsPage.css';
 import Header from '../common/Header';
 import { FaSearch, FaPlus, FaChevronDown, FaMinus, FaSyncAlt } from 'react-icons/fa';
-import axios from 'axios';
-import Modal from '../common/Modal'; // Modal 컴포넌트를 import 합니다.
+import policyAxiosInstance from '../../api/policyAxiosInstance'; // ✅ 수정: 공용 인스턴스 사용
+import Modal from '../common/Modal';
+import qs from 'qs'; // ✅ qs 라이브러리 추가
 
 const SavingsPage = () => {
     const [savingsData, setSavingsData] = useState([]);
@@ -37,21 +38,16 @@ const SavingsPage = () => {
     const benefitFilterRef = useRef(null);
     const benefitButtonRef = useRef(null);
     
-    // --- 은행 선택 모달 관련 상태 ---
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     const [bankOptions, setBankOptions] = useState([]);
-    const [modalBankType, setModalBankType] = useState(1); // 1: 은행, 2: 저축은행
+    const [modalBankType, setModalBankType] = useState(1);
     const [tempSelectedBanks, setTempSelectedBanks] = useState([]);
     const [selectedBanks, setSelectedBanks] = useState([]);
-    
-    const api = axios.create({
-      baseURL: 'https://policy.youth-fi.com',
-    });
     
     useEffect(() => {
       const fetchBenefitOptions = async () => {
         try {
-          const benefitRes = await api.get('/api/finproduct/filter/special_condition?type=1');
+          const benefitRes = await policyAxiosInstance.get('/api/finproduct/filter/special_condition?type=1');
           setBenefitOptions(benefitRes.data);
         } catch (error) {
           console.error("Failed to fetch benefit options:", error);
@@ -60,16 +56,14 @@ const SavingsPage = () => {
       fetchBenefitOptions();
     }, []);
 
-    // --- 은행 목록을 모달이 열릴 때 가져오도록 수정 ---
     useEffect(() => {
         if (!isBankModalOpen) return;
-
         const fetchBankOptions = async () => {
             try {
-                const response = await api.get('/api/finproduct/filter/bank', {
+                const response = await policyAxiosInstance.get('/api/finproduct/filter/bank', {
                     params: { type: modalBankType }
                 });
-                setBankOptions(response.data.result || []);
+                setBankOptions(response.data || []);
             } catch (error) {
                 console.error("Failed to fetch bank options:", error);
                 setBankOptions([]);
@@ -99,8 +93,14 @@ const SavingsPage = () => {
                     }
                   }
                 });
-
-                const response = await api.get('/api/finproduct/list', { params });
+                
+                // ✅ 수정: paramsSerializer 추가
+                const response = await policyAxiosInstance.get('/api/finproduct/list', {
+                  params,
+                  paramsSerializer: params => {
+                    return qs.stringify(params, { arrayFormat: 'repeat' });
+                  }
+                });
                 
                 let filteredData = response.data.result.finProductList;
                 if (selectedProductTypes.length > 0) {
@@ -148,12 +148,12 @@ const SavingsPage = () => {
         setSelectedProductTypes([]); 
         setSelectedCategories([]); 
         setSelectedBankCategory(0);
-        setSelectedBanks([]); // 선택된 은행도 초기화
+        setSelectedBanks([]);
         setCurrentPage(1);
     };
     const handleProductTypeApply = () => { setIsProductTypeFilterOpen(false); };
     
-    const productTypeOptions = ['특판', '방문없이 가입', '누구나가입'];
+    const productTypeOptions = ['방문없이 가입', '누구나가입'];
 
     const handleBenefitChange = (benefit) => { setSelectedBenefits(prev => prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]); setCurrentPage(1); };
     const handleBenefitReset = () => { setSelectedBenefits([]); };
@@ -161,7 +161,6 @@ const SavingsPage = () => {
   
     const categoryTitle = selectedCategories.length === 1 ? selectedCategories[0] : '예·적금';
     
-    // --- 은행 모달 관련 핸들러 ---
     const handleOpenBankModal = (bankType) => {
         setSelectedBankCategory(bankType);
         setModalBankType(bankType);
@@ -173,17 +172,17 @@ const SavingsPage = () => {
         setIsBankModalOpen(false);
     };
 
-    const handleTempBankSelect = (bankName) => {
+    const handleTempBankSelect = (bankNickname) => {
         setTempSelectedBanks(prev => 
-            prev.includes(bankName) 
-            ? prev.filter(b => b !== bankName) 
-            : [...prev, bankName]
+            prev.includes(bankNickname) 
+            ? prev.filter(b => b !== bankNickname) 
+            : [...prev, bankNickname]
         );
     };
 
     const handleSelectAllBanks = (e) => {
         if (e.target.checked) {
-            setTempSelectedBanks(bankOptions.map(b => b.bank_name));
+            setTempSelectedBanks(bankOptions.map(b => b.nickname));
         } else {
             setTempSelectedBanks([]);
         }
@@ -353,14 +352,14 @@ const SavingsPage = () => {
             <div className="bank-grid">
               {bankOptions.map(bank => (
                 <div 
-                  key={bank.bank_id} 
-                  className={`bank-item ${tempSelectedBanks.includes(bank.bank_name) ? 'active' : ''}`}
-                  onClick={() => handleTempBankSelect(bank.bank_name)}
+                  key={bank.id} 
+                  className={`bank-item ${tempSelectedBanks.includes(bank.nickname) ? 'active' : ''}`}
+                  onClick={() => handleTempBankSelect(bank.nickname)}
                 >
                   <div className="bank-item-logo">
-                    <img src={bank.image_url} alt={bank.bank_name} />
+                    <img src={bank.image_url} alt={bank.kor_co_nm} />
                   </div>
-                  <span className="bank-item-name">{bank.bank_name}</span>
+                  <span className="bank-item-name">{bank.nickname}</span>
                   <div className="bank-item-plus">+</div>
                 </div>
               ))}

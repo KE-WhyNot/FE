@@ -30,17 +30,25 @@ export function normalizeDetail(resp) {
   const bottom2 = resp?.bottom2 || {};
 
   const rawRates = (bottom2 && bottom2.interest_rates) || [];
-  let byPeriod = rawRates.map((r) => ({
+
+  // ✨ 수정된 중복 제거 로직: 객체 전체를 기반으로 고유한 항목만 필터링
+  const uniqueRates = Array.from(new Map(rawRates.map(item => [JSON.stringify(item), item])).values());
+
+  let byPeriod = uniqueRates.map((r) => ({
     period: r.period || r.save_trm || '',
-    rate: String(r.rate || r.intr_rate || 0),
+    // ✨ bottom2.interest_rates에 base_rate가 있으므로 그것을 우선 사용
+    base_rate: String(r.base_rate || r.intr_rate || 0),
+    // ✨ bottom2.interest_rates에 bonus_rate가 있으므로 그것을 우선 사용
+    max_rate: String(r.bonus_rate || r.rate || r.intr_rate || 0),
   }));
+
 
   // 기간별 금리 정보가 없을 경우, 기본 정보를 바탕으로 한 줄을 생성합니다.
   if (byPeriod.length === 0 && bottom1.period) {
     byPeriod.push({
       period: bottom1.period,
-      // rate 값은 아래에서 동적으로 채워지므로 여기서는 기본값만 설정합니다.
-      rate: String(top.min_interest_rate || 0) 
+      base_rate: String(top.min_interest_rate || 0),
+      max_rate: String(top.max_interest_rate || top.min_interest_rate || 0)
     });
   }
 

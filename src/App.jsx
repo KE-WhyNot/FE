@@ -1,40 +1,54 @@
 import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"; // ✅ React Query 추가
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools"; // ✅ Devtools (선택)
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import useAuthStore from "./store/useAuthStore";
 
+// ✅ 로그인 & 회원가입
 import LoginPage from "./components/LoginPage/LoginPage";
 import AuthCallbackGoogle from "./components/LoginPage/AuthCallbackGoogle";
 import AuthCallbackKakao from "./components/LoginPage/AuthCallbackKakao";
-import MainPage from "./components/MainPage/MainPage";
 import SignupPage from "./components/SignupPage/SignupPage";
+
+// ✅ 메인 페이지
+import MainPage from "./components/MainPage/MainPage";
+
+// ✅ PaperTrading 관련
 import PaperTrading from "./components/PaperTrading/PaperTrading";
+import DashboardLayout from "./components/PaperTrading/DashboardLayout";
+import AllStocksList from "./components/PaperTrading/AllStocksList";
+import AllStocksDetail from "./components/PaperTrading/AllStocksDetail";
+import QuizPage from "./components/PaperTrading/Quiz";
+
+// ✅ 포트폴리오 관련
+import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
+import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
+import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
+
+// ✅ 설정 관련
 import SettingLayout from "./components/Setting/SettingLayout";
 import Profile from "./components/Setting/Profile";
 import Investment from "./components/Setting/Investment";
 import Settings from "./components/Setting/SettingPage";
 import Notification from "./components/Setting/Notification";
+
+// ✅ 예금 & 정책
 import SavingsPage from "./components/SavingsPage/SavingsPage";
-import PolicyPage from "./components/PolicyPage/PolicyPage";
-import DashboardLayout from "./components/PaperTrading/DashboardLayout";
-import AllStocks from "./components/PaperTrading/AllStocks";
-import QuizPage from "./components/PaperTrading/Quiz";
-import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
-import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
-import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
-import PrivateRoute from "./api/PrivateRoute";
 import SavingsDetailPage from "./components/SavingsDetailPage/SavingsDetailPage";
+import PolicyPage from "./components/PolicyPage/PolicyPage";
 import PolicyDetailPage from "./components/PolicyDetailPage/PolicyDetailPage";
 
-// ✅ React Query 클라이언트 생성
+// ✅ 인증 라우트
+import PrivateRoute from "./api/PrivateRoute";
+
+// ✅ React Query 클라이언트 설정
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      refetchOnWindowFocus: false, // 탭 전환 시 재요청 방지
-      retry: 1, // 실패 시 1회만 재시도
-      staleTime: 1000 * 60 * 3, // 3분간 fresh 상태 유지
+      refetchOnWindowFocus: false,
+      retry: 1,
+      staleTime: 1000 * 60 * 3,
     },
   },
 });
@@ -42,7 +56,6 @@ const queryClient = new QueryClient({
 function App() {
   const { fetchProfile } = useAuthStore();
 
-  // ✅ 로그인 상태 유지용 (accessToken 있을 경우 프로필 자동 불러오기)
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -54,18 +67,15 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <Routes>
-          {/* ✅ 로그인 & 회원가입 페이지 (비보호) */}
+          {/* ✅ 로그인 & 회원가입 */}
           <Route path="/" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
-          {/* ✅ 소셜 로그인 콜백 (비보호) */}
-          <Route
-            path="/auth/callback/google"
-            element={<AuthCallbackGoogle />}
-          />
+          {/* ✅ 소셜 로그인 콜백 */}
+          <Route path="/auth/callback/google" element={<AuthCallbackGoogle />} />
           <Route path="/auth/callback/kakao" element={<AuthCallbackKakao />} />
 
-          {/* ✅ 보호된 라우트 영역 */}
+          {/* ✅ 메인 페이지 (보호됨) */}
           <Route
             path="/main"
             element={
@@ -75,7 +85,7 @@ function App() {
             }
           />
 
-          {/* ✅ 예금 관련 페이지 (보호됨) */}
+          {/* ✅ 예금 관련 페이지 */}
           <Route
             path="/savings"
             element={
@@ -93,7 +103,7 @@ function App() {
             }
           />
 
-          {/* ✅ 정책 관련 페이지 (보호됨) */}
+          {/* ✅ 정책 관련 페이지 */}
           <Route
             path="/policy"
             element={
@@ -111,7 +121,7 @@ function App() {
             }
           />
 
-          {/* ✅ 포트폴리오 관련 페이지 (보호됨) */}
+          {/* ✅ 포트폴리오 관련 페이지 */}
           <Route
             path="/portfolio"
             element={
@@ -137,7 +147,7 @@ function App() {
             }
           />
 
-          {/* ✅ 설정 관련 페이지 (SettingLayout 내부 구조 유지) */}
+          {/* ✅ 설정 관련 (SettingLayout 구조 유지) */}
           <Route
             path="/setting"
             element={
@@ -153,7 +163,7 @@ function App() {
             <Route path="investment" element={<Investment />} />
           </Route>
 
-          {/* ✅ PaperTrading 관련 페이지 (DashboardLayout으로 감쌈) */}
+          {/* ✅ PaperTrading 관련 페이지 (DashboardLayout 내부 라우팅) */}
           <Route
             element={
               <PrivateRoute>
@@ -162,13 +172,20 @@ function App() {
             }
           >
             <Route path="/papertrading" element={<PaperTrading />} />
-            <Route path="/all-stocks" element={<AllStocks />} />
+
+            {/* ✅ 전체 종목 리스트 및 상세 페이지 */}
+            <Route path="/all-stocks" element={<AllStocksList />} />
+            <Route
+              path="/all-stocks/:stockId"
+              element={<AllStocksDetail />}
+            />
+
             <Route path="/quiz" element={<QuizPage />} />
           </Route>
         </Routes>
       </BrowserRouter>
 
-      {/* ✅ React Query 개발자 도구 (선택사항, 개발용) */}
+      {/* ✅ React Query Devtools (선택사항) */}
       <ReactQueryDevtools initialIsOpen={false} position="bottom-right" />
     </QueryClientProvider>
   );

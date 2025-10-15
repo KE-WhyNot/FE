@@ -1,3 +1,6 @@
+/* =========================
+   📦 전체 컨테이너 & 기본 설정
+========================= */
 .all-stocks-container {
   padding: 2rem;
   background-color: #f9fafb;
@@ -16,6 +19,61 @@
   box-sizing: border-box;
 }
 
+/* =========================
+   📊 종목 리스트 영역
+========================= */
+.stock-list-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 3rem;
+}
+
+.stock-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stock-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stock-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.stock-info h4 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: #333;
+}
+
+.stock-info p {
+  font-size: 0.85rem;
+  color: #777;
+  margin: 0.3rem 0 0;
+}
+
+.loading-text {
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  padding: 2rem;
+}
+
+/* =========================
+   📈 세부 차트 & 주문 패널
+========================= */
 .stock-detail-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -42,7 +100,7 @@
 .stock-title-container {
   display: flex;
   align-items: center;
-  gap: 0.75rem; /* 제목과 아이콘 사이 간격 */
+  gap: 0.75rem;
 }
 
 .widget-header h3 {
@@ -55,23 +113,28 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  line-height: 0; /* 아이콘 정렬을 위한 설정 */
+  line-height: 0;
 }
 
 .favorite-toggle-btn svg {
-  font-size: 1.5rem; /* 아이콘 크기 (24px) */
-  color: #a0aec0; /* 기본 아이콘 색상 (회색) */
+  font-size: 1.5rem;
+  color: #a0aec0;
   transition: transform 0.1s ease-out, color 0.2s ease;
 }
 
 .favorite-toggle-btn svg.is-favorite {
-  color: #d32f2f; /* 즐겨찾기 선택 시 색상 (빨간색) */
+  color: #d32f2f;
 }
 
 .favorite-toggle-btn:hover svg {
-  transform: scale(1.15); /* 마우스 호버 시 약간 커지는 효과 */
+  transform: scale(1.15);
 }
 /* --- ✨ 아이콘 스타일링 끝 --- */
+
+.chart-tabs {
+  display: flex;
+  gap: 0.3rem;
+}
 
 .chart-tabs button {
   background: none;
@@ -80,7 +143,11 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
+  font-size: 0.9rem;
+  color: #555;
+  transition: background 0.15s ease, color 0.15s ease;
 }
+
 .chart-tabs button.active {
   background-color: #f0efff;
   color: #6e55ff;
@@ -113,7 +180,7 @@
   border: 1px solid #ccc;
   border-radius: 8px;
   padding: 0.8rem 1rem;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
   font-size: 0.85rem;
   width: 220px;
 }
@@ -128,12 +195,19 @@
   color: #555;
 }
 
-.tooltip-row .positive { color: #d32f2f; }
-.tooltip-row .negative { color: #1976d2; }
-.tooltip-row .neutral { color: #333; }
+.tooltip-row .positive {
+  color: #d32f2f;
+}
+.tooltip-row .negative {
+  color: #1976d2;
+}
+.tooltip-row .neutral {
+  color: #333;
+}
 
-
-/* --- 오른쪽 주문 패널 --- */
+/* =========================
+   💰 오른쪽 주문 패널
+========================= */
 .order-panel .widget {
   position: sticky;
   top: 2rem;
@@ -147,6 +221,7 @@
   font-size: 1.2rem;
   margin-bottom: 1rem;
 }
+
 .stock-id {
   display: flex;
   align-items: center;
@@ -154,6 +229,7 @@
   font-weight: 600;
   margin-bottom: 1rem;
 }
+
 .stock-logo-small {
   width: 24px;
   height: 24px;
@@ -166,6 +242,7 @@
   grid-template-columns: 1fr 1fr;
   margin-bottom: 1rem;
 }
+
 .order-tabs button {
   padding: 0.8rem;
   border: none;
@@ -173,7 +250,9 @@
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.15s ease;
 }
+
 .order-tabs button.active {
   background-color: #fff;
   border-bottom: 3px solid #6e55ff;
@@ -182,18 +261,22 @@
 .order-book {
   font-size: 0.9rem;
 }
+
 .order-row {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem;
   border-radius: 4px;
 }
+
 .order-row.sell {
   background-color: #e3f2fd;
 }
+
 .order-row.buy {
   background-color: #ffebee;
 }
+
 .order-book .divider {
   height: 1px;
   background-color: #eee;
@@ -203,12 +286,14 @@
 .order-form {
   margin-top: 1.5rem;
 }
+
 .order-form .form-group {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.8rem;
 }
+
 .order-form input {
   width: 60%;
   text-align: right;
@@ -225,6 +310,7 @@
   padding-top: 1.5rem;
   border-top: 1px solid #eee;
 }
+
 .total-amount {
   color: #d32f2f;
 }
@@ -239,10 +325,53 @@
   color: white;
   cursor: pointer;
   margin-top: 1rem;
+  transition: opacity 0.2s ease;
 }
+
 .order-button.buy {
   background-color: #d32f2f;
 }
+
 .order-button.sell {
   background-color: #1976d2;
+}
+
+.order-button:hover {
+  opacity: 0.9;
+}
+
+/* =========================
+   📱 반응형 디자인
+========================= */
+@media (max-width: 1024px) {
+  .stock-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .order-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 600px) {
+  .stock-list-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
+
+  .stock-card {
+    padding: 0.8rem;
+  }
+
+  .stock-logo {
+    width: 50px;
+    height: 50px;
+  }
+
+  .widget-header h3 {
+    font-size: 1.2rem;
+  }
+
+  .chart-tabs button {
+    font-size: 0.8rem;
+  }
 }

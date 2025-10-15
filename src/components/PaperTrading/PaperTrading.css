@@ -420,3 +420,202 @@
 .nivo-tooltip {
   display: none !important;
 }
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #eee;
+}
+
+.transaction-item .buy {
+  color: #007aff;
+  font-weight: 600;
+}
+
+.transaction-item .sell {
+  color: #ff3b30;
+  font-weight: 600;
+}
+
+.transaction-item .total-amount {
+  color: #999;
+  font-size: 13px;
+}
+
+
+/* 거래 내역 카드 스타일 */
+.transaction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.tx-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.tx-date {
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.tx-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #222;
+}
+
+.tx-subinfo {
+  font-size: 13px;
+  color: #999;
+}
+
+.tx-right {
+  text-align: right;
+}
+
+.tx-amount {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.tx-amount.sell {
+  color: #e53935; /* 매도 빨간색 */
+}
+
+.tx-amount.buy {
+  color: #1e88e5; /* 매수 파란색 */
+}
+
+.tx-price {
+  font-size: 13px;
+  color: #aaa;
+}
+
+/* 관심종목 리스트 */
+.watchlist-list, .watchlist-modal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stock-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: #fafafa;
+  transition: background 0.2s ease;
+}
+
+.stock-item:hover {
+  background-color: #f0f0f5;
+}
+
+.stock-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: #6e55ff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+.stock-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stock-name {
+  font-weight: 600;
+  color: #222;
+  font-size: 15px;
+}
+
+.sector-name {
+  color: #777;
+  font-size: 13px;
+}
+
+.created-date {
+  font-size: 12px;
+  color: #aaa;
+}
+
+.stock-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background-color: #fafafa;
+  transition: background 0.2s ease;
+}
+
+.stock-item:hover {
+  background-color: #f0f0f5;
+}
+
+.stock-logo-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  margin-right: 10px;
+  object-fit: contain;
+}
+
+.stock-logo-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-color: #6e55ff;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 16px;
+  margin-right: 10px;
+}
+
+.stock-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.stock-name {
+  font-weight: 600;
+  color: #222;
+  font-size: 15px;
+}
+
+.sector-name {
+  color: #777;
+  font-size: 13px;
+}
+
+.created-date {
+  font-size: 12px;
+  color: #aaa;
+}

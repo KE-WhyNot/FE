@@ -7,10 +7,16 @@ import Modal from "../../components/common/Modal";
 import financeAxios from "../../api/financeAxiosInstance";
 import useAuthStore from "../../store/useAuthStore";
 
-// ✅ 날짜 포맷 함수
-const formatDate = (dateStr) => {
-  if (!dateStr || dateStr.length !== 8) return dateStr;
-  return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
+// ✅ 날짜 포맷 함수 (ISO → yyyy-MM-dd HH:mm)
+const formatDate = (iso) => {
+  if (!iso) return "-";
+  const d = new Date(iso);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${day} ${hh}:${mm}`;
 };
 
 // ✅ 커스텀 툴팁
@@ -42,7 +48,7 @@ const CustomTooltip = ({ info, position }) => {
         pointerEvents: "none",
       }}
     >
-      <div>📅 <strong>날짜:</strong> {formatDate(info.date)}</div>
+      <div>📅 <strong>날짜:</strong> {info.date}</div>
       <div>💰 <strong>현재가:</strong> {parseFloat(info.currentPrice).toLocaleString()}</div>
       <div>📈 <strong>최고가:</strong> {parseFloat(info.highPrice).toLocaleString()}</div>
       <div>📉 <strong>최저가:</strong> {parseFloat(info.lowPrice).toLocaleString()}</div>
@@ -55,7 +61,7 @@ const PaperTrading = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  // ✅ 상태
+  // ✅ 상태 정의
   const [activeMarket, setActiveMarket] = useState("KOSPI");
   const [activePeriod, setActivePeriod] = useState("daily");
   const [chartData, setChartData] = useState([]);
@@ -70,12 +76,15 @@ const PaperTrading = () => {
   const [isHoldingsModalOpen, setHoldingsModalOpen] = useState(false);
   const [isRankingModalOpen, setRankingModalOpen] = useState(false);
 
-  // ✅ 관심 종목 상태
+  // ✅ 관심 종목
   const [watchlist, setWatchlist] = useState([]);
   const [watchlistPage, setWatchlistPage] = useState(1);
   const [watchlistHasNext, setWatchlistHasNext] = useState(false);
 
-  // ✅ 금융 데이터
+  // ✅ 거래 내역
+  const [transactions, setTransactions] = useState([]);
+
+  // ✅ 금융 데이터 불러오기
   useEffect(() => {
     const fetchMarketData = async () => {
       setLoading(true);
@@ -117,17 +126,51 @@ const PaperTrading = () => {
     fetchMarketData();
   }, [activeMarket, activePeriod]);
 
-  // ✅ 관심 종목 불러오기
-  const fetchWatchlist = async (page = 1) => {
-    try {
-      const res = await financeAxios.get("/api/user/interest-stocks");
-      const list = res.data?.result || [];
-      setWatchlist(list);
-      setWatchlistHasNext(list.length >= 10);
-    } catch (e) {
-      console.error("❌ 관심 종목 불러오기 실패:", e);
-    }
-  };
+// ✅ 관심 종목 불러오기
+const fetchWatchlist = async () => {
+  try {
+    const userId = user?.id ?? user?.userId ?? "guest";
+
+    // 1️⃣ 기본 관심 종목 리스트 가져오기
+    const res = await financeAxios.get("/api/user/interest-stocks", {
+      headers: { "X-User-Id": userId },
+    });
+
+    const baseList = res.data?.result || [];
+
+    // 2️⃣ 각 종목의 이미지 정보 요청
+    const enrichedList = await Promise.all(
+      baseList.map(async (item) => {
+        try {
+          const detailRes = await financeAxios.get(
+            `/api/stock/list/${item.stockId}`,
+            { headers: { "X-User-Id": userId } }
+          );
+          const detail = detailRes.data?.result;
+          return {
+            ...item,
+            stockImage: detail?.stockImage || null,
+          };
+        } catch (err) {
+          console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
+          return { ...item, stockImage: null };
+        }
+      })
+    );
+
+    // 3️⃣ 최신순 정렬
+    const sorted = enrichedList.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    setWatchlist(sorted);
+    setWatchlistHasNext(sorted.length >= 10);
+  } catch (e) {
+    console.error("❌ 관심 종목 불러오기 실패:", e);
+  }
+};
+
+
 
   useEffect(() => {
     fetchWatchlist();
@@ -145,6 +188,22 @@ const PaperTrading = () => {
       }
     };
     fetchRanking();
+  }, []);
+
+  // ✅ 거래 내역 불러오기
+  const fetchTransactions = async () => {
+    try {
+      const res = await financeAxios.get("/api/user/trading/history");
+      let list = res.data?.result || [];
+      list = list.sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
+      setTransactions(list);
+    } catch (e) {
+      console.error("❌ 거래 내역 불러오기 실패:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
   }, []);
 
   // ✅ X축 포맷
@@ -236,10 +295,8 @@ const PaperTrading = () => {
                   enableGridX={false}
                   colors={["#6e55ff"]}
                   lineWidth={3}
+                  curve="monotoneX"
                   pointSize={0}
-                  pointColor="white"
-                  pointBorderWidth={2}
-                  pointBorderColor={{ from: "serieColor" }}
                   useMesh={true}
                   enableCrosshair={true}
                   crosshairType="x"
@@ -262,27 +319,34 @@ const PaperTrading = () => {
           </div>
 
           {/* --- 관심 종목 --- */}
-          <div className="widget watchlist-widget">
-            <div className="widget-header">
-              <h3>관심 종목</h3>
-              <button className="add-button" onClick={() => setWatchlistModalOpen(true)}>+</button>
-            </div>
-            <div className="watchlist-list">
-              {watchlist.length > 0 ? (
-                watchlist.slice(0, 5).map((stock) => (
-                  <div key={stock.interestStockId} className="stock-item">
-                    <div className="stock-logo">{stock.stockName[0]}</div>
-                    <div className="stock-info">
-                      <span>{stock.stockName}</span>
-                      <small>{stock.sectorName}</small>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="loading-text">관심 종목이 없습니다.</p>
-              )}
-            </div>
+<div className="widget watchlist-widget">
+  <div className="widget-header">
+    <h3>관심 종목</h3>
+    <button className="add-button" onClick={() => setWatchlistModalOpen(true)}>+</button>
+  </div>
+
+  <div className="watchlist-list">
+    {watchlist.length > 0 ? (
+      watchlist.slice(0, 5).map((stock) => (
+        <div key={stock.interestStockId} className="stock-item">
+          {stock.stockImage ? (
+            <img src={stock.stockImage} alt={stock.stockName} className="stock-logo-img" />
+          ) : (
+            <div className="stock-logo-fallback">{stock.stockName[0]}</div>
+          )}
+          <div className="stock-info">
+            <span className="stock-name">{stock.stockName}</span>
+            <small className="sector-name">{stock.sectorName}</small>
           </div>
+        </div>
+      ))
+    ) : (
+      <p className="loading-text">관심 종목이 없습니다.</p>
+    )}
+  </div>
+</div>
+
+
 
           {/* --- 수익률 랭킹 --- */}
           <div className="widget ranking-widget">
@@ -325,13 +389,50 @@ const PaperTrading = () => {
           </div>
 
           {/* 거래 내역 */}
-          <div className="widget transaction-widget">
-            <div className="widget-header">
-              <h3>거래 내역</h3>
-              <button className="add-button" onClick={() => setTransactionsModalOpen(true)}>+</button>
+<div className="widget transaction-widget">
+  <div className="widget-header">
+    <h3>거래 내역</h3>
+    <button className="add-button" onClick={() => setTransactionsModalOpen(true)}>+</button>
+  </div>
+
+  {transactions.length > 0 ? (
+    <div className="transaction-list">
+      {transactions.slice(0, 5).map((tx) => {
+        const date = new Date(tx.executedAt);
+        const month = date.getMonth() + 1;
+        const day = date.getDate();
+        const hour = String(date.getHours()).padStart(2, "0");
+        const minute = String(date.getMinutes()).padStart(2, "0");
+
+        const isBuy = tx.executionType === "BUY";
+        const sign = isBuy ? "-" : "+";
+        const profitClass = isBuy ? "buy" : "sell";
+
+        return (
+          <div key={tx.executionId} className={`transaction-item ${profitClass}`}>
+            <div className="tx-left">
+              <div className="tx-date">{`${month}.${day}`}</div>
+              <div className="tx-name">{tx.stockName} {tx.quantity}주</div>
+              <div className="tx-subinfo">
+                {hour}:{minute} | {isBuy ? "구매" : "판매"}
+              </div>
             </div>
-            <p className="loading-text">거래 내역 기능 준비 중...</p>
+
+            <div className="tx-right">
+              <div className={`tx-amount ${profitClass}`}>
+                {sign}{tx.totalAmount.toLocaleString()}원
+              </div>
+              <div className="tx-price">{tx.price.toLocaleString()}원</div>
+            </div>
           </div>
+        );
+      })}
+    </div>
+  ) : (
+    <p className="loading-text">거래 내역이 없습니다.</p>
+  )}
+</div>
+
 
           {/* 투자 현황 */}
           <div className="widget portfolio-widget">
@@ -346,46 +447,74 @@ const PaperTrading = () => {
       </div>
 
       {/* --- 관심종목 모달 --- */}
-      <Modal
-        isOpen={isWatchlistModalOpen}
-        onClose={() => setWatchlistModalOpen(false)}
-        title="전체 관심 종목"
-      >
-        <div className="watchlist-modal-list">
-          {watchlist.length > 0 ? (
-            watchlist.slice(0, watchlistPage * 10).map((stock) => (
-              <div key={stock.interestStockId} className="stock-item">
-                <div className="stock-logo">{stock.stockName[0]}</div>
-                <div className="stock-info">
-                  <span>{stock.stockName}</span>
-                  <small>{stock.sectorName}</small>
-                </div>
-              </div>
-            ))
+<Modal
+  isOpen={isWatchlistModalOpen}
+  onClose={() => setWatchlistModalOpen(false)}
+  title="전체 관심 종목"
+>
+  <div className="watchlist-modal-list">
+    {watchlist.length > 0 ? (
+      watchlist.slice(0, watchlistPage * 10).map((stock) => (
+        <div key={stock.interestStockId} className="stock-item">
+          {stock.stockImage ? (
+            <img src={stock.stockImage} alt={stock.stockName} className="stock-logo-img" />
           ) : (
-            <p className="loading-text">관심 종목이 없습니다.</p>
+            <div className="stock-logo-fallback">{stock.stockName[0]}</div>
           )}
-
-          {watchlistHasNext && watchlist.length > watchlistPage * 10 && (
-            <button
-              className="next-page-button"
-              onClick={() => setWatchlistPage((prev) => prev + 1)}
-            >
-              다음 페이지
-            </button>
-          )}
+          <div className="stock-info">
+            <span className="stock-name">{stock.stockName}</span>
+            <small className="sector-name">{stock.sectorName}</small>
+          </div>
+          <span className="created-date">
+            {new Date(stock.createdAt).toLocaleDateString("ko-KR")}
+          </span>
         </div>
-      </Modal>
+      ))
+    ) : (
+      <p className="loading-text">관심 종목이 없습니다.</p>
+    )}
+    {watchlistHasNext && watchlist.length > watchlistPage * 10 && (
+      <button
+        className="next-page-button"
+        onClick={() => setWatchlistPage((prev) => prev + 1)}
+      >
+        다음 페이지
+      </button>
+    )}
+  </div>
+</Modal>
 
-      {/* --- 나머지 모달 --- */}
+
+
+      {/* --- 거래 내역 모달 --- */}
       <Modal
         isOpen={isTransactionsModalOpen}
         onClose={() => setTransactionsModalOpen(false)}
         title="전체 거래 내역"
       >
-        <p>추후 기능 예정</p>
+        {transactions.length > 0 ? (
+          <div className="transaction-modal-list">
+            {transactions.map((tx) => (
+              <div key={tx.executionId} className="transaction-item">
+                <span>{formatDate(tx.executedAt)}</span>
+                <span>{tx.stockName}</span>
+                <span className={tx.executionType === "BUY" ? "buy" : "sell"}>
+                  {tx.executionType === "BUY" ? "매수" : "매도"}
+                </span>
+                <span>{tx.quantity}주</span>
+                <span>{tx.price.toLocaleString()}원</span>
+                <span className="total-amount">
+                  ({tx.totalAmount.toLocaleString()}원)
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="loading-text">거래 내역이 없습니다.</p>
+        )}
       </Modal>
 
+      {/* --- 나머지 모달 --- */}
       <Modal
         isOpen={isHoldingsModalOpen}
         onClose={() => setHoldingsModalOpen(false)}

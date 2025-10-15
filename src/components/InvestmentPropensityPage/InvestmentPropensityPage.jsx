@@ -1,8 +1,61 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './InvestmentPropensityPage.css';
-import './LoadingSpinner.css'; // 로딩 스피너 CSS 파일 import
+import './LoadingSpinner.css';
 import Header from '../common/Header';
+import axiosInstance from '../../api/authAxiosInstance';
+import useAuthStore from '../../store/useAuthStore'; // ✅ zustand 스토어 import
+
+// --- API 요청을 위한 데이터 매핑 객체들 ---
+
+const profileMap = {
+  안정형: 'CONSERVATIVE',
+  안정추구형: 'MODERATE_CONSERVATIVE',
+  위험중립형: 'NEUTRAL',
+  적극투자형: 'AGGRESSIVE',
+  공격투자형: 'VERY_AGGRESSIVE',
+};
+
+const budgetMap = {
+  '50만원 이하': 500000,
+  '100만원 이하': 1000000,
+  '200만원 이하': 2000000,
+  '500만원 이하': 5000000,
+  '1000만원 이하': 10000000,
+};
+
+const goalMap = {
+  학비: 'EDUCATION',
+  생활비: 'LIVING_EXPENSES',
+  주택마련: 'HOUSING',
+  자산증식: 'ASSET_GROWTH',
+  채무상환: 'DEBT_REPAYMENT',
+};
+
+const lossMap = {
+  '원금 손실 없음': 'ZERO_PERCENT',
+  '원금의 10%': 'TEN_PERCENT',
+  '원금의 30%': 'THIRTY_PERCENT',
+  '원금의 50%': 'FIFTY_PERCENT',
+  '원금의 70%': 'SEVENTY_PERCENT',
+  '원금 전액': 'FULL_AMOUNT',
+};
+
+const knowledgeMap = {
+  '매우 낮음': 'VERY_LOW',
+  낮음: 'LOW',
+  보통: 'MEDIUM',
+  높음: 'HIGH',
+  '매우 높음': 'VERY_HIGH',
+};
+
+const profitMap = {
+  '150%': 'ONE_HUNDRED_FIFTY_PERCENT',
+  '200%': 'TWO_HUNDRED_PERCENT',
+  '250%': 'TWO_HUNDRED_FIFTY_PERCENT',
+  '300% 이상': 'OVER_THREE_HUNDRED_PERCENT',
+};
+
 
 const InvestmentPropensityPage = () => {
   const [answers, setAnswers] = useState({
@@ -14,10 +67,12 @@ const InvestmentPropensityPage = () => {
     profit: '',
   });
   const [result, setResult] = useState('');
-  const [isNavigating, setIsNavigating] = useState(false); // 페이지 이동 로딩 상태 추가
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const showHeader = !location.pathname.startsWith('/setting');
+  const { user } = useAuthStore(); // ✅ 전역 스토어에서 사용자 정보 가져오기
 
   const questions = [
     {
@@ -28,7 +83,7 @@ const InvestmentPropensityPage = () => {
     },
     {
       id: 'sectors',
-      question: '2. 관심 종목 (3개 선택)', // ✨ 문구 수정
+      question: '2. 관심 종목 (3개 선택)',
       options: [
         '전기·전자', '제약', 'IT 서비스', '화학', '금속', '기타금융', '건설', '기계·장비', '운송장비·부품'
       ],
@@ -64,12 +119,10 @@ const InvestmentPropensityPage = () => {
     setAnswers({ ...answers, [questionId]: option });
   };
 
-  // ✨ 관심 종목 선택 로직 수정
   const handleCheckboxChange = (option) => {
     const isSelected = answers.sectors.includes(option);
     
     if (!isSelected && answers.sectors.length >= 3) {
-      // 3개가 이미 선택된 상태에서 새로운 항목을 추가하려고 할 때 아무 작업도 하지 않음
       return;
     }
 
@@ -80,8 +133,7 @@ const InvestmentPropensityPage = () => {
     setAnswers({ ...answers, sectors: newSectors });
   };
 
-  // ✨ 제출 시 정확히 3개인지 확인하도록 수정
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (answers.sectors.length !== 3) {
@@ -101,26 +153,54 @@ const InvestmentPropensityPage = () => {
       return;
     }
 
-    // 점수 계산 및 결과 설정 (로딩 없이 즉시)
+    setIsSubmitting(true);
+
+    // 점수 계산 및 결과 유형 결정
     let score = 0;
     score += ['50만원 이하', '100만원 이하', '200만원 아하', '500만원 이하', '1000만원 이하'].indexOf(answers.budget);
     score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(answers.knowledge);
     score += ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'].indexOf(answers.loss);
     score += ['150%', '200%', '250%', '300% 이상'].indexOf(answers.profit);
 
-    if (score <= 4) setResult('안정형');
-    else if (score <= 8) setResult('안정추구형');
-    else if (score <= 12) setResult('위험중립형');
-    else if (score <= 16) setResult('적극투자형');
-    else setResult('공격투자형');
+    let resultType = '';
+    if (score <= 4) resultType = '안정형';
+    else if (score <= 8) resultType = '안정추구형';
+    else if (score <= 12) resultType = '위험중립형';
+    else if (score <= 16) resultType = '적극투자형';
+    else resultType = '공격투자형';
+
+    const payload = {
+        investmentProfile: profileMap[resultType],
+        availableAssets: budgetMap[answers.budget],
+        investmentGoal: goalMap[answers.goal],
+        lossTolerance: lossMap[answers.loss],
+        financialKnowledge: knowledgeMap[answers.knowledge],
+        expectedProfit: profitMap[answers.profit],
+        interestedSectorNames: answers.sectors.map(sector => sector.replace('·', '/')),
+    };
+
+    try {
+        // ✅ API POST 요청 시 헤더에 X-User-Id 추가
+        await axiosInstance.post('/api/user/investment-profile/complete', payload, {
+          headers: {
+            'X-User-Id': user?.userId
+          }
+        });
+        
+        setResult(resultType);
+    } catch (error) {
+        console.error("투자 성향 제출 실패:", error);
+        alert('투자 성향 정보를 제출하는 데 실패했습니다. 다시 시도해주세요.');
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
-  // 포트폴리오 페이지로 이동하는 함수
   const handleNavigateToPortfolio = () => {
     setIsNavigating(true);
     setTimeout(() => {
       navigate('/portfolio-main');
-    }, 3000); // 1.5초 후 페이지 이동
+    }, 1500);
   };
 
   if (result) {
@@ -139,8 +219,9 @@ const InvestmentPropensityPage = () => {
             <button
               className="submit-button"
               onClick={handleNavigateToPortfolio}
+              disabled={isNavigating}
             >
-              AI에게 내 포트폴리오 분석 요청하기
+              {isNavigating ? '분석 중...' : 'AI에게 내 포트폴리오 분석 요청하기'}
             </button>
           </div>
         </main>
@@ -150,6 +231,11 @@ const InvestmentPropensityPage = () => {
 
   return (
     <div className="propensity-page-layout">
+      {isSubmitting && (
+          <div className="loading-overlay">
+              <div className="loading-spinner"></div>
+          </div>
+      )}
       {showHeader && <Header />}
       <main className="propensity-content">
         <h1>투자 성향 분석</h1>
@@ -170,6 +256,7 @@ const InvestmentPropensityPage = () => {
                       value={option}
                       checked={type === 'checkbox' ? answers.sectors.includes(option) : answers[id] === option}
                       onChange={() => type === 'checkbox' ? handleCheckboxChange(option) : handleRadioChange(id, option)}
+                      disabled={isSubmitting}
                     />
                     <label htmlFor={option}>{option}</label>
                   </div>
@@ -177,8 +264,8 @@ const InvestmentPropensityPage = () => {
               </div>
             </div>
           ))}
-          <button type="submit" className="submit-button">
-            결과 보기
+          <button type="submit" className="submit-button" disabled={isSubmitting}>
+            {isSubmitting ? '분석 중...' : '결과 보기'}
           </button>
         </form>
       </main>

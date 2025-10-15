@@ -66,9 +66,9 @@ const StockRecommendationPage = () => {
                         <thead>
                             <tr>
                                 <th>기본</th>
-                                <th>종목 <FaCaretDown /></th>
+                                <th>종목 명</th>
                                 <th>거래소 <FaCaretDown /></th>
-                                <th>섹터 <FaCaretDown /></th>
+                                <th>분야 <FaCaretDown /></th>
                                 <th>업종 <FaCaretDown /></th>
                                 <th>시가총액 <FaCaretDown /></th>
                                 <th>주가수익비율 <FaCaretDown /></th>

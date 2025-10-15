@@ -28,7 +28,7 @@ const InvestmentPropensityPage = () => {
     },
     {
       id: 'sectors',
-      question: '2. 관심 종목 (최소 3개 선택)',
+      question: '2. 관심 종목 (3개 선택)', // ✨ 문구 수정
       options: [
         '전기·전자', '제약', 'IT 서비스', '화학', '금속', '기타금융', '건설', '기계·장비', '운송장비·부품'
       ],
@@ -64,18 +64,28 @@ const InvestmentPropensityPage = () => {
     setAnswers({ ...answers, [questionId]: option });
   };
 
+  // ✨ 관심 종목 선택 로직 수정
   const handleCheckboxChange = (option) => {
-    const newSectors = answers.sectors.includes(option)
+    const isSelected = answers.sectors.includes(option);
+    
+    if (!isSelected && answers.sectors.length >= 3) {
+      // 3개가 이미 선택된 상태에서 새로운 항목을 추가하려고 할 때 아무 작업도 하지 않음
+      return;
+    }
+
+    const newSectors = isSelected
       ? answers.sectors.filter((s) => s !== option)
       : [...answers.sectors, option];
+      
     setAnswers({ ...answers, sectors: newSectors });
   };
 
+  // ✨ 제출 시 정확히 3개인지 확인하도록 수정
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (answers.sectors.length < 3) {
-      alert('관심 종목은 최소 3개 이상 선택해야 합니다.');
+    if (answers.sectors.length !== 3) {
+      alert('관심 종목은 3개를 선택해야 합니다.');
       return;
     }
 

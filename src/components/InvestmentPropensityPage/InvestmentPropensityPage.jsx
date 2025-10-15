@@ -120,7 +120,7 @@ const InvestmentPropensityPage = () => {
     setIsNavigating(true);
     setTimeout(() => {
       navigate('/portfolio-main');
-    }, 1500); // 1.5초 후 페이지 이동
+    }, 3000); // 1.5초 후 페이지 이동
   };
 
   if (result) {

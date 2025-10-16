@@ -23,7 +23,6 @@ import QuizPage from "./components/PaperTrading/Quiz";
 
 // ✅ 포트폴리오 관련
 import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
-import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
 import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
 
 // ✅ 설정 관련
@@ -135,14 +134,6 @@ function App() {
             element={
               <PrivateRoute>
                 <PortfolioPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/portfolio/recommendations"
-            element={
-              <PrivateRoute>
-                <StockRecommendationPage />
               </PrivateRoute>
             }
           />

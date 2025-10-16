@@ -106,7 +106,8 @@ const SavingsPage = () => {
                     product_type: selectedCategories.length === 1 ? (selectedCategories[0] === '예금' ? 1 : 2) : 0,
                     bank_type: selectedBankCategory !== 0 ? selectedBankCategory : null,
                     banks: selectedBanks.length > 0 ? selectedBanks : null,
-                    periods: selectedPeriod === '전체' ? null : parseInt(selectedPeriod.replace('개월','')),
+                    // ✅ 수정된 부분: '전체'일 때 null 대신 0을 보내도록 수정
+                    periods: selectedPeriod === '전체' ? 0 : parseInt(selectedPeriod.replace('개월','')),
                     special_conditions: selectedBenefits.length > 0 ? selectedBenefits : null,
                     special_types: selectedProductTypes.length > 0 ? selectedProductTypes : null,
                     interest_rate_sort: sortOrder === '최고금리순' ? 'include_bonus' : 'base_only',
@@ -322,7 +323,19 @@ const SavingsPage = () => {
             </div>
              <div className="filter-item-container" ref={benefitButtonRef}>
               <button className={`filter-button ${isBenefitFilterOpen ? 'active' : ''}`} onClick={() => setIsBenefitFilterOpen(!isBenefitFilterOpen)}> 우대조건 {isBenefitFilterOpen ? <FaMinus /> : <FaPlus />} </button>
-              {isBenefitFilterOpen && ( <div className="filter-panel large" ref={benefitFilterRef}> <div className="panel-section"> <h4>우대조건</h4> <div className="benefit-button-group"> {benefitOptions.map(benefit => ( <button key={benefit.id} className={`period-button ${selectedBenefits.includes(benefit.db_row_name) ? 'active' : ''}`} onClick={() => handleBenefitChange(benefit.db_row_name)}> {benefit.name} </button> ))} </div> </div> <small className="panel-disclaimer">*신협 상품에는 적용되지 않습니다.</small> <div className="panel-actions"> <button className="reset-button" onClick={handleBenefitReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handleBenefitApply}>적용</button> </div> </div> )}
+              {isBenefitFilterOpen && ( <div className="filter-panel large" ref={benefitFilterRef}> <div className="panel-section"> <h4>우대조건</h4> <div className="benefit-button-group"> 
+                
+                {/* ✅ 수정된 부분: db_row_name 대신 name을 사용합니다. */}
+                {benefitOptions.map(benefit => ( 
+                  <button 
+                    key={benefit.id} 
+                    className={`period-button ${selectedBenefits.includes(benefit.name) ? 'active' : ''}`} 
+                    onClick={() => handleBenefitChange(benefit.name)}> 
+                    {benefit.name} 
+                  </button> 
+                ))}
+              
+              </div> </div> <small className="panel-disclaimer">*신협 상품에는 적용되지 않습니다.</small> <div className="panel-actions"> <button className="reset-button" onClick={handleBenefitReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handleBenefitApply}>적용</button> </div> </div> )}
             </div>
           </div>
 

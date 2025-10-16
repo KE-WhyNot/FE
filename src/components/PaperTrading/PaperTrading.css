@@ -398,10 +398,11 @@
 
 /* --- 거래 내역 --- */
 .transaction-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 6px;
 }
+
 
 .transaction-item {
   display: flex;
@@ -410,6 +411,7 @@
   padding: 10px 0;
   border-bottom: 1px solid #eee;
   font-size: 14px;
+  margin-bottom: 0.6rem;
 }
 
 .tx-left {
@@ -457,14 +459,14 @@
   color: #aaa;
 }
 
-/* --- 투자 현황 --- */
-.portfolio-widget .pie-chart-container {
+/* --- 투자 현황 (Pie Chart) --- */
+.pie-chart-container {
   position: relative;
-  flex-grow: 1;
-  min-height: 150px;
+  height: 260px;
+  overflow: visible !important;
+  z-index: 10;
 }
 
-/* 중앙 라벨 */
 .chart-center-label {
   position: absolute;
   top: 50%;
@@ -481,12 +483,13 @@
 
 .chart-center-label strong {
   display: block;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 700;
   color: #333;
 }
 
-/* Nivo 기본 툴팁 비활성화 */
+
+/* Nivo 기본 툴팁 비활성화 (툴팁을 커스텀했으므로 필요할 수 있음) */
 .nivo-tooltip {
   display: none !important;
 }
@@ -502,13 +505,13 @@
 
 .holding-item {
   display: grid;
-  grid-template-columns: 1.5fr 0.7fr 1fr 1fr; /* 종목명 / 수량 / 평균가 / 현재가 */
+  grid-template-columns: 2fr 1fr 1fr 1fr 1.2fr;
   align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f4f4f4;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.95rem;
 }
+
 
 .holding-item .stock-name {
   font-weight: 600;
@@ -534,6 +537,12 @@
   color: #333;
   font-weight: 600;
 }
+
+.holding-item .profit {
+  text-align: right;
+  font-weight: 600;
+}
+
 
 /* 수익 / 손실 색상 강조 */
 .holding-item .positive {
@@ -600,4 +609,10 @@
 .transaction-modal-list::-webkit-scrollbar-thumb {
   background: #ccc;
   border-radius: 3px;
+}
+
+.tx-balance {
+  font-size: 0.85rem;
+  color: #aaa; /* 회색 */
+  margin-top: 2px;
 }

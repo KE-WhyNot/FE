@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
-import "./PaperTrading.css";
 import { ResponsiveLine } from "@nivo/line";
+import { ResponsivePie } from "@nivo/pie";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Modal from "../../components/common/Modal";
 import financeAxios from "../../api/financeAxiosInstance";
+import Modal from "../../components/common/Modal";
 import useAuthStore from "../../store/useAuthStore";
+import "./PaperTrading.css";
 
 // ✅ 날짜 포맷 함수 (ISO → yyyy-MM-dd HH:mm)
 const formatDate = (iso) => {
@@ -18,7 +19,7 @@ const formatDate = (iso) => {
   return `${y}-${m}-${day} ${hh}:${mm}`;
 };
 
-// ✅ 커스텀 툴팁
+// ✅ 라인 차트용 커스텀 툴팁
 const CustomTooltip = ({ info, position }) => {
   if (!info) return null;
 
@@ -56,6 +57,37 @@ const CustomTooltip = ({ info, position }) => {
   );
 };
 
+// ✅ 파이 차트용 커스텀 툴팁 (최종 수정 버전)
+const PieCustomTooltip = ({ datum }) => {
+  const { id, value, data } = datum;
+
+  return (
+    <div
+      style={{
+        background: "rgba(0, 0, 0, 0.85)",
+        color: "#fff",
+        padding: "10px 14px",
+        borderRadius: "8px",
+        fontSize: "14px",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+        minWidth: "160px",      // 최소 너비 지정
+        lineHeight: "1.5",      // 줄 간격 추가
+      }}
+    >
+      <div style={{ fontWeight: "bold", marginBottom: "6px" }}>{id}</div>
+      <div>
+        <span style={{ color: "#aaa", marginRight: "6px" }}>●</span>
+        총 금액: {value.toLocaleString()}원
+      </div>
+      <div>
+        <span style={{ color: "#aaa", marginRight: "6px" }}>●</span>
+        투자 비율: {data.percent}%
+      </div>
+    </div>
+  );
+};
+
+
 const PaperTrading = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
@@ -89,6 +121,9 @@ const PaperTrading = () => {
   const [totalValue, setTotalValue] = useState(0);
   const [totalProfit, setTotalProfit] = useState(0);
   const [totalRate, setTotalRate] = useState(0);
+
+  const [pieData, setPieData] = useState([]);
+
 
   // ✅ 금융 데이터 불러오기
   useEffect(() => {
@@ -216,63 +251,106 @@ const PaperTrading = () => {
     fetchTransactions();
   }, []);
 
-// ✅ 보유 종목 불러오기 (이미지 + 현재가 + 수익률 계산 포함)
-const fetchHoldings = async () => {
-  try {
-    // 1️⃣ 기본 보유 종목 목록
-    const res = await financeAxios.get("https://finance.youth-fi.com/api/user/holdings");
-    const list = res.data?.result || [];
+  // ✅ 보유 종목 불러오기 (이미지 + 현재가 + 수익률 계산 포함)
+  const fetchHoldings = async () => {
+    try {
+      // 1️⃣ 기본 보유 종목 목록
+      const res = await financeAxios.get("https://finance.youth-fi.com/api/user/holdings");
+      const list = res.data?.result || [];
 
-    // 2️⃣ 각 종목에 대해 이미지 + 현재가 + 수익률 계산
-    const enriched = await Promise.all(
-      list.map(async (h) => {
-        try {
-          // 🏦 현재가 불러오기
-          const priceRes = await financeAxios.post("/api/stock/current-price", {
-            marketCode: "J",
-            stockCode: h.stockId,
-          });
-          const current = Number(priceRes.data?.result?.stckPrpr || 0);
-          const change = current - h.avgPrice;
-          const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
+      // 2️⃣ 각 종목에 대해 이미지 + 현재가 + 수익률 계산
+      const enriched = await Promise.all(
+        list.map(async (h) => {
+          try {
+            // 🏦 현재가 불러오기
+            const priceRes = await financeAxios.post("/api/stock/current-price", {
+              marketCode: "J",
+              stockCode: h.stockId,
+            });
+            const current = Number(priceRes.data?.result?.stckPrpr || 0);
+            const change = current - h.avgPrice;
+            const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
 
-          // 🖼️ 종목 이미지 불러오기
-          const infoRes = await financeAxios.get(`/api/stock/list/${h.stockId}`);
-          const info = infoRes.data?.result;
+            // 🖼️ 종목 이미지 불러오기
+            const infoRes = await financeAxios.get(`/api/stock/list/${h.stockId}`);
+            const info = infoRes.data?.result;
 
+            return {
+              ...h,
+              currentPrice: current,
+              change,
+              rate,
+              stockImage: info?.stockImage || null,
+              sectorName: info?.sectorName || "",
+            };
+          } catch (err) {
+            console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
+            return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
+          }
+        })
+      );
+
+      // 3️⃣ 총자산 / 총수익률 계산
+      const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
+      const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
+      const profit = value - cost;
+      const rate = cost ? (profit / cost) * 100 : 0;
+
+      setHoldings(enriched);
+      setTotalValue(value);
+      setTotalProfit(profit);
+      setTotalRate(rate);
+
+      // ✅ 파이 차트용 데이터 계산 (퍼센트 포함)
+      const total = value;
+      let finalPieData = [];
+
+      if (total > 0) {
+        const sorted = [...enriched].sort(
+          (a, b) => b.currentPrice * b.holdingQuantity - a.currentPrice * a.holdingQuantity
+        );
+
+        const top5 = sorted.slice(0, 5);
+        const others = sorted.slice(5);
+        const othersValue = others.reduce(
+          (sum, h) => sum + h.currentPrice * h.holdingQuantity,
+          0
+        );
+
+        const top5Data = top5.map((h) => {
+          const val = h.currentPrice * h.holdingQuantity;
+          const percent = ((val / total) * 100).toFixed(1);
           return {
-            ...h,
-            currentPrice: current,
-            change,
-            rate,
-            stockImage: info?.stockImage || null,
-            sectorName: info?.sectorName || "",
+            id: h.stockName,
+            label: `${h.stockName} (${percent}%)`,
+            value: val,
+            percent: percent, 
           };
-        } catch (err) {
-          console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
-          return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
+        });
+
+        if (others.length > 0) {
+          const othersPercent = ((othersValue / total) * 100).toFixed(1);
+          top5Data.push({
+            id: "기타",
+            label: `기타 (${othersPercent}%)`,
+            value: othersValue,
+            percent: othersPercent,
+          });
         }
-      })
-    );
 
-    // 3️⃣ 총자산 / 총수익률 계산
-    const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
-    const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
-    const profit = value - cost;
-    const rate = cost ? (profit / cost) * 100 : 0;
+        finalPieData = top5Data;
+      }
 
-    setHoldings(enriched);
-    setTotalValue(value);
-    setTotalProfit(profit);
-    setTotalRate(rate);
-  } catch (e) {
-    console.error("❌ 보유 종목 불러오기 실패:", e);
-  }
-};
+      setPieData(finalPieData);
 
-useEffect(() => {
-  fetchHoldings();
-}, []);
+    } catch (e) {
+      console.error("❌ 보유 종목 불러오기 실패:", e);
+    }
+  };
+
+  useEffect(() => {
+    fetchHoldings();
+  }, []);
 
   // ✅ X축 포맷
   const formatXAxisDate = (dateStr) => {
@@ -353,7 +431,7 @@ useEffect(() => {
                     tickSize: 5,
                     tickPadding: 5,
                     tickRotation: -45,
-                    tickValues: getTickValues(chartData[0].data),
+                    tickValues: getTickValues(chartData[0]?.data || []),
                     format: (v) => formatXAxisDate(v),
                   }}
                   axisLeft={{ tickSize: 5, tickPadding: 5 }}
@@ -468,7 +546,7 @@ useEffect(() => {
               </p>
             </div>
 
-                        <div className="holdings-list">
+            <div className="holdings-list">
               {holdings.length > 0 ? (
                 holdings.slice(0, 4).map((h) => (
                   <div key={h.userStockId} className="holding-row">
@@ -554,7 +632,13 @@ useEffect(() => {
                         <div className="tx-price">
                           {tx.price.toLocaleString()}원
                         </div>
+                        {tx.userBalance !== undefined && (
+                          <div className="tx-balance">
+                            {tx.userBalance.toLocaleString()}원
+                          </div>
+                        )}
                       </div>
+
                     </div>
                   );
                 })}
@@ -569,10 +653,29 @@ useEffect(() => {
             <div className="widget-header">
               <h3>투자 현황</h3>
             </div>
+
             <div className="pie-chart-container">
-              <p className="loading-text">포트폴리오 기능 준비 중...</p>
+              {pieData.length > 0 ? (
+                <ResponsivePie
+                  data={pieData}
+                  margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                  innerRadius={0.7}
+                  padAngle={1.2}
+                  cornerRadius={3}
+                  activeOuterRadiusOffset={8}
+                  colors={{ scheme: "paired" }}
+                  borderWidth={1}
+                  borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
+                  enableArcLabels={false}
+                  enableArcLinkLabels={false}
+                  tooltip={({ datum }) => <PieCustomTooltip datum={datum} />}
+                />
+              ) : (
+                <p className="loading-text">투자 데이터 없음</p>
+              )}
             </div>
           </div>
+
         </div>
       </div>
 
@@ -660,23 +763,36 @@ useEffect(() => {
       >
         <div className="holdings-modal-list">
           {holdings.length > 0 ? (
-            holdings.map((h) => (
-              <div key={h.userStockId} className="holding-item">
-                <span className="stock-name">{h.stockName}</span>
-                <span className="quantity">{h.holdingQuantity}주</span>
-                <span className="avg-price">
-                  {h.avgPrice.toLocaleString()}원
-                </span>
-                <span className="current-price">
-                  {h.currentPrice.toLocaleString()}원
-                </span>
-              </div>
-            ))
+            holdings.map((h) => {
+              const profit = (h.currentPrice - h.avgPrice) * h.holdingQuantity;
+              const profitRate = h.avgPrice ? (profit / (h.avgPrice * h.holdingQuantity)) * 100 : 0;
+              const profitClass = profit >= 0 ? "positive" : "negative";
+
+              return (
+                <div key={h.userStockId} className="holding-item">
+                  <span className="stock-name">{h.stockName}</span>
+                  <span className="quantity">{h.holdingQuantity}주</span>
+                  <span className="avg-price">{h.avgPrice.toLocaleString()}원</span>
+                  <span className="current-price">{h.currentPrice.toLocaleString()}원</span>
+
+                  <span className={`profit ${profitClass}`}>
+                    <div className="profit-amount">
+                      {profit >= 0 ? "+" : ""}
+                      {profit.toLocaleString()}원
+                    </div>
+                    <div className="profit-rate">
+                      ({profitRate.toFixed(1)}%)
+                    </div>
+                  </span>
+                </div>
+              );
+            })
           ) : (
             <p className="loading-text">보유 종목이 없습니다.</p>
           )}
         </div>
       </Modal>
+
 
       {/* --- 전체 수익률 랭킹 모달 --- */}
       <Modal
@@ -688,9 +804,8 @@ useEffect(() => {
           {ranking.map((r, idx) => (
             <div
               key={r.userId}
-              className={`ranking-item ${
-                user?.id === r.userId ? "highlight" : ""
-              }`}
+              className={`ranking-item ${user?.id === r.userId ? "highlight" : ""
+                }`}
             >
               <span>{idx + 1}</span>
               <span>{r.userId}</span>

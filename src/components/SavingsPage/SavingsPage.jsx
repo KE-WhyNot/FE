@@ -10,7 +10,7 @@ import qs from 'qs';
 const SavingsPage = () => {
     const [savingsData, setSavingsData] = useState([]);
     const [benefitOptions, setBenefitOptions] = useState([]);
-    const [productTypeOptions, setProductTypeOptions] = useState([]); // ✅ [수정] 상세 유형을 state로 관리
+    const [productTypeOptions, setProductTypeOptions] = useState([]);
     
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -45,6 +45,8 @@ const SavingsPage = () => {
     const [tempSelectedBanks, setTempSelectedBanks] = useState([]);
     const [selectedBanks, setSelectedBanks] = useState([]);
     
+    const [searchWord, setSearchWord] = useState('');
+
     useEffect(() => {
       const fetchBenefitOptions = async () => {
         const type = selectedCategories.includes('적금') ? 2 : 1;
@@ -58,7 +60,6 @@ const SavingsPage = () => {
       fetchBenefitOptions();
     }, [selectedCategories]);
 
-    // ✅ [추가] '예금'/'적금' 선택에 따라 '상세 유형' 목록을 다시 불러옵니다.
     useEffect(() => {
       const fetchDetailedTypeOptions = async () => {
         const type = selectedCategories.includes('적금') ? 2 : 1;
@@ -96,11 +97,13 @@ const SavingsPage = () => {
                 const params = {
                     page_num: currentPage,
                     page_size: itemsPerPage,
+                    search_word: searchWord,
                     product_type: selectedCategories.length === 1 ? (selectedCategories[0] === '예금' ? 1 : 2) : 0,
                     bank_type: selectedBankCategory !== 0 ? selectedBankCategory : null,
                     banks: selectedBanks.length > 0 ? selectedBanks : null,
                     periods: selectedPeriod === '전체' ? null : parseInt(selectedPeriod.replace('개월','')),
                     special_conditions: selectedBenefits.length > 0 ? selectedBenefits : null,
+                    special_types: selectedProductTypes.length > 0 ? selectedProductTypes : null,
                     interest_rate_sort: sortOrder === '최고금리순' ? 'include_bonus' : 'base_only',
                 };
                 
@@ -119,23 +122,20 @@ const SavingsPage = () => {
                   }
                 });
                 
-                let filteredData = response.data.result.finProductList;
-                if (selectedProductTypes.length > 0) {
-                    filteredData = filteredData.filter(item => 
-                        selectedProductTypes.every(type => item.product_type_chip.includes(type))
-                    );
-                }
-
-                setSavingsData(filteredData);
+                setSavingsData(response.data.result.finProductList);
                 setTotalCount(response.data.result.pagging.total_count);
 
             } catch (error) {
                 console.error("Failed to fetch savings data:", error);
+                if (error.response && error.response.status === 404) {
+                    setSavingsData([]);
+                    setTotalCount(0);
+                }
             }
         };
 
         fetchSavingsData();
-    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes, selectedBanks]);
+    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes, selectedBanks, searchWord]);
 
 
     useEffect(() => {
@@ -153,7 +153,6 @@ const SavingsPage = () => {
     const handlePeriodAmountApply = () => { setIsPeriodAmountFilterOpen(false); };
     const periodOptions = ['전체', '6개월', '12개월', '24개월'];
 
-    // ✅ [수정] 상품 분류 변경 시, 우대조건과 상세 유형 선택을 모두 초기화합니다.
     const handleCategoryChange = (category) => {
         setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [category]);
         setSelectedBenefits([]);
@@ -245,7 +244,18 @@ const SavingsPage = () => {
         <h1 className="page-title">예·적금</h1>
         <div className="content-wrapper">
           <div className="filter-bar">
-            <div className="search-box"> <FaSearch className="search-icon" /> <input type="text" placeholder="검색어 입력" /> </div>
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="검색어 입력"
+                value={searchWord}
+                onChange={(e) => {
+                  setSearchWord(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
             <div className="filter-item-container" ref={periodButtonRef}>
               <button className={`filter-button ${isPeriodAmountFilterOpen ? 'active' : ''}`} onClick={() => setIsPeriodAmountFilterOpen(!isPeriodAmountFilterOpen)}> 기간·금액 {isPeriodAmountFilterOpen ? <FaMinus /> : <FaPlus />} </button>
               {isPeriodAmountFilterOpen && ( <div className="filter-panel" ref={periodAmountFilterRef}> <div className="panel-section"> <h4>기간</h4> <div className="period-button-group"> {periodOptions.map(period => ( <button key={period} className={`period-button ${selectedPeriod === period ? 'active' : ''}`} onClick={() => setSelectedPeriod(period)}> {period} </button> ))} </div> </div> <div className="panel-actions"> <button className="reset-button" onClick={handlePeriodAmountReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handlePeriodAmountApply}>적용</button> </div> </div> )}
@@ -287,7 +297,6 @@ const SavingsPage = () => {
                   </div>
                   <div className="panel-section">
                     <h4>상세 유형</h4>
-                    {/* ✅ [수정] 동적으로 불러온 상세 유형 버튼을 렌더링합니다. */}
                     <div className="product-type-button-group">
                       {productTypeOptions.map(type => ( 
                         <button 

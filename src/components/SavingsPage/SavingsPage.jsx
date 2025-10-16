@@ -52,9 +52,14 @@ const SavingsPage = () => {
         const type = selectedCategories.includes('적금') ? 2 : 1;
         try {
           const benefitRes = await policyAxiosInstance.get(`/api/finproduct/filter/special_condition?type=${type}`);
-          setBenefitOptions(benefitRes.data);
+          
+          // ✅ 수정된 부분: API 응답이 배열인지, 객체 안의 배열인지 확인 후 설정
+          const options = Array.isArray(benefitRes.data) ? benefitRes.data : benefitRes.data.data;
+          
+          setBenefitOptions(Array.isArray(options) ? options : []);
         } catch (error) {
           console.error("Failed to fetch benefit options:", error);
+          setBenefitOptions([]); // ✅ 에러 발생 시 빈 배열로 초기화
         }
       };
       fetchBenefitOptions();

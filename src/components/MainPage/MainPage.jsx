@@ -74,7 +74,7 @@ const MainPage = () => {
     queryKey: ["investmentProfile", userId],
     queryFn: async () => {
       const res = await financeAxios.post(
-        "/api/user/investment-profile/send-to-llm",
+        // "/api/user/investment-profile/send-to-llm",
         {},
         { headers: { "X-User-Id": userId } }
       );

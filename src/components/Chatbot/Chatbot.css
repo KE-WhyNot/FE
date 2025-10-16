@@ -84,13 +84,21 @@
   padding: 0.8rem 1rem;
   border-radius: 18px;
   max-width: 80%;
-  line-height: 1.5;
+  line-height: 1.6;
+  white-space: pre-line; 
+  position: relative;
 }
 
 .message-bubble.bot {
   background-color: #f1f3f5;
   border-bottom-left-radius: 4px;
   align-self: flex-start;
+}
+
+.message-bubble.bot.loading {
+  font-style: italic;
+  color: #666;
+  background-color: #f1f3f5;
 }
 
 .message-bubble.user {
@@ -130,4 +138,16 @@
   padding: 0.5rem;
   display: flex;
   align-items: center;
+}
+
+.more-btn {
+  background: none;
+  border: none;
+  color: #6e55ff;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 6px;
+  padding: 0;
+  font-size: 0.9rem;
+  text-align: left;
 }

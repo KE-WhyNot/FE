@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom';
 import './SavingsPage.css';
 import Header from '../common/Header';
 import { FaSearch, FaPlus, FaChevronDown, FaMinus, FaSyncAlt } from 'react-icons/fa';
-import axios from 'axios';
-import Modal from '../common/Modal'; // Modal 컴포넌트를 import 합니다.
+import policyAxiosInstance from '../../api/policyAxiosInstance';
+import Modal from '../common/Modal';
+import qs from 'qs';
 
 const SavingsPage = () => {
     const [savingsData, setSavingsData] = useState([]);
     const [benefitOptions, setBenefitOptions] = useState([]);
+    const [productTypeOptions, setProductTypeOptions] = useState([]);
     
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -37,39 +39,55 @@ const SavingsPage = () => {
     const benefitFilterRef = useRef(null);
     const benefitButtonRef = useRef(null);
     
-    // --- 은행 선택 모달 관련 상태 ---
     const [isBankModalOpen, setIsBankModalOpen] = useState(false);
     const [bankOptions, setBankOptions] = useState([]);
-    const [modalBankType, setModalBankType] = useState(1); // 1: 은행, 2: 저축은행
+    const [modalBankType, setModalBankType] = useState(1);
     const [tempSelectedBanks, setTempSelectedBanks] = useState([]);
     const [selectedBanks, setSelectedBanks] = useState([]);
     
-    const api = axios.create({
-      baseURL: 'https://policy.youth-fi.com',
-    });
-    
+    const [searchWord, setSearchWord] = useState('');
+
     useEffect(() => {
       const fetchBenefitOptions = async () => {
+        const type = selectedCategories.includes('적금') ? 2 : 1;
         try {
-          const benefitRes = await api.get('/api/finproduct/filter/special_condition?type=1');
-          setBenefitOptions(benefitRes.data);
+          const benefitRes = await policyAxiosInstance.get(`/api/finproduct/filter/special_condition?type=${type}`);
+          
+          // ✅ 수정된 부분: API 응답이 배열인지, 객체 안의 배열인지 확인 후 설정
+          const options = Array.isArray(benefitRes.data) ? benefitRes.data : benefitRes.data.data;
+          
+          setBenefitOptions(Array.isArray(options) ? options : []);
         } catch (error) {
           console.error("Failed to fetch benefit options:", error);
+          setBenefitOptions([]); // ✅ 에러 발생 시 빈 배열로 초기화
         }
       };
       fetchBenefitOptions();
-    }, []);
+    }, [selectedCategories]);
 
-    // --- 은행 목록을 모달이 열릴 때 가져오도록 수정 ---
+    useEffect(() => {
+      const fetchDetailedTypeOptions = async () => {
+        const type = selectedCategories.includes('적금') ? 2 : 1;
+        try {
+          const res = await policyAxiosInstance.get(`/api/finproduct/filter/special_type?type=${type}`);
+          setProductTypeOptions(res.data || []);
+        } catch (error) {
+          console.error("Failed to fetch detailed type options:", error);
+          setProductTypeOptions([]);
+        }
+      };
+      fetchDetailedTypeOptions();
+    }, [selectedCategories]);
+
+
     useEffect(() => {
         if (!isBankModalOpen) return;
-
         const fetchBankOptions = async () => {
             try {
-                const response = await api.get('/api/finproduct/filter/bank', {
+                const response = await policyAxiosInstance.get('/api/finproduct/filter/bank', {
                     params: { type: modalBankType }
                 });
-                setBankOptions(response.data.result || []);
+                setBankOptions(response.data || []);
             } catch (error) {
                 console.error("Failed to fetch bank options:", error);
                 setBankOptions([]);
@@ -84,11 +102,13 @@ const SavingsPage = () => {
                 const params = {
                     page_num: currentPage,
                     page_size: itemsPerPage,
+                    search_word: searchWord,
                     product_type: selectedCategories.length === 1 ? (selectedCategories[0] === '예금' ? 1 : 2) : 0,
                     bank_type: selectedBankCategory !== 0 ? selectedBankCategory : null,
                     banks: selectedBanks.length > 0 ? selectedBanks : null,
                     periods: selectedPeriod === '전체' ? null : parseInt(selectedPeriod.replace('개월','')),
                     special_conditions: selectedBenefits.length > 0 ? selectedBenefits : null,
+                    special_types: selectedProductTypes.length > 0 ? selectedProductTypes : null,
                     interest_rate_sort: sortOrder === '최고금리순' ? 'include_bonus' : 'base_only',
                 };
                 
@@ -99,26 +119,28 @@ const SavingsPage = () => {
                     }
                   }
                 });
-
-                const response = await api.get('/api/finproduct/list', { params });
                 
-                let filteredData = response.data.result.finProductList;
-                if (selectedProductTypes.length > 0) {
-                    filteredData = filteredData.filter(item => 
-                        selectedProductTypes.every(type => item.product_type_chip.includes(type))
-                    );
-                }
-
-                setSavingsData(filteredData);
+                const response = await policyAxiosInstance.get('/api/finproduct/list', {
+                  params,
+                  paramsSerializer: params => {
+                    return qs.stringify(params, { arrayFormat: 'repeat' });
+                  }
+                });
+                
+                setSavingsData(response.data.result.finProductList);
                 setTotalCount(response.data.result.pagging.total_count);
 
             } catch (error) {
                 console.error("Failed to fetch savings data:", error);
+                if (error.response && error.response.status === 404) {
+                    setSavingsData([]);
+                    setTotalCount(0);
+                }
             }
         };
 
         fetchSavingsData();
-    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes, selectedBanks]);
+    }, [selectedBankCategory, selectedCategories, selectedPeriod, selectedBenefits, sortOrder, currentPage, selectedProductTypes, selectedBanks, searchWord]);
 
 
     useEffect(() => {
@@ -136,7 +158,13 @@ const SavingsPage = () => {
     const handlePeriodAmountApply = () => { setIsPeriodAmountFilterOpen(false); };
     const periodOptions = ['전체', '6개월', '12개월', '24개월'];
 
-    const handleCategoryChange = (category) => { setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [category]); setCurrentPage(1); };
+    const handleCategoryChange = (category) => {
+        setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [category]);
+        setSelectedBenefits([]);
+        setSelectedProductTypes([]);
+        setCurrentPage(1);
+    };
+
     const handleProductTypeChange = (type) => { setSelectedProductTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]); setCurrentPage(1); };
     
     const handleBankCategoryChange = (bankCategoryId) => {
@@ -148,20 +176,17 @@ const SavingsPage = () => {
         setSelectedProductTypes([]); 
         setSelectedCategories([]); 
         setSelectedBankCategory(0);
-        setSelectedBanks([]); // 선택된 은행도 초기화
+        setSelectedBanks([]);
         setCurrentPage(1);
     };
     const handleProductTypeApply = () => { setIsProductTypeFilterOpen(false); };
     
-    const productTypeOptions = ['특판', '방문없이 가입', '누구나가입'];
-
     const handleBenefitChange = (benefit) => { setSelectedBenefits(prev => prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]); setCurrentPage(1); };
     const handleBenefitReset = () => { setSelectedBenefits([]); };
     const handleBenefitApply = () => { setIsBenefitFilterOpen(false); };
   
     const categoryTitle = selectedCategories.length === 1 ? selectedCategories[0] : '예·적금';
     
-    // --- 은행 모달 관련 핸들러 ---
     const handleOpenBankModal = (bankType) => {
         setSelectedBankCategory(bankType);
         setModalBankType(bankType);
@@ -173,17 +198,17 @@ const SavingsPage = () => {
         setIsBankModalOpen(false);
     };
 
-    const handleTempBankSelect = (bankName) => {
+    const handleTempBankSelect = (bankNickname) => {
         setTempSelectedBanks(prev => 
-            prev.includes(bankName) 
-            ? prev.filter(b => b !== bankName) 
-            : [...prev, bankName]
+            prev.includes(bankNickname) 
+            ? prev.filter(b => b !== bankNickname) 
+            : [...prev, bankNickname]
         );
     };
 
     const handleSelectAllBanks = (e) => {
         if (e.target.checked) {
-            setTempSelectedBanks(bankOptions.map(b => b.bank_name));
+            setTempSelectedBanks(bankOptions.map(b => b.nickname));
         } else {
             setTempSelectedBanks([]);
         }
@@ -224,7 +249,18 @@ const SavingsPage = () => {
         <h1 className="page-title">예·적금</h1>
         <div className="content-wrapper">
           <div className="filter-bar">
-            <div className="search-box"> <FaSearch className="search-icon" /> <input type="text" placeholder="검색어 입력" /> </div>
+            <div className="search-box">
+              <FaSearch className="search-icon" />
+              <input
+                type="text"
+                placeholder="검색어 입력"
+                value={searchWord}
+                onChange={(e) => {
+                  setSearchWord(e.target.value);
+                  setCurrentPage(1);
+                }}
+              />
+            </div>
             <div className="filter-item-container" ref={periodButtonRef}>
               <button className={`filter-button ${isPeriodAmountFilterOpen ? 'active' : ''}`} onClick={() => setIsPeriodAmountFilterOpen(!isPeriodAmountFilterOpen)}> 기간·금액 {isPeriodAmountFilterOpen ? <FaMinus /> : <FaPlus />} </button>
               {isPeriodAmountFilterOpen && ( <div className="filter-panel" ref={periodAmountFilterRef}> <div className="panel-section"> <h4>기간</h4> <div className="period-button-group"> {periodOptions.map(period => ( <button key={period} className={`period-button ${selectedPeriod === period ? 'active' : ''}`} onClick={() => setSelectedPeriod(period)}> {period} </button> ))} </div> </div> <div className="panel-actions"> <button className="reset-button" onClick={handlePeriodAmountReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handlePeriodAmountApply}>적용</button> </div> </div> )}
@@ -267,7 +303,14 @@ const SavingsPage = () => {
                   <div className="panel-section">
                     <h4>상세 유형</h4>
                     <div className="product-type-button-group">
-                      {productTypeOptions.map(type => ( <button key={type} className={`period-button ${selectedProductTypes.includes(type) ? 'active' : ''}`} onClick={() => handleProductTypeChange(type)}> {type} </button>))}
+                      {productTypeOptions.map(type => ( 
+                        <button 
+                          key={type.id} 
+                          className={`period-button ${selectedProductTypes.includes(type.name) ? 'active' : ''}`} 
+                          onClick={() => handleProductTypeChange(type.name)}> 
+                          {type.name} 
+                        </button>
+                      ))}
                     </div>
                   </div>
                   <div className="panel-actions">
@@ -353,14 +396,14 @@ const SavingsPage = () => {
             <div className="bank-grid">
               {bankOptions.map(bank => (
                 <div 
-                  key={bank.bank_id} 
-                  className={`bank-item ${tempSelectedBanks.includes(bank.bank_name) ? 'active' : ''}`}
-                  onClick={() => handleTempBankSelect(bank.bank_name)}
+                  key={bank.id} 
+                  className={`bank-item ${tempSelectedBanks.includes(bank.nickname) ? 'active' : ''}`}
+                  onClick={() => handleTempBankSelect(bank.nickname)}
                 >
                   <div className="bank-item-logo">
-                    <img src={bank.image_url} alt={bank.bank_name} />
+                    <img src={bank.image_url} alt={bank.kor_co_nm} />
                   </div>
-                  <span className="bank-item-name">{bank.bank_name}</span>
+                  <span className="bank-item-name">{bank.nickname}</span>
                   <div className="bank-item-plus">+</div>
                 </div>
               ))}

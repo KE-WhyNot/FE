@@ -417,10 +417,9 @@
 /* --- '상세 유형' 버튼 그룹 스타일 --- */
 .product-type-button-group {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr); /* 3을 2로 수정 */
   gap: 0.5rem;
 }
-
 /* SavingsPage.css 파일 하단에 추가 */
 
 .bank-modal-body {

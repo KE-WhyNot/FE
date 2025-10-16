@@ -92,6 +92,10 @@ const PolicyPage = () => {
     selectedFilters,
     setSelectedFilters,
     resetFilters,
+    searchInput,
+    setSearchInput,
+    searchWord,
+    setSearchWord,
   } = usePolicyUIStore();
 
   const sortDropdownRef = useRef(null);
@@ -100,8 +104,9 @@ const PolicyPage = () => {
     setPageNum(1);
   }, [setPageNum]);
 
+  // ✅ 검색어까지 전달
   const { data, isLoading, isError, error, refetch, isFetching } =
-    usePoliciesQuery(pageNum, pageSize, selectedFilters, sortOrder);
+    usePoliciesQuery(pageNum, pageSize, selectedFilters, sortOrder, searchWord);
 
   const policies = data?.list || [];
   const totalCount = data?.totalCount || 0;
@@ -150,13 +155,14 @@ const PolicyPage = () => {
   };
 
   const handleSearch = () => {
-    // 검색 시점에 API 호출
-    refetch();
+    setPageNum(1);
+    refetch(); // ✅ 검색어 반영 후 API 호출
     setActiveFilter(null);
   };
 
   const handleReset = () => {
     resetFilters();
+    setSearchWord(""); // ✅ 검색어 초기화
     refetch();
   };
 
@@ -197,7 +203,6 @@ const PolicyPage = () => {
 
   const handleOpenRegionModal = () => setIsRegionModalOpen(true);
   const handleCloseRegionModal = () => setIsRegionModalOpen(false);
-
   const handleResetRegions = () => {
     setSelectedRegion(null);
     setSubRegions([]);
@@ -208,32 +213,24 @@ const PolicyPage = () => {
     const newPersonalFilters = { ...selectedFilters.personal };
 
     if (selectedRegion) {
-      // ✅ 전국 선택 시
       if (selectedRegion.name === "전국") {
         newPersonalFilters["지역"] = "전국";
-      }
-      // ✅ 시/도 전체 선택 시 (모든 하위 구/군이 선택됨)
-      else if (
+      } else if (
         selectedSubRegions.length > 0 &&
         selectedSubRegions.length === subRegions.length
       ) {
         newPersonalFilters["지역"] = `${selectedRegion.name} 전체`;
-      }
-      // ✅ 일부 구/군만 선택 시
-      else if (selectedSubRegions.length > 0) {
+      } else if (selectedSubRegions.length > 0) {
         newPersonalFilters["지역"] = `${
           selectedRegion.name
         } ${selectedSubRegions.map((r) => r.name).join(", ")}`;
-      }
-      // ✅ 하위 지역이 전혀 선택되지 않은 경우
-      else {
+      } else {
         newPersonalFilters["지역"] = selectedRegion.name;
       }
     } else {
       newPersonalFilters["지역"] = "";
     }
 
-    // 지역 ID 저장 (API 호출 X)
     newPersonalFilters["지역_ID"] = {
       parentId: selectedRegion?.id || null,
       subIds: selectedSubRegions.map((r) => r.id),
@@ -261,9 +258,30 @@ const PolicyPage = () => {
         <div className="policy-filter-container">
           <div className="policy-filter-bar">
             <div className="search-box">
-              <FaSearch className="search-icon" />
-              <input type="text" placeholder="검색어 입력" />
-            </div>
+              <FaSearch
+              className="search-icon"
+              style={{ cursor: "pointer" }}
+              onClick={() => {
+                setPageNum(1);
+                setSearchWord(searchInput); // ✅ 돋보기 클릭 시 반영
+                refetch();
+              }}
+              />
+              <input
+              type="text"
+              placeholder="검색어 입력"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setPageNum(1);
+                  setSearchWord(searchInput); // ✅ 엔터 입력 시 반영
+                  refetch();
+                }
+              }}
+            />
+          </div>
+
             <button
               className={`filter-button ${
                 activeFilter === "category" ? "active" : ""
@@ -363,7 +381,12 @@ const PolicyPage = () => {
                   <div className="filter-group">
                     <label>혼인여부</label>
                     <div className="region-select-box">
-                      <select>
+                      <select
+                        value={selectedFilters.personal["혼인여부"] || ""}
+                        onChange={(e) =>
+                          handlePersonalFilterChange("혼인여부", e.target.value)
+                        }
+                      >
                         <option value="">선택하세요.</option>
                         <option value="미혼">미혼</option>
                         <option value="기혼">기혼</option>
@@ -383,12 +406,10 @@ const PolicyPage = () => {
                         min="0"
                         step="1"
                         onInput={(e) => {
-                          // 0보다 작은 값 입력 불가
                           if (e.target.value < 0) e.target.value = 0;
-                          // 소수점 입력 시 자동 정수화
                           e.target.value = e.target.value.replace(/\D/g, "");
                         }}
-                        onWheel={(e) => e.target.blur()} // 🔥 마우스 휠로 값 변경 방지
+                        onWheel={(e) => e.target.blur()}
                       />
                       <span>세</span>
                     </div>
@@ -402,12 +423,10 @@ const PolicyPage = () => {
                       min="1"
                       step="1"
                       onInput={(e) => {
-                        // 1 미만 금지
                         if (e.target.value < 1) e.target.value = "";
-                        // 숫자만 허용
                         e.target.value = e.target.value.replace(/\D/g, "");
                       }}
-                      onWheel={(e) => e.target.blur()} // 🔥 휠 방지
+                      onWheel={(e) => e.target.blur()}
                     />
                     <span>~</span>
                     <input

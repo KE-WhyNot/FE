@@ -21,22 +21,26 @@ const Header = () => {
   } = useNotificationStore();
 
   const navigate = useNavigate();
-  const userId = user?.id || 1;
 
-  // ✅ 초기 데이터 로드
+  // ✅ 스토어에 따라 id/userId 모두 대응
+  const uid = user?.id ?? user?.userId ?? null;
+
+  // ✅ 로그인 & uid 준비된 뒤에만 호출
   useEffect(() => {
-    fetchHeaderNotifications(userId); // 4개만
-    fetchUnreadCount(userId);
-  }, [userId, fetchHeaderNotifications, fetchUnreadCount]);
+    if (!isAuthenticated || !uid) return;
+    fetchHeaderNotifications(uid);
+    fetchUnreadCount(uid);
+  }, [isAuthenticated, uid, fetchHeaderNotifications, fetchUnreadCount]);
 
   const toggleNotificationPanel = () => {
-    setIsPanelOpen(!isPanelOpen);
+    setIsPanelOpen((v) => !v);
   };
 
   const handleNotificationClick = async (id) => {
-    await markAsRead(userId, id);
-    await fetchHeaderNotifications(userId); // ✅ 클릭 후 헤더 새로고침
-    await fetchUnreadCount(userId);
+    if (!uid) return;
+    await markAsRead(uid, id);
+    await fetchHeaderNotifications(uid);
+    await fetchUnreadCount(uid);
   };
 
   const handleViewAllNotifications = () => {
@@ -82,10 +86,7 @@ const Header = () => {
 
           {/* --- 알림 아이콘 --- */}
           <div className="notification-container">
-            <div
-              className="notification-bell"
-              onClick={toggleNotificationPanel}
-            >
+            <div className="notification-bell" onClick={toggleNotificationPanel}>
               <IoMdNotifications />
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount}</span>
@@ -100,28 +101,19 @@ const Header = () => {
                     headerNotifications.map((n) => (
                       <div
                         key={n.notificationId}
-                        className={`notification-item ${
-                          n.read ? "read" : "unread"
-                        }`}
-                        onClick={() =>
-                          handleNotificationClick(n.notificationId)
-                        }
+                        className={`notification-item ${n.read ? "read" : "unread"}`}
+                        onClick={() => handleNotificationClick(n.notificationId)}
                       >
                         {n.message}
                       </div>
                     ))
                   ) : (
-                    <div className="notification-item">
-                      새로운 알림이 없습니다.
-                    </div>
+                    <div className="notification-item">새로운 알림이 없습니다.</div>
                   )}
                 </div>
 
                 <div className="notification-footer">
-                  <button
-                    onClick={handleViewAllNotifications}
-                    className="view-all-btn"
-                  >
+                  <button onClick={handleViewAllNotifications} className="view-all-btn">
                     전체 알림 보기
                   </button>
                 </div>

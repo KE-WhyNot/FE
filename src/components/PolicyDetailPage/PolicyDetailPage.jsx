@@ -138,8 +138,8 @@ const PolicyDetailPage = () => {
           data={{
             "출처": meta?.ext_source,
             "조회수": meta?.views,
-            "등록일": meta?.created_at,
-            "수정일": meta?.updated_at,
+            "등록일": meta?.first_external_created || meta?.created_at,
+            "수정일": meta?.last_external_modified || meta?.updated_at,
           }}
         />
       </main>

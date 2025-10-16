@@ -3,23 +3,35 @@ import policyAxios from "../api/policyAxiosInstance";
 
 /**
  * 정책 목록 요청 훅
- * - 필터 상태(selectedFilters)와 정렬(sortOrder)에 따라 API 호출
- * - 한글 인코딩 / 빈 값 / 숫자 ID 처리 최적화
+ * - 필터 상태(selectedFilters), 정렬(sortOrder), 검색어(searchWord)에 따라 API 호출
  */
 export const usePoliciesQuery = (
   pageNum,
   pageSize,
   selectedFilters,
-  sortOrder
+  sortOrder,
+  searchWord // ✅ 추가됨
 ) => {
   return useQuery({
-    queryKey: ["policies", pageNum, pageSize, selectedFilters, sortOrder],
+    queryKey: [
+      "policies",
+      pageNum,
+      pageSize,
+      selectedFilters,
+      sortOrder,
+      searchWord,
+    ],
     queryFn: async () => {
       const params = new URLSearchParams();
 
       // ✅ 페이지 정보
       params.append("page_num", pageNum);
       params.append("page_size", pageSize);
+
+      // ✅ 검색어 추가
+      if (searchWord && searchWord.trim() !== "") {
+        params.append("search_word", searchWord.trim());
+      }
 
       // ✅ 정책 카테고리 (소분류)
       Object.entries(selectedFilters.categories || {}).forEach(([_, subs]) => {
@@ -78,33 +90,28 @@ export const usePoliciesQuery = (
         params.append("specialization", personal["특화분야"]);
       }
 
-      // ✅ 정렬 순서 (한글 → API용 sort_by 코드 매핑)
+      // ✅ 정렬 순서 (한글 → API sort_by 코드 매핑)
       const sortMap = {
         마감임박순: "deadline",
         최신순: "newest",
         오래된순: "oldest",
       };
+      params.append("sort_by", sortMap[sortOrder] || "deadline");
 
-      const sortBy = sortMap[sortOrder] || "deadline"; // 기본값: 마감임박순
-      params.append("sort_by", sortBy);
-
-      // ✅ 최종 URL 생성
+      // ✅ 최종 URL
       const queryString = params.toString();
       const url = `/api/policy/list?${queryString}`;
 
-      // ✅ 디버깅용 로그
       console.log("📡 [정책 요청 URL]", decodeURIComponent(url));
 
-      // ✅ 실제 요청
+      // ✅ 요청
       let res;
       try {
         res = await policyAxios.get(url);
       } catch (err) {
-        // ✅ 404면 "결과 없음" 처리
         if (err.response && err.response.status === 404) {
           return { list: [], totalCount: 0 };
         }
-        // ✅ 그 외는 에러 throw
         throw err;
       }
 

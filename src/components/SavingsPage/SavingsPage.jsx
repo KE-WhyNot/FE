@@ -3,13 +3,14 @@ import { Link } from 'react-router-dom';
 import './SavingsPage.css';
 import Header from '../common/Header';
 import { FaSearch, FaPlus, FaChevronDown, FaMinus, FaSyncAlt } from 'react-icons/fa';
-import policyAxiosInstance from '../../api/policyAxiosInstance'; // ✅ 수정: 공용 인스턴스 사용
+import policyAxiosInstance from '../../api/policyAxiosInstance';
 import Modal from '../common/Modal';
-import qs from 'qs'; // ✅ qs 라이브러리 추가
+import qs from 'qs';
 
 const SavingsPage = () => {
     const [savingsData, setSavingsData] = useState([]);
     const [benefitOptions, setBenefitOptions] = useState([]);
+    const [productTypeOptions, setProductTypeOptions] = useState([]); // ✅ [수정] 상세 유형을 state로 관리
     
     const [currentPage, setCurrentPage] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
@@ -46,15 +47,32 @@ const SavingsPage = () => {
     
     useEffect(() => {
       const fetchBenefitOptions = async () => {
+        const type = selectedCategories.includes('적금') ? 2 : 1;
         try {
-          const benefitRes = await policyAxiosInstance.get('/api/finproduct/filter/special_condition?type=1');
+          const benefitRes = await policyAxiosInstance.get(`/api/finproduct/filter/special_condition?type=${type}`);
           setBenefitOptions(benefitRes.data);
         } catch (error) {
           console.error("Failed to fetch benefit options:", error);
         }
       };
       fetchBenefitOptions();
-    }, []);
+    }, [selectedCategories]);
+
+    // ✅ [추가] '예금'/'적금' 선택에 따라 '상세 유형' 목록을 다시 불러옵니다.
+    useEffect(() => {
+      const fetchDetailedTypeOptions = async () => {
+        const type = selectedCategories.includes('적금') ? 2 : 1;
+        try {
+          const res = await policyAxiosInstance.get(`/api/finproduct/filter/special_type?type=${type}`);
+          setProductTypeOptions(res.data || []);
+        } catch (error) {
+          console.error("Failed to fetch detailed type options:", error);
+          setProductTypeOptions([]);
+        }
+      };
+      fetchDetailedTypeOptions();
+    }, [selectedCategories]);
+
 
     useEffect(() => {
         if (!isBankModalOpen) return;
@@ -94,7 +112,6 @@ const SavingsPage = () => {
                   }
                 });
                 
-                // ✅ 수정: paramsSerializer 추가
                 const response = await policyAxiosInstance.get('/api/finproduct/list', {
                   params,
                   paramsSerializer: params => {
@@ -136,7 +153,14 @@ const SavingsPage = () => {
     const handlePeriodAmountApply = () => { setIsPeriodAmountFilterOpen(false); };
     const periodOptions = ['전체', '6개월', '12개월', '24개월'];
 
-    const handleCategoryChange = (category) => { setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [category]); setCurrentPage(1); };
+    // ✅ [수정] 상품 분류 변경 시, 우대조건과 상세 유형 선택을 모두 초기화합니다.
+    const handleCategoryChange = (category) => {
+        setSelectedCategories(prev => prev.includes(category) ? prev.filter(c => c !== category) : [category]);
+        setSelectedBenefits([]);
+        setSelectedProductTypes([]);
+        setCurrentPage(1);
+    };
+
     const handleProductTypeChange = (type) => { setSelectedProductTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]); setCurrentPage(1); };
     
     const handleBankCategoryChange = (bankCategoryId) => {
@@ -153,8 +177,6 @@ const SavingsPage = () => {
     };
     const handleProductTypeApply = () => { setIsProductTypeFilterOpen(false); };
     
-    const productTypeOptions = ['방문없이 가입', '누구나가입'];
-
     const handleBenefitChange = (benefit) => { setSelectedBenefits(prev => prev.includes(benefit) ? prev.filter(b => b !== benefit) : [...prev, benefit]); setCurrentPage(1); };
     const handleBenefitReset = () => { setSelectedBenefits([]); };
     const handleBenefitApply = () => { setIsBenefitFilterOpen(false); };
@@ -265,8 +287,16 @@ const SavingsPage = () => {
                   </div>
                   <div className="panel-section">
                     <h4>상세 유형</h4>
+                    {/* ✅ [수정] 동적으로 불러온 상세 유형 버튼을 렌더링합니다. */}
                     <div className="product-type-button-group">
-                      {productTypeOptions.map(type => ( <button key={type} className={`period-button ${selectedProductTypes.includes(type) ? 'active' : ''}`} onClick={() => handleProductTypeChange(type)}> {type} </button>))}
+                      {productTypeOptions.map(type => ( 
+                        <button 
+                          key={type.id} 
+                          className={`period-button ${selectedProductTypes.includes(type.name) ? 'active' : ''}`} 
+                          onClick={() => handleProductTypeChange(type.name)}> 
+                          {type.name} 
+                        </button>
+                      ))}
                     </div>
                   </div>
                   <div className="panel-actions">

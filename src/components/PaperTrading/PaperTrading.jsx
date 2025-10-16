@@ -236,27 +236,35 @@ const PaperTrading = () => {
   }, []);
 
   // ✅ 거래 내역 불러오기
-  const fetchTransactions = async () => {
-    try {
-      const res = await financeAxios.get("/api/user/trading/history");
-      let list = res.data?.result || [];
-      list = list.sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
-      setTransactions(list);
-    } catch (e) {
-      console.error("❌ 거래 내역 불러오기 실패:", e);
-    }
-  };
+const fetchTransactions = async () => {
+  try {
+    const userId = user?.id ?? user?.userId ?? "guest";
+    const res = await financeAxios.get("/api/user/trading/history", {
+      headers: { "X-User-Id": userId },
+    });
+    let list = res.data?.result || [];
+    list = list.sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
+    setTransactions(list);
+  } catch (e) {
+    console.error("❌ 거래 내역 불러오기 실패:", e);
+  }
+};
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   // ✅ 보유 종목 불러오기 (이미지 + 현재가 + 수익률 계산 포함)
-  const fetchHoldings = async () => {
-    try {
-      // 1️⃣ 기본 보유 종목 목록
-      const res = await financeAxios.get("https://finance.youth-fi.com/api/user/holdings");
-      const list = res.data?.result || [];
+const fetchHoldings = async () => {
+  try {
+    const userId = user?.id ?? user?.userId ?? "guest";
+    const res = await financeAxios.get(
+      "https://finance.youth-fi.com/api/user/holdings",
+      {
+        headers: { "X-User-Id": userId },
+      }
+    );
+    const list = res.data?.result || [];
 
       // 2️⃣ 각 종목에 대해 이미지 + 현재가 + 수익률 계산
       const enriched = await Promise.all(

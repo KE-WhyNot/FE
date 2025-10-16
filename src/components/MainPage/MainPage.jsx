@@ -8,13 +8,17 @@ import {
   FaGraduationCap,
   FaHeartbeat,
   FaUsers,
-  FaLandmark,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import policyAxios from "../../api/policyAxiosInstance";
+import financeAxios from "../../api/financeAxiosInstance";
+import useAuthStore from "../../store/useAuthStore"; // ✅ 로그인 유저 불러오기
 
 const MainPage = () => {
+  const { user } = useAuthStore();
+  const userId = user?.id || "test123"; // ✅ 로그인된 유저 ID (테스트용 fallback)
+
   // ✅ 최신 정책 3개 불러오기
   const {
     data: policies,
@@ -31,37 +35,53 @@ const MainPage = () => {
   });
 
   // ✅ 예적금 3개 불러오기
-const {
-  data: finProducts,
-  isLoading: isFinLoading,
-  isError: isFinError,
-} = useQuery({
-  queryKey: ["finProducts"],
-  queryFn: async () => {
-    const res = await policyAxios.get("/api/finproduct/list", {
-      params: {
-        page_num: 1,
-        page_size: 3,
-        banks: [92, 94], 
-        interest_rate_sort: "include_bonus",
-      },
+  const {
+    data: finProducts,
+    isLoading: isFinLoading,
+    isError: isFinError,
+  } = useQuery({
+    queryKey: ["finProducts"],
+    queryFn: async () => {
+      const res = await policyAxios.get("/api/finproduct/list", {
+        params: {
+          page_num: 1,
+          page_size: 3,
+          banks: [92, 94],
+          interest_rate_sort: "include_bonus",
+        },
+        paramsSerializer: (params) => {
+          return Object.keys(params)
+            .map((key) => {
+              const value = params[key];
+              if (Array.isArray(value)) {
+                return value.map((v) => `${key}=${encodeURIComponent(v)}`).join("&");
+              }
+              return `${key}=${encodeURIComponent(value)}`;
+            })
+            .join("&");
+        },
+      });
+      return res.data?.result?.finProductList || [];
+    },
+  });
 
-      paramsSerializer: (params) => {
-        return Object.keys(params)
-          .map((key) => {
-            const value = params[key];
-            if (Array.isArray(value)) {
-              return value.map((v) => `${key}=${encodeURIComponent(v)}`).join("&");
-            }
-            return `${key}=${encodeURIComponent(value)}`;
-          })
-          .join("&");
-      },
-    });
-
-    return res.data?.result?.finProductList || [];
-  },
-});
+  // ✅ 투자 포트폴리오 (finance API)
+  const {
+    data: portfolio,
+    isLoading: isPortfolioLoading,
+    isError: isPortfolioError,
+  } = useQuery({
+    queryKey: ["investmentProfile", userId],
+    queryFn: async () => {
+      const res = await financeAxios.post(
+        "/api/user/investment-profile/send-to-llm",
+        {},
+        { headers: { "X-User-Id": userId } }
+      );
+      return res.data?.result;
+    },
+    enabled: !!userId, // ✅ userId가 있을 때만 실행
+  });
 
   // ✅ 카테고리별 아이콘 매핑
   const categoryIcons = {
@@ -72,48 +92,33 @@ const {
     참여권리: <FaUsers />,
   };
 
-  // ✅ 포트폴리오 예시 데이터
-  const portfolioDetails = [
-    { id: "예금", value: 16805120, color: "#66DA26" },
-    { id: "적금", value: 19205850, color: "#826AF9" },
-    { id: "주식", value: 18005430, color: "#FF6B6B" },
+  // ✅ 포트폴리오 데이터 가공
+  const allocationSavings = portfolio?.allocationSavings ?? 0;
+  const allocationStocks = 100 - allocationSavings;
+  const totalAmount = portfolio?.highestValue ?? 0;
+
+  const donutChartData = [
+    { id: "예적금", value: allocationSavings, color: "#66DA26" },
+    { id: "주식", value: allocationStocks, color: "#FF6B6B" },
   ];
 
-  const donutChartData = portfolioDetails.map((item) => ({
-    id: item.id,
-    label: item.id,
-    value: item.value,
-    color: item.color,
-  }));
-
-  const totalAmount = portfolioDetails.reduce(
-    (sum, item) => sum + item.value,
-    0
-  );
   const formattedTotal = `${totalAmount.toLocaleString()}원`;
 
+  // ✅ 중앙 텍스트 (총 금액)
   const CenteredMetric = ({ centerX, centerY }) => (
     <text
       x={centerX}
       y={centerY}
       textAnchor="middle"
       dominantBaseline="central"
-      style={{ fontSize: "16px", fontWeight: 700, fill: "#555" }}
+      style={{
+        fontSize: "16px",
+        fontWeight: 700,
+        fill: "#333",
+      }}
     >
       {formattedTotal}
     </text>
-  );
-
-  const CustomArcLinkLabel = ({ datum, style }) => (
-    <g transform={style.transform} style={{ pointerEvents: "none" }}>
-      <text
-        textAnchor="middle"
-        dominantBaseline="central"
-        style={{ fill: "#555", fontSize: 12, fontWeight: 600 }}
-      >
-        {datum.id}
-      </text>
-    </g>
   );
 
   return (
@@ -151,9 +156,7 @@ const {
               ) : (
                 <ul className="policy-list">
                   {policies.map((policy) => {
-                    const icon = categoryIcons[policy.category_large] || (
-                      <FaUsers />
-                    );
+                    const icon = categoryIcons[policy.category_large] || <FaUsers />;
                     const isUrgent =
                       policy.period_apply?.includes("~") &&
                       (() => {
@@ -196,7 +199,7 @@ const {
             </div>
           </div>
 
-          {/* ✅ 예적금 카드 (API 연동 버전) */}
+          {/* ✅ 예적금 카드 */}
           <div className="info-card">
             <div className="card-header">
               <h3>예·적금</h3>
@@ -247,31 +250,38 @@ const {
             </div>
           </div>
 
-          {/* --- 포트폴리오 카드 --- */}
+          {/* ✅ 포트폴리오 카드 */}
           <div className="info-card">
             <div className="card-header">
               <h3>포트폴리오</h3>
               <Link to="/portfolio">자세히보기 &gt;</Link>
             </div>
             <div className="card-content chart-container">
-              <ResponsivePie
-                data={donutChartData}
-                margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
-                innerRadius={0.6}
-                padAngle={0.7}
-                cornerRadius={3}
-                activeOuterRadiusOffset={8}
-                colors={{ datum: "data.color" }}
-                borderWidth={1}
-                borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
-                enableArcLabels={false}
-                enableArcLinkLabels={true}
-                arcLinkLabelsSkipAngle={10}
-                arcLinkLabelsTextColor="#555"
-                arcLinkLabelsColor={{ from: "color" }}
-                arcLinkLabelsComponent={CustomArcLinkLabel}
-                layers={["arcs", "arcLinkLabels", CenteredMetric]}
-              />
+              {isPortfolioLoading ? (
+                <p style={{ textAlign: "center" }}>불러오는 중...</p>
+              ) : isPortfolioError || !portfolio ? (
+                <p style={{ textAlign: "center", color: "red" }}>
+                  투자 데이터가 없습니다.
+                </p>
+              ) : (
+                <ResponsivePie
+                  data={donutChartData}
+                  margin={{ top: 20, right: 80, bottom: 20, left: 80 }}
+                  innerRadius={0.6}
+                  padAngle={0.7}
+                  cornerRadius={3}
+                  activeOuterRadiusOffset={8}
+                  colors={{ datum: "data.color" }}
+                  borderWidth={1}
+                  borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
+                  enableArcLabels={false}
+                  enableArcLinkLabels={true}
+                  arcLinkLabelsSkipAngle={10}
+                  arcLinkLabelsTextColor="#555"
+                  arcLinkLabelsColor={{ from: "color" }}
+                  layers={["arcs", "arcLinkLabels", CenteredMetric]}
+                />
+              )}
             </div>
           </div>
         </section>

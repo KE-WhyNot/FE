@@ -1,5 +1,6 @@
 // src/api/financeAxiosInstance.js
 import axios from "axios";
+import useAuthStore from "../store/useAuthStore";
 
 const financeAxios = axios.create({
   baseURL: "https://finance.youth-fi.com",
@@ -7,22 +8,28 @@ const financeAxios = axios.create({
     "Content-Type": "application/json",
     accept: "application/json",
   },
-  withCredentials: true, // ✅ 중요: CORS 인증 포함
+  withCredentials: true,
 });
 
+// ✅ 요청 인터셉터
 financeAxios.interceptors.request.use(
   (config) => {
     console.log("📡 [Finance API 요청]", config.url);
 
-    // ✅ 필요한 인증 헤더 추가 (있을 경우만)
+    // ✅ accessToken 자동 추가
     const token = localStorage.getItem("accessToken");
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }
 
-    const userId = localStorage.getItem("userId");
+    // ✅ zustand에서 로그인된 유저 ID 가져오기
+    const user = useAuthStore.getState().user;
+    const userId = user?.id ?? user?.userId ?? null;
+
     if (userId) {
       config.headers["X-User-Id"] = userId;
+    } else {
+      console.warn("⚠️ 로그인 유저 ID 없음 → X-User-Id 헤더 미포함");
     }
 
     return config;

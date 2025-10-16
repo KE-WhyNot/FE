@@ -14,52 +14,55 @@ const AllStocksList = () => {
   const navigate = useNavigate();
 
 const { user } = useAuthStore(); 
-const userId = user?.id; 
+const userId = user?.id ?? user?.userId ?? "guest"; // ✅ 혹시 몰라 fallback 추가
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+useEffect(() => {
+  // ✅ userId가 없으면 요청 안 보냄
+  if (!userId) return;
 
-        // 1️⃣ 전체 종목 목록 불러오기
-        const [stockRes, interestRes] = await Promise.all([
-          financeAxios.get("/api/stock/list", {
-            headers: { "X-User-Id": userId },
-          }),
-          financeAxios.get("/api/user/interest-stocks", {
-            headers: { "X-User-Id": userId },
-          }),
-        ]);
+  const fetchData = async () => {
+    try {
+      setLoading(true);
 
-        const allStocks = stockRes.data?.result || [];
-        const interests = interestRes.data?.result || [];
+      // ✅ 한 번에 재사용 가능한 headers 변수 선언
+      const headers = { "X-User-Id": userId };
 
-        // 2️⃣ 관심 종목 ID만 추출
-        const interestIds = interests.map((i) => i.stockId);
+      // 1️⃣ 전체 종목 목록 불러오기
+      const [stockRes, interestRes] = await Promise.all([
+        financeAxios.get("/api/stock/list", { headers }),
+        financeAxios.get("/api/user/interest-stocks", { headers }),
+      ]);
 
-        // 3️⃣ 전체 종목에 “isFavorite” 속성 추가
-        const combined = allStocks.map((stock) => ({
-          ...stock,
-          isFavorite: interestIds.includes(stock.stockId),
-        }));
+      const allStocks = stockRes.data?.result || [];
+      const interests = interestRes.data?.result || [];
 
-        // 4️⃣ 관심 종목 우선 정렬
-        const sorted = combined.sort((a, b) => {
-          if (a.isFavorite === b.isFavorite) return 0;
-          return a.isFavorite ? -1 : 1; // true인 항목(관심)은 앞으로
-        });
+      // 2️⃣ 관심 종목 ID만 추출
+      const interestIds = interests.map((i) => i.stockId);
 
-        setStockList(sorted);
-        setInterestList(interests);
-      } catch (error) {
-        console.error("❌ 종목 데이터 불러오기 실패:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      // 3️⃣ 전체 종목에 “isFavorite” 속성 추가
+      const combined = allStocks.map((stock) => ({
+        ...stock,
+        isFavorite: interestIds.includes(stock.stockId),
+      }));
 
-    fetchData();
-  }, []);
+      // 4️⃣ 관심 종목 우선 정렬
+      const sorted = combined.sort((a, b) => {
+        if (a.isFavorite === b.isFavorite) return 0;
+        return a.isFavorite ? -1 : 1; // true인 항목(관심)은 앞으로
+      });
+
+      setStockList(sorted);
+      setInterestList(interests);
+    } catch (error) {
+      console.error("❌ 종목 데이터 불러오기 실패:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [userId]); // ✅ userId가 바뀔 때만 재요청
+
 
   // 🔍 검색 필터
   const filteredStocks = stockList.filter(

@@ -39,7 +39,7 @@ const portfolioDetails = [
       { icon: <FaMicrochip />, name: '엔비디아', detail: '₩567,400' },
     ],
     rates: null,
-    linkText: '주식 추천 더보기 >'
+    linkText: '더보기 >'
   },
 ];
 
@@ -173,7 +173,7 @@ const PortfolioPage = () => {
                         )}
                         {/* ✨ 이 부분을 수정했습니다. */}
                         {card.id === '주식' ? (
-                            <Link to="/portfolio/recommendations" className="more-link">{card.linkText}</Link>
+                            <Link to="/all-stocks" className="more-link">{card.linkText}</Link>
                         ) : card.id === '예금' || card.id === '적금' ? (
                             <Link to="/savings" className="more-link">{card.linkText}</Link>
                         ) : (

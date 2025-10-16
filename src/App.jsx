@@ -21,7 +21,6 @@ import DashboardLayout from "./components/PaperTrading/DashboardLayout";
 import AllStocks from "./components/PaperTrading/AllStocks";
 import QuizPage from "./components/PaperTrading/Quiz";
 import PortfolioPage from "./components/PortfolioPage/PortfolioPage";
-import StockRecommendationPage from "./components/StockRecommendationPage/StockRecommendationPage";
 import InvestmentPropensityPage from "./components/InvestmentPropensityPage/InvestmentPropensityPage";
 import PrivateRoute from "./api/PrivateRoute";
 import SavingsDetailPage from "./components/SavingsDetailPage/SavingsDetailPage";
@@ -124,14 +123,6 @@ function App() {
             element={
               <PrivateRoute>
                 <PortfolioPage />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/portfolio/recommendations"
-            element={
-              <PrivateRoute>
-                <StockRecommendationPage />
               </PrivateRoute>
             }
           />

@@ -17,7 +17,7 @@ import useAuthStore from "../../store/useAuthStore"; // ✅ 로그인 유저 불
 
 const MainPage = () => {
   const { user } = useAuthStore();
-  const userId = user?.id || "test123"; // ✅ 로그인된 유저 ID (테스트용 fallback)
+  const userId = user?.id
 
   // ✅ 최신 정책 3개 불러오기
   const {

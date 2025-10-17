@@ -321,19 +321,28 @@ const SavingsPage = () => {
                 </div>
               )}
             </div>
-             <div className="filter-item-container" ref={benefitButtonRef}>
+            <div className="filter-item-container" ref={benefitButtonRef}>
               <button className={`filter-button ${isBenefitFilterOpen ? 'active' : ''}`} onClick={() => setIsBenefitFilterOpen(!isBenefitFilterOpen)}> 우대조건 {isBenefitFilterOpen ? <FaMinus /> : <FaPlus />} </button>
               {isBenefitFilterOpen && ( <div className="filter-panel large" ref={benefitFilterRef}> <div className="panel-section"> <h4>우대조건</h4> <div className="benefit-button-group"> 
                 
-                {/* ✅ 수정된 부분: db_row_name 대신 name을 사용합니다. */}
-                {benefitOptions.map(benefit => ( 
-                  <button 
-                    key={benefit.id} 
-                    className={`period-button ${selectedBenefits.includes(benefit.name) ? 'active' : ''}`} 
-                    onClick={() => handleBenefitChange(benefit.name)}> 
-                    {benefit.name} 
-                  </button> 
-                ))}
+                {/* ✅ 수정된 부분: API 명세에 맞게 버튼 텍스트를 수정합니다. */}
+                {benefitOptions.map(benefit => {
+                  let buttonText = benefit.name;
+                  if (benefit.name === '추천,쿠폰') {
+                    buttonText = '추천/쿠폰';
+                  } else if (benefit.name === '자동이체/달성') {
+                    buttonText = '자동이체';
+                  }
+
+                  return (
+                    <button 
+                      key={benefit.id} 
+                      className={`period-button ${selectedBenefits.includes(buttonText) ? 'active' : ''}`} 
+                      onClick={() => handleBenefitChange(buttonText)}> 
+                      {buttonText} 
+                    </button>
+                  );
+                })}
               
               </div> </div> <small className="panel-disclaimer">*신협 상품에는 적용되지 않습니다.</small> <div className="panel-actions"> <button className="reset-button" onClick={handleBenefitReset}><FaSyncAlt /> 초기화</button> <button className="apply-button" onClick={handleBenefitApply}>적용</button> </div> </div> )}
             </div>

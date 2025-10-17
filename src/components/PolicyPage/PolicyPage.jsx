@@ -259,28 +259,28 @@ const PolicyPage = () => {
           <div className="policy-filter-bar">
             <div className="search-box">
               <FaSearch
-              className="search-icon"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                setPageNum(1);
-                setSearchWord(searchInput); // ✅ 돋보기 클릭 시 반영
-                refetch();
-              }}
+                className="search-icon"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setPageNum(1);
+                  setSearchWord(searchInput); // ✅ 돋보기 클릭 시 반영
+                  refetch();
+                }}
               />
               <input
-              type="text"
-              placeholder="검색어 입력"
-              value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  setPageNum(1);
-                  setSearchWord(searchInput); // ✅ 엔터 입력 시 반영
-                  refetch();
-                }
-              }}
-            />
-          </div>
+                type="text"
+                placeholder="검색어 입력"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setPageNum(1);
+                    setSearchWord(searchInput); // ✅ 엔터 입력 시 반영
+                    refetch();
+                  }
+                }}
+              />
+            </div>
 
             <button
               className={`filter-button ${

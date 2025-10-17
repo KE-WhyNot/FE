@@ -49,11 +49,23 @@ const CustomTooltip = ({ info, position }) => {
         pointerEvents: "none",
       }}
     >
-      <div>📅 <strong>날짜:</strong> {info.date}</div>
-      <div>💰 <strong>현재가:</strong> {parseFloat(info.currentPrice).toLocaleString()}</div>
-      <div>📈 <strong>최고가:</strong> {parseFloat(info.highPrice).toLocaleString()}</div>
-      <div>📉 <strong>최저가:</strong> {parseFloat(info.lowPrice).toLocaleString()}</div>
-      <div>📊 <strong>거래량:</strong> {parseInt(info.volume).toLocaleString()}</div>
+      <div>
+        📅 <strong>날짜:</strong> {info.date}
+      </div>
+      <div>
+        💰 <strong>현재가:</strong>{" "}
+        {parseFloat(info.currentPrice).toLocaleString()}
+      </div>
+      <div>
+        📈 <strong>최고가:</strong>{" "}
+        {parseFloat(info.highPrice).toLocaleString()}
+      </div>
+      <div>
+        📉 <strong>최저가:</strong> {parseFloat(info.lowPrice).toLocaleString()}
+      </div>
+      <div>
+        📊 <strong>거래량:</strong> {parseInt(info.volume).toLocaleString()}
+      </div>
     </div>
   );
 };
@@ -77,8 +89,8 @@ const PieCustomTooltip = ({ datum }) => {
     >
       <div style={{ fontWeight: "bold", marginBottom: "6px" }}>{id}</div>
       <div>
-        <span style={{ color: "#aaa", marginRight: "6px" }}>●</span>
-        총 금액: {value.toLocaleString()}원
+        <span style={{ color: "#aaa", marginRight: "6px" }}>●</span>총 금액:{" "}
+        {value.toLocaleString()}원
       </div>
       <div>
         <span style={{ color: "#aaa", marginRight: "6px" }}>●</span>
@@ -87,7 +99,6 @@ const PieCustomTooltip = ({ datum }) => {
     </div>
   );
 };
-
 
 const PaperTrading = () => {
   const navigate = useNavigate();
@@ -125,7 +136,6 @@ const PaperTrading = () => {
 
   const [pieData, setPieData] = useState([]);
 
-
   // ✅ 금융 데이터 불러오기
   useEffect(() => {
     const fetchMarketData = async () => {
@@ -151,8 +161,12 @@ const PaperTrading = () => {
 
         const prices = candles.map((c) => parseFloat(c.currentPrice));
         const summaryData = {
-          high: Math.max(...candles.map((c) => parseFloat(c.highPrice))).toLocaleString(),
-          low: Math.min(...candles.map((c) => parseFloat(c.lowPrice))).toLocaleString(),
+          high: Math.max(
+            ...candles.map((c) => parseFloat(c.highPrice))
+          ).toLocaleString(),
+          low: Math.min(
+            ...candles.map((c) => parseFloat(c.lowPrice))
+          ).toLocaleString(),
           close: prices[0]?.toLocaleString(),
           start: prices[prices.length - 1]?.toLocaleString(),
         };
@@ -179,14 +193,14 @@ const PaperTrading = () => {
 
       try {
         console.log(`[1] 사용자 존재 여부 확인: ${userId}`);
-        const existsRes = await financeAxios.get('/api/user/exists', {
-          headers: { 'X-User-Id': userId },
+        const existsRes = await financeAxios.get("/api/user/exists", {
+          headers: { "X-User-Id": userId },
         });
 
         if (existsRes.data?.result === false) {
           console.log(`[2] 사용자가 존재하지 않아 생성을 요청합니다.`);
-          await financeAxios.post('/api/user', null, {
-            headers: { 'X-User-Id': userId },
+          await financeAxios.post("/api/user", null, {
+            headers: { "X-User-Id": userId },
           });
           console.log(`[3] 사용자 생성이 완료되었습니다.`);
         } else {
@@ -199,10 +213,9 @@ const PaperTrading = () => {
           fetchWatchlist(userId),
           fetchTop10Ranking(userId),
           fetchTransactions(userId),
-          fetchHoldings(userId)
+          fetchHoldings(userId),
         ]);
         console.log(`[5] 모든 데이터 로딩이 완료되었습니다.`);
-
       } catch (error) {
         console.error("❌ 사용자 초기화 및 데이터 로딩 실패:", error);
       }
@@ -227,7 +240,10 @@ const PaperTrading = () => {
               `/api/stock/list/${item.stockId}`,
               { headers: { "X-User-Id": userId } }
             );
-            return { ...item, stockImage: detailRes.data?.result?.stockImage || null };
+            return {
+              ...item,
+              stockImage: detailRes.data?.result?.stockImage || null,
+            };
           } catch (err) {
             console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
             return { ...item, stockImage: null };
@@ -235,7 +251,9 @@ const PaperTrading = () => {
         })
       );
 
-      const sorted = enrichedList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      const sorted = enrichedList.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
       setWatchlist(sorted);
       setWatchlistHasNext(sorted.length >= 10);
     } catch (e) {
@@ -283,16 +301,23 @@ const PaperTrading = () => {
       const enriched = await Promise.all(
         list.map(async (h) => {
           try {
-            const priceRes = await financeAxios.post("/api/stock/current-price", {
-              marketCode: "J", stockCode: h.stockId,
-            });
+            const priceRes = await financeAxios.post(
+              "/api/stock/current-price",
+              {
+                marketCode: "J",
+                stockCode: h.stockId,
+              }
+            );
             const current = Number(priceRes.data?.result?.stckPrpr || 0);
             const change = current - h.avgPrice;
             const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
 
-            const infoRes = await financeAxios.get(`/api/stock/list/${h.stockId}`, {
-              headers: { "X-User-Id": userId },
-            });
+            const infoRes = await financeAxios.get(
+              `/api/stock/list/${h.stockId}`,
+              {
+                headers: { "X-User-Id": userId },
+              }
+            );
             const info = infoRes.data?.result;
 
             return {
@@ -305,13 +330,25 @@ const PaperTrading = () => {
             };
           } catch (err) {
             console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
-            return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
+            return {
+              ...h,
+              currentPrice: 0,
+              change: 0,
+              rate: 0,
+              stockImage: null,
+            };
           }
         })
       );
 
-      const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
-      const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
+      const value = enriched.reduce(
+        (sum, h) => sum + h.currentPrice * h.holdingQuantity,
+        0
+      );
+      const cost = enriched.reduce(
+        (sum, h) => sum + h.avgPrice * h.holdingQuantity,
+        0
+      );
       const profit = value - cost;
       const rate = cost ? (profit / cost) * 100 : 0;
 
@@ -321,20 +358,37 @@ const PaperTrading = () => {
       setTotalRate(rate);
 
       if (value > 0) {
-        const sorted = [...enriched].sort((a, b) => b.currentPrice * b.holdingQuantity - a.currentPrice * a.holdingQuantity);
+        const sorted = [...enriched].sort(
+          (a, b) =>
+            b.currentPrice * b.holdingQuantity -
+            a.currentPrice * a.holdingQuantity
+        );
         const top5 = sorted.slice(0, 5);
         const others = sorted.slice(5);
-        const othersValue = others.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
+        const othersValue = others.reduce(
+          (sum, h) => sum + h.currentPrice * h.holdingQuantity,
+          0
+        );
 
         const newPieData = top5.map((h) => {
           const val = h.currentPrice * h.holdingQuantity;
           const percent = ((val / value) * 100).toFixed(1);
-          return { id: h.stockName, label: `${h.stockName} (${percent}%)`, value: val, percent };
+          return {
+            id: h.stockName,
+            label: `${h.stockName} (${percent}%)`,
+            value: val,
+            percent,
+          };
         });
 
         if (others.length > 0) {
           const othersPercent = ((othersValue / value) * 100).toFixed(1);
-          newPieData.push({ id: "기타", label: `기타 (${othersPercent}%)`, value: othersValue, percent: othersPercent });
+          newPieData.push({
+            id: "기타",
+            label: `기타 (${othersPercent}%)`,
+            value: othersValue,
+            percent: othersPercent,
+          });
         }
         setPieData(newPieData);
       } else {
@@ -447,10 +501,22 @@ const PaperTrading = () => {
             </div>
 
             <div className="chart-summary">
-              <div><span>최고가</span>{summary.high || "-"}</div>
-              <div><span>최저가</span>{summary.low || "-"}</div>
-              <div><span>장마감</span>{summary.close || "-"}</div>
-              <div><span>시작가</span>{summary.start || "-"}</div>
+              <div>
+                <span>최고가</span>
+                {summary.high || "-"}
+              </div>
+              <div>
+                <span>최저가</span>
+                {summary.low || "-"}
+              </div>
+              <div>
+                <span>장마감</span>
+                {summary.close || "-"}
+              </div>
+              <div>
+                <span>시작가</span>
+                {summary.start || "-"}
+              </div>
             </div>
           </div>
 
@@ -458,7 +524,12 @@ const PaperTrading = () => {
           <div className="widget watchlist-widget">
             <div className="widget-header">
               <h3>관심 종목</h3>
-              <button className="add-button" onClick={() => setWatchlistModalOpen(true)}>+</button>
+              <button
+                className="add-button"
+                onClick={() => setWatchlistModalOpen(true)}
+              >
+                +
+              </button>
             </div>
 
             <div className="watchlist-list">
@@ -466,9 +537,15 @@ const PaperTrading = () => {
                 watchlist.slice(0, 5).map((stock) => (
                   <div key={stock.interestStockId} className="stock-item">
                     {stock.stockImage ? (
-                      <img src={stock.stockImage} alt={stock.stockName} className="stock-logo-img" />
+                      <img
+                        src={stock.stockImage}
+                        alt={stock.stockName}
+                        className="stock-logo-img"
+                      />
                     ) : (
-                      <div className="stock-logo-fallback">{stock.stockName[0]}</div>
+                      <div className="stock-logo-fallback">
+                        {stock.stockName[0]}
+                      </div>
                     )}
                     <div className="stock-info">
                       <span className="stock-name">{stock.stockName}</span>
@@ -486,7 +563,12 @@ const PaperTrading = () => {
           <div className="widget ranking-widget">
             <div className="widget-header">
               <h3>수익률 랭킹</h3>
-              <button className="add-button" onClick={() => setRankingModalOpen(true)}>+</button>
+              <button
+                className="add-button"
+                onClick={() => setRankingModalOpen(true)}
+              >
+                +
+              </button>
             </div>
 
             <div className="ranking-list scrollable">
@@ -494,11 +576,15 @@ const PaperTrading = () => {
                 ranking.slice(0, 10).map((r) => (
                   <div
                     key={r.userId}
-                    className={`ranking-item ${r.rankNo <= 3 ? `top${r.rankNo}` : ""}`}
+                    className={`ranking-item ${
+                      r.rankNo <= 3 ? `top${r.rankNo}` : ""
+                    }`}
                   >
                     <span>{r.rankNo}</span>
                     <span>{r.userId || "익명"}</span>
-                    <span className={r.profitRate >= 0 ? "positive" : "negative"}>
+                    <span
+                      className={r.profitRate >= 0 ? "positive" : "negative"}
+                    >
                       {r.profitRate.toFixed(2)}%
                     </span>
                   </div>
@@ -511,8 +597,12 @@ const PaperTrading = () => {
             <div className="my-rank">
               {myRank?.rankNo ? (
                 <>
-                  <span>내 순위: <strong>{myRank.rankNo}위</strong></span>{" "}
-                  <span className={myRank.profitRate >= 0 ? "positive" : "negative"}>
+                  <span>
+                    내 순위: <strong>{myRank.rankNo}위</strong>
+                  </span>{" "}
+                  <span
+                    className={myRank.profitRate >= 0 ? "positive" : "negative"}
+                  >
                     {myRank.profitRate.toFixed(2)}%
                   </span>
                 </>
@@ -527,7 +617,10 @@ const PaperTrading = () => {
         <div className="row-grid">
           {/* ✅ 내 종목 보기 (사진처럼) */}
           <div className="widget holdings-widget">
-            <div className="widget-header clickable" onClick={() => setHoldingsModalOpen(true)}>
+            <div
+              className="widget-header clickable"
+              onClick={() => setHoldingsModalOpen(true)}
+            >
               <h3>내 종목보기 &gt;</h3>
             </div>
 
@@ -631,7 +724,6 @@ const PaperTrading = () => {
                           </div>
                         )}
                       </div>
-
                     </div>
                   );
                 })}
@@ -668,7 +760,6 @@ const PaperTrading = () => {
               )}
             </div>
           </div>
-
         </div>
       </div>
 
@@ -728,11 +819,7 @@ const PaperTrading = () => {
               <div key={tx.executionId} className="transaction-item">
                 <span>{formatDate(tx.executedAt)}</span>
                 <span>{tx.stockName}</span>
-                <span
-                  className={
-                    tx.executionType === "BUY" ? "buy" : "sell"
-                  }
-                >
+                <span className={tx.executionType === "BUY" ? "buy" : "sell"}>
                   {tx.executionType === "BUY" ? "매수" : "매도"}
                 </span>
                 <span>{tx.quantity}주</span>
@@ -758,15 +845,21 @@ const PaperTrading = () => {
           {holdings.length > 0 ? (
             holdings.map((h) => {
               const profit = (h.currentPrice - h.avgPrice) * h.holdingQuantity;
-              const profitRate = h.avgPrice ? (profit / (h.avgPrice * h.holdingQuantity)) * 100 : 0;
+              const profitRate = h.avgPrice
+                ? (profit / (h.avgPrice * h.holdingQuantity)) * 100
+                : 0;
               const profitClass = profit >= 0 ? "positive" : "negative";
 
               return (
                 <div key={h.userStockId} className="holding-item">
                   <span className="stock-name">{h.stockName}</span>
                   <span className="quantity">{h.holdingQuantity}주</span>
-                  <span className="avg-price">{h.avgPrice.toLocaleString()}원</span>
-                  <span className="current-price">{h.currentPrice.toLocaleString()}원</span>
+                  <span className="avg-price">
+                    {h.avgPrice.toLocaleString()}원
+                  </span>
+                  <span className="current-price">
+                    {h.currentPrice.toLocaleString()}원
+                  </span>
 
                   <span className={`profit ${profitClass}`}>
                     <div className="profit-amount">
@@ -786,7 +879,6 @@ const PaperTrading = () => {
         </div>
       </Modal>
 
-
       {/* --- 전체 수익률 랭킹 모달 --- */}
       <Modal
         isOpen={isRankingModalOpen}
@@ -797,8 +889,9 @@ const PaperTrading = () => {
           {ranking.map((r, idx) => (
             <div
               key={r.userId}
-              className={`ranking-item ${user?.id === r.userId ? "highlight" : ""
-                }`}
+              className={`ranking-item ${
+                user?.id === r.userId ? "highlight" : ""
+              }`}
             >
               <span>{idx + 1}</span>
               <span>{r.userId}</span>

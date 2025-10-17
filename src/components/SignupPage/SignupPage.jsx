@@ -81,7 +81,6 @@ const SignupPage = () => {
     setShowCalendar(false); // 날짜 선택 후 캘린더 닫기
   };
 
-
   // --- 회원가입 처리 ---
   const handleSignup = async (e) => {
     e.preventDefault();

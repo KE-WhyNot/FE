@@ -1,6 +1,7 @@
-@import url('https://cdn.rawgit.com/moonspam/NanumSquare/master/nanumsquare.css');
+@import url("https://cdn.rawgit.com/moonspam/NanumSquare/master/nanumsquare.css");
 
 /* 전역 기본 폰트 설정 */
-html, body {
-  font-family: 'NanumSquare', sans-serif ;
+html,
+body {
+  font-family: "NanumSquare", sans-serif;
 }

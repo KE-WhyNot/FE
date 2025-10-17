@@ -43,7 +43,11 @@ const Chatbot = ({ onClose }) => {
   // ✅ 로딩 텍스트 순환 효과
   useEffect(() => {
     if (!loading) return;
-    const states = ["잠시만 기다려주세요.", "잠시만 기다려주세요..", "잠시만 기다려주세요..."];
+    const states = [
+      "잠시만 기다려주세요.",
+      "잠시만 기다려주세요..",
+      "잠시만 기다려주세요...",
+    ];
     let i = 0;
     const interval = setInterval(() => {
       setLoadingMessage(states[i]);

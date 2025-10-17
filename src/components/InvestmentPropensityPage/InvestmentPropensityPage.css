@@ -34,7 +34,8 @@
   margin-bottom: 1.5rem;
 }
 
-.radio-group, .checkbox-group {
+.radio-group,
+.checkbox-group {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;

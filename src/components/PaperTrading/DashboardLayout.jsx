@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import './DashboardLayout.css';
-import Header from '../common/Header';
-import Chatbot from '../Chatbot/Chatbot';
-import Tutorial from '../PaperTrading/Tutorial'; 
-import { dashboardSteps } from '../../tutorials/dashboardSteps'; 
-import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { BsChatDots } from 'react-icons/bs';
+import React, { useState } from "react";
+import "./DashboardLayout.css";
+import Header from "../common/Header";
+import Chatbot from "../Chatbot/Chatbot";
+import Tutorial from "../PaperTrading/Tutorial";
+import { dashboardSteps } from "../../tutorials/dashboardSteps";
+import { Outlet, NavLink, useLocation } from "react-router-dom";
+import { BsChatDots } from "react-icons/bs";
 
 const DashboardLayout = () => {
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -13,10 +13,10 @@ const DashboardLayout = () => {
   const location = useLocation();
 
   const startTutorial = () => {
-    if (location.pathname === '/papertrading') {
+    if (location.pathname === "/papertrading") {
       setTutorialActive(true);
     } else {
-      alert('이 페이지에는 튜토리얼이 없습니다.');
+      alert("이 페이지에는 튜토리얼이 없습니다.");
     }
   };
 
@@ -32,14 +32,20 @@ const DashboardLayout = () => {
             <h3 className="sidebar-title">사용자 패널</h3>
             <nav className="sidebar-nav">
               <ul>
-                <li><NavLink to="/papertrading">대시보드</NavLink></li>
-                <li><NavLink to="/all-stocks">전체종목</NavLink></li>
+                <li>
+                  <NavLink to="/papertrading">대시보드</NavLink>
+                </li>
+                <li>
+                  <NavLink to="/all-stocks">전체종목</NavLink>
+                </li>
                 <li>
                   <button className="sidebar-button" onClick={startTutorial}>
                     튜토리얼
                   </button>
                 </li>
-                <li><NavLink to="/quiz">퀴즈</NavLink></li>
+                <li>
+                  <NavLink to="/quiz">퀴즈</NavLink>
+                </li>
               </ul>
             </nav>
           </div>
@@ -58,9 +64,9 @@ const DashboardLayout = () => {
       {isChatOpen && <Chatbot onClose={() => setIsChatOpen(false)} />}
 
       {isTutorialActive && (
-        <Tutorial 
-          steps={dashboardSteps} 
-          onFinish={() => setTutorialActive(false)} 
+        <Tutorial
+          steps={dashboardSteps}
+          onFinish={() => setTutorialActive(false)}
         />
       )}
     </>

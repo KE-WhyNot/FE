@@ -54,7 +54,9 @@ const MainPage = () => {
             .map((key) => {
               const value = params[key];
               if (Array.isArray(value)) {
-                return value.map((v) => `${key}=${encodeURIComponent(v)}`).join("&");
+                return value
+                  .map((v) => `${key}=${encodeURIComponent(v)}`)
+                  .join("&");
               }
               return `${key}=${encodeURIComponent(value)}`;
             })
@@ -156,7 +158,9 @@ const MainPage = () => {
               ) : (
                 <ul className="policy-list">
                   {policies.map((policy) => {
-                    const icon = categoryIcons[policy.category_large] || <FaUsers />;
+                    const icon = categoryIcons[policy.category_large] || (
+                      <FaUsers />
+                    );
                     const isUrgent =
                       policy.period_apply?.includes("~") &&
                       (() => {
@@ -231,7 +235,9 @@ const MainPage = () => {
                         />
                       </div>
                       <div className="item-details">
-                        <span className="item-title">{product.product_name}</span>
+                        <span className="item-title">
+                          {product.product_name}
+                        </span>
                         <span className="item-source">{product.bank_name}</span>
                       </div>
                       <div className="item-interest">

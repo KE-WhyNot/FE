@@ -9,7 +9,8 @@
   box-sizing: border-box;
 }
 
-.quiz-card, .quiz-result {
+.quiz-card,
+.quiz-result {
   width: 100%;
   max-width: 800px;
   background-color: white;
@@ -83,7 +84,6 @@
   background-color: #673ab7;
   color: white;
 }
-
 
 .quiz-footer {
   display: flex;

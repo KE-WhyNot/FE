@@ -71,7 +71,10 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
 
           {/* ✅ 소셜 로그인 콜백 */}
-          <Route path="/auth/callback/google" element={<AuthCallbackGoogle />} />
+          <Route
+            path="/auth/callback/google"
+            element={<AuthCallbackGoogle />}
+          />
           <Route path="/auth/callback/kakao" element={<AuthCallbackKakao />} />
 
           {/* ✅ 메인 페이지 (보호됨) */}
@@ -166,10 +169,7 @@ function App() {
 
             {/* ✅ 전체 종목 리스트 및 상세 페이지 */}
             <Route path="/all-stocks" element={<AllStocksList />} />
-            <Route
-              path="/all-stocks/:stockId"
-              element={<AllStocksDetail />}
-            />
+            <Route path="/all-stocks/:stockId" element={<AllStocksDetail />} />
 
             <Route path="/quiz" element={<QuizPage />} />
           </Route>

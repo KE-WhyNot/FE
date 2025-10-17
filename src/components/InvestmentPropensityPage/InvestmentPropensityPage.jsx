@@ -177,7 +177,7 @@ const handleNavigateToPortfolio = async () => {
   try {
     // 요청을 기다리지 않고 비동기로 실행
     financeAxiosInstance.post(
-  'https://finance-api.youth-fi.com/api/user/investment-profile/send-to-llm',
+  '/api/user/investment-profile/send-to-llm',
   {},
   { headers: { 'X-User-Id': user?.userId } }
 )

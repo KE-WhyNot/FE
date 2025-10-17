@@ -12,7 +12,6 @@ import useAuthStore from '../../store/useAuthStore';
 const CustomArcLinkLabel = ({ datum, style }) => {
   return (
     <g transform={style.transform} style={{ pointerEvents: 'none' }}>
-      {/* 첫 번째 줄: 퍼센트(%) 표시 */}
       <text
         textAnchor="middle"
         dominantBaseline="central"
@@ -24,7 +23,6 @@ const CustomArcLinkLabel = ({ datum, style }) => {
       >
         {datum.value}%
       </text>
-      {/* 두 번째 줄: 항목 이름(ID) 표시 */}
       <text
         textAnchor="middle"
         dominantBaseline="central"
@@ -52,6 +50,7 @@ const PortfolioPage = () => {
   // ✅ 데이터 불러오기
   useEffect(() => {
     const fetchPortfolioData = async () => {
+      setLoading(true); // 항상 로딩 시작
       try {
         // 1️⃣ 포트폴리오 추천 정보
         const portfolioRes = await financeAxiosInstance.get(
@@ -61,7 +60,7 @@ const PortfolioPage = () => {
         const result = portfolioRes.data?.result;
         setPortfolioData(result || null);
 
-        // 2️⃣ 투자 성향 정보 (availableAssets 포함)
+        // 2️⃣ 투자 성향 정보
         const profileRes = await financeAxiosInstance.get(
           '/api/user/investment-profile/my',
           { headers: { 'X-User-Id': user?.userId } }
@@ -95,34 +94,25 @@ const PortfolioPage = () => {
       } catch (error) {
         console.error('❌ 데이터 요청 실패:', error);
       } finally {
-        setLoading(false);
+        setLoading(false); // 항상 로딩 종료
       }
     };
 
     fetchPortfolioData();
   }, [user?.userId]);
 
-  // ✅ 로딩 중
-  if (loading) {
+  // ✅ 로딩 중 또는 데이터가 아직 도착하지 않은 경우
+  if (loading || !portfolioData || !investmentProfile) {
     return (
       <div className="portfolio-page-layout">
         <Header />
         <main className="portfolio-content">
           <div className="loading-overlay">
             <div className="loading-spinner"></div>
+            <p className="loading-message">
+              정보를 받아오는 중입니다. 잠시만 기다려 주세요...
+            </p>
           </div>
-        </main>
-      </div>
-    );
-  }
-
-  // ✅ 데이터 없는 경우
-  if (!portfolioData || !investmentProfile) {
-    return (
-      <div className="portfolio-page-layout">
-        <Header />
-        <main className="portfolio-content">
-          <p>포트폴리오 데이터를 불러올 수 없습니다.</p>
         </main>
       </div>
     );

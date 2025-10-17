@@ -1,4 +1,3 @@
-// src/pages/Investment.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Investment.css';
@@ -77,7 +76,7 @@ const Investment = () => {
   const showHeader = !location.pathname.startsWith('/setting');
   const { user } = useAuthStore();
 
-  // ✅ 기존 투자 성향이 없으면 새 등록 페이지로 보내기
+  // ✅ 기존 투자 성향이 없으면 신규 등록 페이지로 이동
   useEffect(() => {
     const checkProfileExists = async () => {
       try {
@@ -97,7 +96,8 @@ const Investment = () => {
   }, [navigate, user?.userId]);
 
   // ✅ 라디오 선택
-  const handleRadioChange = (id, option) => setAnswers({ ...answers, [id]: option });
+  const handleRadioChange = (id, option) =>
+    setAnswers({ ...answers, [id]: option });
 
   // ✅ 체크박스 선택
   const handleCheckboxChange = (option) => {
@@ -108,7 +108,7 @@ const Investment = () => {
     setAnswers({ ...answers, sectors: newSectors });
   };
 
-  // ✅ 설문 제출 (PATCH)
+  // ✅ 설문 제출 (POST + LLM 자동 호출)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -117,7 +117,13 @@ const Investment = () => {
       return;
     }
 
-    const isFormValid = answers.budget && answers.goal && answers.knowledge && answers.loss && answers.profit;
+    const isFormValid =
+      answers.budget &&
+      answers.goal &&
+      answers.knowledge &&
+      answers.loss &&
+      answers.profit;
+
     if (!isFormValid) {
       alert('모든 질문에 답변해주세요.');
       return;
@@ -127,9 +133,24 @@ const Investment = () => {
 
     // ✅ 점수 기반 투자 성향 계산
     let score = 0;
-    score += ['50만원 이하', '100만원 이하', '200만원 이하', '500만원 이하', '1000만원 이하'].indexOf(answers.budget);
-    score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(answers.knowledge);
-    score += ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'].indexOf(answers.loss);
+    score += [
+      '50만원 이하',
+      '100만원 이하',
+      '200만원 이하',
+      '500만원 이하',
+      '1000만원 이하',
+    ].indexOf(answers.budget);
+    score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(
+      answers.knowledge
+    );
+    score += [
+      '원금 손실 없음',
+      '원금의 10%',
+      '원금의 30%',
+      '원금의 50%',
+      '원금의 70%',
+      '원금 전액',
+    ].indexOf(answers.loss);
     score += ['150%', '200%', '250%', '300% 이상'].indexOf(answers.profit);
 
     let resultType = '';
@@ -151,32 +172,34 @@ const Investment = () => {
     };
 
     try {
-      await financeAxiosInstance.patch('/api/user/investment-profile/my', payload, {
-        headers: { 'X-User-Id': user?.userId },
-      });
-      console.log('✅ 투자 성향 수정 성공:', payload);
-      setResult(resultType);
-    } catch (error) {
-      console.error('❌ 투자 성향 수정 실패:', error);
-      alert('투자 성향 수정에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // ✅ 수정 후 LLM에 재요청
-  const handleSendToLLM = async () => {
-    try {
-      await financeAxiosInstance.post(
-        'https://finance-api.youth-fi.com/api/user/investment-profile/send-to-llm',
-        {},
+      console.log('📤 투자 성향 등록 요청 중...');
+      const res = await financeAxiosInstance.post(
+        'https://finance.youth-fi.com/api/user/investment-profile/complete',
+        payload,
         { headers: { 'X-User-Id': user?.userId } }
       );
-      console.log('✅ 수정 후 send-to-llm 요청 성공');
+      console.log('✅ 투자 성향 등록 성공:', res.data);
+
+      // ✅ 등록 성공 시 LLM 자동 요청
+      try {
+        console.log('📤 LLM 요청 시작...');
+        const llmRes = await financeAxiosInstance.post(
+          'https://finance.youth-fi.com/api/user/investment-profile/send-to-llm',
+          {},
+          { headers: { 'X-User-Id': user?.userId } }
+        );
+        console.log('✅ LLM 요청 완료:', llmRes.data);
+      } catch (llmErr) {
+        console.error('⚠️ LLM 요청 실패:', llmErr);
+      }
+
+      // ✅ 결과 표시 및 이동
+      setResult(resultType);
     } catch (error) {
-      console.error('⚠️ send-to-llm 요청 실패:', error);
+      console.error('❌ 투자 성향 등록 실패:', error);
+      alert('투자 성향 등록에 실패했습니다. 다시 시도해주세요.');
     } finally {
-      navigate('/portfolio-main');
+      setIsSubmitting(false);
     }
   };
 
@@ -187,12 +210,15 @@ const Investment = () => {
         {showHeader && <Header />}
         <main className="propensity-content">
           <div className="result-container">
-            <h1>수정 결과</h1>
+            <h1>등록 결과</h1>
             <p>
               당신의 새로운 투자 성향은 <strong>{result}</strong>입니다.
             </p>
-            <button className="submit-button" onClick={handleSendToLLM}>
-              AI에게 수정된 포트폴리오 분석 요청하기
+            <button
+              className="submit-button"
+              onClick={() => navigate('/portfolio-main')}
+            >
+              포트폴리오 분석 페이지로 이동하기
             </button>
           </div>
         </main>
@@ -216,16 +242,63 @@ const Investment = () => {
         </p>
         <form onSubmit={handleSubmit}>
           {[
-            { id: 'budget', question: '1. 투자 예산', options: ['50만원 이하', '100만원 이하', '200만원 이하', '500만원 이하', '1000만원 이하'], type: 'radio' },
-            { id: 'sectors', question: '2. 관심 종목 (3개 이상 선택)', options: availableSectors, type: 'checkbox' },
-            { id: 'goal', question: '3. 투자 목표', options: ['학비', '생활비', '주택마련', '자산증식', '채무상환'], type: 'radio' },
-            { id: 'knowledge', question: '4. 금융지식 이해도 수준', options: ['매우 낮음', '낮음', '보통', '높음', '매우 높음'], type: 'radio' },
-            { id: 'loss', question: '5. 감당 가능한 손실 수준', options: ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'], type: 'radio' },
-            { id: 'profit', question: '6. 기대하는 투자 수익률', options: ['150%', '200%', '250%', '300% 이상'], type: 'radio' },
+            {
+              id: 'budget',
+              question: '1. 투자 예산',
+              options: [
+                '50만원 이하',
+                '100만원 이하',
+                '200만원 이하',
+                '500만원 이하',
+                '1000만원 이하',
+              ],
+              type: 'radio',
+            },
+            {
+              id: 'sectors',
+              question: '2. 관심 종목 (3개 이상 선택)',
+              options: availableSectors,
+              type: 'checkbox',
+            },
+            {
+              id: 'goal',
+              question: '3. 투자 목표',
+              options: ['학비', '생활비', '주택마련', '자산증식', '채무상환'],
+              type: 'radio',
+            },
+            {
+              id: 'knowledge',
+              question: '4. 금융지식 이해도 수준',
+              options: ['매우 낮음', '낮음', '보통', '높음', '매우 높음'],
+              type: 'radio',
+            },
+            {
+              id: 'loss',
+              question: '5. 감당 가능한 손실 수준',
+              options: [
+                '원금 손실 없음',
+                '원금의 10%',
+                '원금의 30%',
+                '원금의 50%',
+                '원금의 70%',
+                '원금 전액',
+              ],
+              type: 'radio',
+            },
+            {
+              id: 'profit',
+              question: '6. 기대하는 투자 수익률',
+              options: ['150%', '200%', '250%', '300% 이상'],
+              type: 'radio',
+            },
           ].map(({ id, question, options, type }) => (
             <div key={id} className="question-container">
               <h3>{question}</h3>
-              <div className={type === 'checkbox' ? 'checkbox-group' : 'radio-group'}>
+              <div
+                className={
+                  type === 'checkbox' ? 'checkbox-group' : 'radio-group'
+                }
+              >
                 {options.map((option) => (
                   <div key={option} className="option">
                     <input
@@ -233,7 +306,11 @@ const Investment = () => {
                       id={option}
                       name={id}
                       value={option}
-                      checked={type === 'checkbox' ? answers.sectors.includes(option) : answers[id] === option}
+                      checked={
+                        type === 'checkbox'
+                          ? answers.sectors.includes(option)
+                          : answers[id] === option
+                      }
                       onChange={() =>
                         type === 'checkbox'
                           ? handleCheckboxChange(option)
@@ -247,8 +324,12 @@ const Investment = () => {
               </div>
             </div>
           ))}
-          <button type="submit" className="submit-button" disabled={isSubmitting}>
-            {isSubmitting ? '수정 중...' : '결과 보기'}
+          <button
+            type="submit"
+            className="submit-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? '등록 중...' : '결과 보기'}
           </button>
         </form>
       </main>

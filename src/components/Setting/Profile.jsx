@@ -92,7 +92,7 @@ const Profile = () => {
 
       console.log("📦 PATCH body:", body);
 
-      await axiosInstance.patch("/api/auth/profile", body, {
+      await axiosInstance.post("/api/user/investment-profile/complete", body, {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
 

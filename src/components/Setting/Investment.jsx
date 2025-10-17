@@ -1,10 +1,65 @@
-// src/components/Investment/InvestmentPropensityPage.jsx
-import React, { useState } from 'react';
+// src/pages/Investment.jsx
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './Investment.css';
+import '../InvestmentPropensityPage/LoadingSpinner.css';
 import Header from '../common/Header';
-import financeAxios from '../../api/financeAxiosInstance';
-import useAuthStore from '../../store/useAuthStore'; // ✅ 로그인 유저 정보 가져오기
+import useAuthStore from '../../store/useAuthStore';
+import financeAxiosInstance from '../../api/financeAxiosInstance';
+
+// --- 서버 명세에 맞게 매핑 ---
+const profileMap = {
+  안정형: 'CONSERVATIVE',
+  안정추구형: 'CONSERVATIVE_SEEKING',
+  위험중립형: 'RISK_NEUTRAL',
+  적극투자형: 'AGGRESSIVE',
+  공격투자형: 'VERY_AGGRESSIVE',
+};
+
+const budgetMap = {
+  '50만원 이하': 500000,
+  '100만원 이하': 1000000,
+  '200만원 이하': 2000000,
+  '500만원 이하': 5000000,
+  '1000만원 이하': 10000000,
+};
+
+const goalMap = {
+  학비: 'EDUCATION',
+  생활비: 'LIVING_EXPENSES',
+  주택마련: 'HOUSE_PURCHASE',
+  자산증식: 'ASSET_GROWTH',
+  채무상환: 'DEBT_REPAYMENT',
+};
+
+const lossMap = {
+  '원금 손실 없음': 'NO_LOSS',
+  '원금의 10%': 'TEN_PERCENT',
+  '원금의 30%': 'THIRTY_PERCENT',
+  '원금의 50%': 'FIFTY_PERCENT',
+  '원금의 70%': 'SEVENTY_PERCENT',
+  '원금 전액': 'FULL_AMOUNT',
+};
+
+const knowledgeMap = {
+  '매우 낮음': 'VERY_LOW',
+  낮음: 'LOW',
+  보통: 'MEDIUM',
+  높음: 'HIGH',
+  '매우 높음': 'VERY_HIGH',
+};
+
+const profitMap = {
+  '150%': 'ONE_FIFTY_PERCENT',
+  '200%': 'TWO_HUNDRED_PERCENT',
+  '250%': 'TWO_FIFTY_PERCENT',
+  '300% 이상': 'THREE_HUNDRED_PERCENT_PLUS',
+};
+
+const availableSectors = [
+  '화학', '제약', '전기·전자', '운송장비·부품',
+  '기타금융', '기계·장비', '금속', '건설', 'IT 서비스'
+];
 
 const Investment = () => {
   const [answers, setAnswers] = useState({
@@ -16,108 +71,44 @@ const Investment = () => {
     profit: '',
   });
   const [result, setResult] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const showHeader = !location.pathname.startsWith('/setting');
+  const { user } = useAuthStore();
 
-  // ✅ 로그인 유저 정보
-  const { user, isAuthenticated } = useAuthStore();
-  const userId = isAuthenticated ? user?.id ?? user?.userId ?? 'unknown_user' : 'guest';
+  // ✅ 기존 투자 성향이 없으면 새 등록 페이지로 보내기
+  useEffect(() => {
+    const checkProfileExists = async () => {
+      try {
+        const response = await financeAxiosInstance.get(
+          '/api/user/investment-profile/my',
+          { headers: { 'X-User-Id': user?.userId } }
+        );
+        if (!response.data?.result) {
+          console.log('❌ 기존 성향 없음 → 신규 등록 페이지로 이동');
+          navigate('/investment-propensity');
+        }
+      } catch (error) {
+        console.error('❌ 투자 성향 확인 실패:', error);
+      }
+    };
+    checkProfileExists();
+  }, [navigate, user?.userId]);
 
-  const questions = [
-    {
-      id: 'budget',
-      question: '1. 투자 예산',
-      options: ['50만원 이하', '100만원 이하', '200만원 이하', '500만원 이하', '1000만원 이하'],
-      type: 'radio',
-    },
-    {
-      id: 'sectors',
-      question: '2. 관심 종목 (최소 3개 선택)',
-      options: [
-        '전기전자', '자동차', '철강금속', '화학', '서비스업', '통신',
-        '금융업', '증권', '보험', '건설업', '기계', '전기가스업',
-        '의약품', '섬유의복', '음식료품', '유통업', '운수창고',
-        '운수장비(조선)', '종이목재', '비금속광물', '은행', '기타제조',
-      ],
-      type: 'checkbox',
-    },
-    {
-      id: 'goal',
-      question: '3. 투자 목표',
-      options: ['학비', '생활비', '주택마련', '자산증식', '채무상환'],
-      type: 'radio',
-    },
-    {
-      id: 'knowledge',
-      question: '4. 금융지식 이해도 수준',
-      options: ['매우 낮음', '낮음', '보통', '높음', '매우 높음'],
-      type: 'radio',
-    },
-    {
-      id: 'loss',
-      question: '5. 감당 가능한 손실 수준',
-      options: ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'],
-      type: 'radio',
-    },
-    {
-      id: 'profit',
-      question: '6. 기대 이익 수준',
-      options: ['150%', '200%', '250%', '300% 이상'],
-      type: 'radio',
-    },
-  ];
+  // ✅ 라디오 선택
+  const handleRadioChange = (id, option) => setAnswers({ ...answers, [id]: option });
 
-  const handleRadioChange = (questionId, option) => {
-    setAnswers({ ...answers, [questionId]: option });
-  };
-
+  // ✅ 체크박스 선택
   const handleCheckboxChange = (option) => {
-    const newSectors = answers.sectors.includes(option)
+    const isSelected = answers.sectors.includes(option);
+    const newSectors = isSelected
       ? answers.sectors.filter((s) => s !== option)
       : [...answers.sectors, option];
     setAnswers({ ...answers, sectors: newSectors });
   };
 
-  // ✅ 서버 ENUM 매핑
-  const mapToServerEnum = {
-    investmentProfile: {
-      안정형: 'CONSERVATIVE',
-      안정추구형: 'CAUTIOUS',
-      위험중립형: 'NEUTRAL',
-      적극투자형: 'AGGRESSIVE',
-      공격투자형: 'VERY_AGGRESSIVE',
-    },
-    investmentGoal: {
-      학비: 'EDUCATION', // ✅ 서버 기준으로 수정 (EDUCATION)
-      생활비: 'LIVING',
-      주택마련: 'HOUSE_PURCHASE',
-      자산증식: 'ASSET_GROWTH',
-      채무상환: 'DEBT_REPAYMENT',
-    },
-    lossTolerance: {
-      '원금 손실 없음': 'NO_LOSS',
-      '원금의 10%': 'TEN_PERCENT',
-      '원금의 30%': 'THIRTY_PERCENT',
-      '원금의 50%': 'FIFTY_PERCENT',
-      '원금의 70%': 'SEVENTY_PERCENT',
-      '원금 전액': 'FULL_LOSS',
-    },
-    financialKnowledge: {
-      '매우 낮음': 'VERY_LOW',
-      낮음: 'LOW',
-      보통: 'MEDIUM',
-      높음: 'HIGH',
-      '매우 높음': 'VERY_HIGH',
-    },
-    expectedProfit: {
-      '150%': 'ONE_FIFTY_PERCENT',
-      '200%': 'TWO_HUNDRED_PERCENT',
-      '250%': 'TWO_FIFTY_PERCENT',
-      '300% 이상': 'THREE_HUNDRED_PERCENT',
-    },
-  };
-
+  // ✅ 설문 제출 (PATCH)
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -126,76 +117,82 @@ const Investment = () => {
       return;
     }
 
-    const isFormValid =
-      answers.budget &&
-      answers.goal &&
-      answers.knowledge &&
-      answers.loss &&
-      answers.profit;
-
+    const isFormValid = answers.budget && answers.goal && answers.knowledge && answers.loss && answers.profit;
     if (!isFormValid) {
       alert('모든 질문에 답변해주세요.');
       return;
     }
 
-    // 투자 성향 계산
+    setIsSubmitting(true);
+
+    // ✅ 점수 기반 투자 성향 계산
     let score = 0;
     score += ['50만원 이하', '100만원 이하', '200만원 이하', '500만원 이하', '1000만원 이하'].indexOf(answers.budget);
     score += ['매우 낮음', '낮음', '보통', '높음', '매우 높음'].indexOf(answers.knowledge);
     score += ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'].indexOf(answers.loss);
     score += ['150%', '200%', '250%', '300% 이상'].indexOf(answers.profit);
 
-    let profile = '';
-    if (score <= 4) profile = '안정형';
-    else if (score <= 8) profile = '안정추구형';
-    else if (score <= 12) profile = '위험중립형';
-    else if (score <= 16) profile = '적극투자형';
-    else profile = '공격투자형';
+    let resultType = '';
+    if (score <= 4) resultType = '안정형';
+    else if (score <= 8) resultType = '안정추구형';
+    else if (score <= 12) resultType = '위험중립형';
+    else if (score <= 16) resultType = '적극투자형';
+    else resultType = '공격투자형';
 
-    setResult(profile);
+    // ✅ 서버 요청용 payload
+    const payload = {
+      investmentProfile: profileMap[resultType],
+      availableAssets: budgetMap[answers.budget],
+      investmentGoal: goalMap[answers.goal],
+      lossTolerance: lossMap[answers.loss],
+      financialKnowledge: knowledgeMap[answers.knowledge],
+      expectedProfit: profitMap[answers.profit],
+      interestedSectorNames: answers.sectors,
+    };
 
-    // ✅ POST 요청 (X-User-Id 포함)
     try {
-      const payload = {
-        investmentProfile: mapToServerEnum.investmentProfile[profile],
-        availableAssets: 10000000, // ✅ 예시값
-        investmentGoal: mapToServerEnum.investmentGoal[answers.goal],
-        lossTolerance: mapToServerEnum.lossTolerance[answers.loss],
-        financialKnowledge: mapToServerEnum.financialKnowledge[answers.knowledge],
-        expectedProfit: mapToServerEnum.expectedProfit[answers.profit],
-        interestedSectorNames: answers.sectors,
-      };
-
-      console.log("📤 투자 성향 전송 데이터:", payload);
-
-      await financeAxios.post("/api/user/investment-profile/complete", payload, {
-        headers: {
-          "X-User-Id": userId, // ✅ 백엔드 요구사항
-          "Content-Type": "application/json",
-        },
+      await financeAxiosInstance.patch('/api/user/investment-profile/my', payload, {
+        headers: { 'X-User-Id': user?.userId },
       });
-
-      console.log("✅ 투자 성향 프로필 저장 완료");
-    } catch (err) {
-      console.error("❌ 투자 성향 저장 실패:", err);
-      alert("투자 성향 정보를 저장하지 못했습니다. 잠시 후 다시 시도해주세요.");
+      console.log('✅ 투자 성향 수정 성공:', payload);
+      setResult(resultType);
+    } catch (error) {
+      console.error('❌ 투자 성향 수정 실패:', error);
+      alert('투자 성향 수정에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  // ✅ 결과 출력
+  // ✅ 수정 후 LLM에 재요청
+  const handleSendToLLM = async () => {
+    try {
+      await financeAxiosInstance.post(
+        'https://finance-api.youth-fi.com/api/user/investment-profile/send-to-llm',
+        {},
+        { headers: { 'X-User-Id': user?.userId } }
+      );
+      console.log('✅ 수정 후 send-to-llm 요청 성공');
+    } catch (error) {
+      console.error('⚠️ send-to-llm 요청 실패:', error);
+    } finally {
+      navigate('/portfolio-main');
+    }
+  };
+
+  // ✅ 결과 화면
   if (result) {
     return (
       <div className="propensity-page-layout">
         {showHeader && <Header />}
         <main className="propensity-content">
           <div className="result-container">
-            <h1>분석 결과</h1>
-            <p>당신의 투자 성향은 <strong>{result}</strong>입니다.</p>
-            <button 
-              className="submit-button" 
-              onClick={() => navigate('/portfolio-main')}
-            >
-              수정된 내 포트폴리오 확인하기
+            <h1>수정 결과</h1>
+            <p>
+              당신의 새로운 투자 성향은 <strong>{result}</strong>입니다.
+            </p>
+            <button className="submit-button" onClick={handleSendToLLM}>
+              AI에게 수정된 포트폴리오 분석 요청하기
             </button>
           </div>
         </main>
@@ -206,14 +203,26 @@ const Investment = () => {
   // ✅ 기본 폼 UI
   return (
     <div className="propensity-page-layout">
+      {isSubmitting && (
+        <div className="loading-overlay">
+          <div className="loading-spinner"></div>
+        </div>
+      )}
       {showHeader && <Header />}
       <main className="propensity-content">
-        <h1>투자 성향 분석</h1>
+        <h1>투자 성향 수정</h1>
         <p className="description">
-          나의 투자 성향을 알아보고 맞춤형 포트폴리오를 추천 받아보세요.
+          투자 성향을 다시 분석하고 내 포트폴리오를 재구성해보세요.
         </p>
         <form onSubmit={handleSubmit}>
-          {questions.map(({ id, question, options, type }) => (
+          {[
+            { id: 'budget', question: '1. 투자 예산', options: ['50만원 이하', '100만원 이하', '200만원 이하', '500만원 이하', '1000만원 이하'], type: 'radio' },
+            { id: 'sectors', question: '2. 관심 종목 (3개 이상 선택)', options: availableSectors, type: 'checkbox' },
+            { id: 'goal', question: '3. 투자 목표', options: ['학비', '생활비', '주택마련', '자산증식', '채무상환'], type: 'radio' },
+            { id: 'knowledge', question: '4. 금융지식 이해도 수준', options: ['매우 낮음', '낮음', '보통', '높음', '매우 높음'], type: 'radio' },
+            { id: 'loss', question: '5. 감당 가능한 손실 수준', options: ['원금 손실 없음', '원금의 10%', '원금의 30%', '원금의 50%', '원금의 70%', '원금 전액'], type: 'radio' },
+            { id: 'profit', question: '6. 기대하는 투자 수익률', options: ['150%', '200%', '250%', '300% 이상'], type: 'radio' },
+          ].map(({ id, question, options, type }) => (
             <div key={id} className="question-container">
               <h3>{question}</h3>
               <div className={type === 'checkbox' ? 'checkbox-group' : 'radio-group'}>
@@ -230,6 +239,7 @@ const Investment = () => {
                           ? handleCheckboxChange(option)
                           : handleRadioChange(id, option)
                       }
+                      disabled={isSubmitting}
                     />
                     <label htmlFor={option}>{option}</label>
                   </div>
@@ -237,8 +247,8 @@ const Investment = () => {
               </div>
             </div>
           ))}
-          <button type="submit" className="submit-button">
-            결과 보기
+          <button type="submit" className="submit-button" disabled={isSubmitting}>
+            {isSubmitting ? '수정 중...' : '결과 보기'}
           </button>
         </form>
       </main>

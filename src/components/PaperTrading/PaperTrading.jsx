@@ -1,3 +1,4 @@
+// src/pages/PaperTrading/PaperTrading.jsx
 import { ResponsiveLine } from "@nivo/line";
 import { ResponsivePie } from "@nivo/pie";
 import { useEffect, useState } from "react";
@@ -57,7 +58,7 @@ const CustomTooltip = ({ info, position }) => {
   );
 };
 
-// ✅ 파이 차트용 커스텀 툴팁 (최종 수정 버전)
+// ✅ 파이 차트용 커스텀 툴팁
 const PieCustomTooltip = ({ datum }) => {
   const { id, value, data } = datum;
 
@@ -70,8 +71,8 @@ const PieCustomTooltip = ({ datum }) => {
         borderRadius: "8px",
         fontSize: "14px",
         boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
-        minWidth: "160px",      // 최소 너비 지정
-        lineHeight: "1.5",      // 줄 간격 추가
+        minWidth: "160px",
+        lineHeight: "1.5",
       }}
     >
       <div style={{ fontWeight: "bold", marginBottom: "6px" }}>{id}</div>
@@ -167,56 +168,83 @@ const PaperTrading = () => {
     fetchMarketData();
   }, [activeMarket, activePeriod]);
 
-// ✅ 관심 종목 불러오기
-const fetchWatchlist = async () => {
-  try {
-    const userId = user?.id ?? user?.userId ?? "guest";
-
-    const res = await financeAxios.get("/api/user/interest-stocks", {
-      headers: { "X-User-Id": userId },
-    });
-
-    const baseList = res.data?.result || [];
-
-    const enrichedList = await Promise.all(
-      baseList.map(async (item) => {
-        try {
-          const detailRes = await financeAxios.get(
-            `https://finance.youth-fi.com/api/stock/list/${item.stockId}`,
-            { headers: { "X-User-Id": userId } }
-          );
-          const detail = detailRes.data?.result;
-          return {
-            ...item,
-            stockImage: detail?.stockImage || null,
-          };
-        } catch (err) {
-          console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
-          return { ...item, stockImage: null };
-        }
-      })
-    );
-
-    const sorted = enrichedList.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
-
-    setWatchlist(sorted);
-    setWatchlistHasNext(sorted.length >= 10);
-  } catch (e) {
-    console.error("❌ 관심 종목 불러오기 실패:", e);
-  }
-};
-
-
+  // ✅ 사용자 초기화 및 모든 데이터 로딩 (핵심 수정 부분)
   useEffect(() => {
-    fetchWatchlist();
-  }, []);
+    const initializeUserAndData = async () => {
+      if (!user || !user.id) {
+        console.log("사용자 정보가 없어 초기화를 중단합니다.");
+        return;
+      }
+      const userId = user.id;
 
-  // ✅ 상위 10명 & 내 랭킹 불러오기
-  const fetchTop10Ranking = async () => {
+      try {
+        console.log(`[1] 사용자 존재 여부 확인: ${userId}`);
+        const existsRes = await financeAxios.get('/api/user/exists', {
+          headers: { 'X-User-Id': userId },
+        });
+
+        if (existsRes.data?.result === false) {
+          console.log(`[2] 사용자가 존재하지 않아 생성을 요청합니다.`);
+          await financeAxios.post('/api/user', null, {
+            headers: { 'X-User-Id': userId },
+          });
+          console.log(`[3] 사용자 생성이 완료되었습니다.`);
+        } else {
+          console.log(`[2-3] 사용자가 이미 존재합니다.`);
+        }
+
+        // 이제 사용자가 존재하므로 모든 데이터를 병렬로 가져옵니다.
+        console.log(`[4] 모든 사용자 데이터를 병렬로 불러옵니다.`);
+        await Promise.all([
+          fetchWatchlist(userId),
+          fetchTop10Ranking(userId),
+          fetchTransactions(userId),
+          fetchHoldings(userId)
+        ]);
+        console.log(`[5] 모든 데이터 로딩이 완료되었습니다.`);
+
+      } catch (error) {
+        console.error("❌ 사용자 초기화 및 데이터 로딩 실패:", error);
+      }
+    };
+
+    initializeUserAndData();
+  }, [user]);
+
+  // --- 각 데이터 Fetch 함수 (userId를 인자로 받도록 수정) ---
+
+  const fetchWatchlist = async (userId) => {
     try {
-      const userId = user?.id ?? user?.userId ?? "guest";
+      const res = await financeAxios.get("/api/user/interest-stocks", {
+        headers: { "X-User-Id": userId },
+      });
+
+      const baseList = res.data?.result || [];
+      const enrichedList = await Promise.all(
+        baseList.map(async (item) => {
+          try {
+            const detailRes = await financeAxios.get(
+              `/api/stock/list/${item.stockId}`,
+              { headers: { "X-User-Id": userId } }
+            );
+            return { ...item, stockImage: detailRes.data?.result?.stockImage || null };
+          } catch (err) {
+            console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
+            return { ...item, stockImage: null };
+          }
+        })
+      );
+
+      const sorted = enrichedList.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      setWatchlist(sorted);
+      setWatchlistHasNext(sorted.length >= 10);
+    } catch (e) {
+      console.error("❌ 관심 종목 불러오기 실패:", e);
+    }
+  };
+
+  const fetchTop10Ranking = async (userId) => {
+    try {
       const [topRes, myRes] = await Promise.all([
         financeAxios.get("https://notify.youth-fi.com/api/ranking/top10", {
           headers: { "X-User-Id": userId },
@@ -232,133 +260,94 @@ const fetchWatchlist = async () => {
     }
   };
 
-  useEffect(() => {
-    fetchTop10Ranking();
-  }, []);
-
-  // ✅ 거래 내역 불러오기
-const fetchTransactions = async () => {
-  try {
-    const userId = user?.id ?? user?.userId ?? "guest";
-    const res = await financeAxios.get("/api/user/trading/history", {
-      headers: { "X-User-Id": userId },
-    });
-    let list = res.data?.result || [];
-    list = list.sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
-    setTransactions(list);
-  } catch (e) {
-    console.error("❌ 거래 내역 불러오기 실패:", e);
-  }
-};
-
-  useEffect(() => {
-    fetchTransactions();
-  }, []);
-
-// ✅ 보유 종목 불러오기
-const fetchHoldings = async () => {
-  try {
-    const userId = user?.id ?? user?.userId ?? "guest";
-
-    // 1️⃣ 기본 보유 종목 목록
-    const res = await financeAxios.get(
-      "https://finance.youth-fi.com/api/user/holdings",
-      { headers: { "X-User-Id": userId } }
-    );
-    const list = res.data?.result || [];
-
-    // 2️⃣ 각 종목 데이터 상세 조회 (현재가 + 이미지 포함)
-    const enriched = await Promise.all(
-      list.map(async (h) => {
-        try {
-          // 현재가 요청
-          const priceRes = await financeAxios.post("/api/stock/current-price", {
-            marketCode: "J",
-            stockCode: h.stockId,
-          });
-          const current = Number(priceRes.data?.result?.stckPrpr || 0);
-          const change = current - h.avgPrice;
-          const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
-
-          // 종목 상세 요청
-          const infoRes = await financeAxios.get(
-            `https://finance.youth-fi.com/api/stock/list/${h.stockId}`,
-            { headers: { "X-User-Id": userId } }
-          );
-          const info = infoRes.data?.result;
-
-          return {
-            ...h,
-            currentPrice: current,
-            change,
-            rate,
-            stockImage: info?.stockImage || null,
-            sectorName: info?.sectorName || "",
-          };
-        } catch (err) {
-          console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
-          return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
-        }
-      })
-    );
-
-    // 3️⃣ 자산 및 수익률 계산
-    const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
-    const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
-    const profit = value - cost;
-    const rate = cost ? (profit / cost) * 100 : 0;
-
-    setHoldings(enriched);
-    setTotalValue(value);
-    setTotalProfit(profit);
-    setTotalRate(rate);
-
-    // 4️⃣ 파이 차트 데이터 생성
-    const total = value;
-    if (total > 0) {
-      const sorted = [...enriched].sort(
-        (a, b) => b.currentPrice * b.holdingQuantity - a.currentPrice * a.holdingQuantity
-      );
-
-      const top5 = sorted.slice(0, 5);
-      const others = sorted.slice(5);
-      const othersValue = others.reduce(
-        (sum, h) => sum + h.currentPrice * h.holdingQuantity,
-        0
-      );
-
-      const pieData = top5.map((h) => {
-        const val = h.currentPrice * h.holdingQuantity;
-        const percent = ((val / total) * 100).toFixed(1);
-        return {
-          id: h.stockName,
-          label: `${h.stockName} (${percent}%)`,
-          value: val,
-          percent,
-        };
+  const fetchTransactions = async (userId) => {
+    try {
+      const res = await financeAxios.get("/api/user/trading/history", {
+        headers: { "X-User-Id": userId },
       });
+      let list = res.data?.result || [];
+      list.sort((a, b) => new Date(b.executedAt) - new Date(a.executedAt));
+      setTransactions(list);
+    } catch (e) {
+      console.error("❌ 거래 내역 불러오기 실패:", e);
+    }
+  };
 
-      if (others.length > 0) {
-        const othersPercent = ((othersValue / total) * 100).toFixed(1);
-        pieData.push({
-          id: "기타",
-          label: `기타 (${othersPercent}%)`,
-          value: othersValue,
-          percent: othersPercent,
+  const fetchHoldings = async (userId) => {
+    try {
+      const res = await financeAxios.get("/api/user/holdings", {
+        headers: { "X-User-Id": userId },
+      });
+      const list = res.data?.result || [];
+
+      const enriched = await Promise.all(
+        list.map(async (h) => {
+          try {
+            const priceRes = await financeAxios.post("/api/stock/current-price", {
+              marketCode: "J", stockCode: h.stockId,
+            });
+            const current = Number(priceRes.data?.result?.stckPrpr || 0);
+            const change = current - h.avgPrice;
+            const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
+
+            const infoRes = await financeAxios.get(`/api/stock/list/${h.stockId}`, {
+              headers: { "X-User-Id": userId },
+            });
+            const info = infoRes.data?.result;
+
+            return {
+              ...h,
+              currentPrice: current,
+              change,
+              rate,
+              stockImage: info?.stockImage || null,
+              sectorName: info?.sectorName || "",
+            };
+          } catch (err) {
+            console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
+            return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
+          }
+        })
+      );
+
+      const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
+      const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
+      const profit = value - cost;
+      const rate = cost ? (profit / cost) * 100 : 0;
+
+      setHoldings(enriched);
+      setTotalValue(value);
+      setTotalProfit(profit);
+      setTotalRate(rate);
+
+      if (value > 0) {
+        const sorted = [...enriched].sort((a, b) => b.currentPrice * b.holdingQuantity - a.currentPrice * a.holdingQuantity);
+        const top5 = sorted.slice(0, 5);
+        const others = sorted.slice(5);
+        const othersValue = others.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
+
+        const newPieData = top5.map((h) => {
+          const val = h.currentPrice * h.holdingQuantity;
+          const percent = ((val / value) * 100).toFixed(1);
+          return { id: h.stockName, label: `${h.stockName} (${percent}%)`, value: val, percent };
         });
-      }
 
-      setPieData(pieData);
+        if (others.length > 0) {
+          const othersPercent = ((othersValue / value) * 100).toFixed(1);
+          newPieData.push({ id: "기타", label: `기타 (${othersPercent}%)`, value: othersValue, percent: othersPercent });
+        }
+        setPieData(newPieData);
+      } else {
+        setPieData([]); // 보유 종목이 없으면 파이 데이터 초기화
+      }
+    } catch (e) {
+      console.error("❌ 보유 종목 불러오기 실패:", e);
     }
   } catch (e) {
     console.error("❌ 보유 종목 불러오기 실패:", e);
   }
 };
 
-
-  useEffect(() => {
-    fetchHoldings();
-  }, []);
 
   // ✅ X축 포맷
   const formatXAxisDate = (dateStr) => {
@@ -429,7 +418,7 @@ const fetchHoldings = async () => {
             >
               {loading ? (
                 <p className="loading-text">데이터 불러오는 중...</p>
-              ) : chartData.length > 0 ? (
+              ) : chartData.length > 0 && chartData[0].data.length > 0 ? (
                 <ResponsiveLine
                   data={chartData}
                   margin={{ top: 20, right: 20, bottom: 50, left: 60 }}

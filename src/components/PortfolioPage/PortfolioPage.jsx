@@ -8,31 +8,32 @@ import { Link } from 'react-router-dom';
 // 종합 추천 데이터
 const portfolioDetails = [
   {
-    id: '예금',
-    percentage: 28,
-    value: 16805120,
+    id: '예적금',
+    percentage: 70,
+    value: 37811480,
     color: '#66DA26',
     products: [
-      { icon: <FaLandmark />, name: 'SH수협은행', detail: 'Sh첫만남우대예금' }
+      { 
+        type: '예금',
+        icon: <FaLandmark />, 
+        name: 'SH수협은행', 
+        detail: 'Sh첫만남우대예금', 
+        rates: { max: '2.90%', base: '1.85%' } 
+      },
+      { 
+        type: '적금',
+        icon: <FaLandmark />, 
+        name: '신한은행', 
+        detail: '적금적금적금', 
+        rates: { max: '7.77%', base: '4.56%' } 
+      }
     ],
-    rates: { max: '2.90%', base: '1.85%' },
-    linkText: '더 알아보기 >'
-  },
-  {
-    id: '적금',
-    percentage: 32,
-    value: 19205850,
-    color: '#826AF9',
-    products: [
-      { icon: <FaLandmark />, name: '신한은행', detail: '적금적금적금' }
-    ],
-    rates: { max: '7.77%', base: '4.56%' },
     linkText: '더 알아보기 >'
   },
   {
     id: '주식',
     percentage: 30,
-    value: 18005430,
+    value: 16204920,
     color: '#FF6B6B',
     products: [
       { icon: <FaMicrochip />, name: 'sk 하이닉스', detail: '₩78,400' },
@@ -144,18 +145,40 @@ const PortfolioPage = () => {
                       layers={['arcs', 'arcLinkLabels', CenteredMetric]}
                     />
                 </div>
-                    <div className="summary-cards">
-                        {portfolioDetails.map((card) => (
-                        <div className="summary-card" key={card.id}>
-                        <div className="card-title">
-                        <span className="percentage" style={{ color: card.color }}>
-                            {card.percentage}%
-                        </span>
-                        <span>{card.value.toLocaleString()} 원</span>
-                        </div>
-                        <h4>{card.id}</h4>
+                <div className="summary-cards">
+                    {portfolioDetails.map((card) => (
+                    <div className="summary-card" key={card.id}>
+                    <div className="card-title">
+                    <span className="percentage" style={{ color: card.color }}>
+                        {card.percentage}%
+                    </span>
+                    <span>{card.value.toLocaleString()} 원</span>
+                    </div>
+                    <h4>{card.id}</h4>
 
+                    {card.id === '예적금' ? (
+                      <div className="product-split-container">
                         {card.products.map((product, index) => (
+                          <div className="product-split-item" key={index}>
+                            <h5>{product.type}</h5>
+                            <div className="product-item">
+                                <div className="product-logo">{product.icon}</div>
+                                <div className="product-details">
+                                <span>{product.name}</span>
+                                <strong>{product.detail}</strong>
+                                </div>
+                            </div>
+                            {product.rates && (
+                            <div className="product-rates">
+                                <span>최고 <strong>{product.rates.max}</strong></span>
+                                <span>기본 {product.rates.base}</span>
+                            </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      card.products.map((product, index) => (
                         <div className="product-item" key={index}>
                             <div className="product-logo">{product.icon}</div>
                             <div className="product-details">
@@ -163,25 +186,19 @@ const PortfolioPage = () => {
                             <strong>{product.detail}</strong>
                             </div>
                         </div>
-                        ))}
-                        
-                        {card.rates && (
-                        <div className="product-rates">
-                            <span>최고 <strong>{card.rates.max}</strong></span>
-                            <span>기본 {card.rates.base}</span>
-                        </div>
-                        )}
-                        {/* ✨ 이 부분을 수정했습니다. */}
-                        {card.id === '주식' ? (
-                            <Link to="/all-stocks" className="more-link">{card.linkText}</Link>
-                        ) : card.id === '예금' || card.id === '적금' ? (
-                            <Link to="/savings" className="more-link">{card.linkText}</Link>
-                        ) : (
-                            <a href="#" className="more-link">{card.linkText}</a>
-                        )}
-                    </div>
-                    ))}
+                      ))
+                    )}
+                    
+                    {card.id === '주식' ? (
+                        <Link to="/all-stocks" className="more-link">{card.linkText}</Link>
+                    ) : card.id === '예적금' ? (
+                        <Link to="/savings" className="more-link">{card.linkText}</Link>
+                    ) : (
+                        <a href="#" className="more-link">{card.linkText}</a>
+                    )}
                 </div>
+                ))}
+            </div>
             </div>
 
             <div className="portfolio-right">

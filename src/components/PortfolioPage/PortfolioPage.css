@@ -93,6 +93,16 @@
   margin: 0 0 1rem 0;
   font-size: 1rem;
 }
+
+/* PortfolioPage.css 파일 하단에 추가 */
+
+.summary-cards .summary-card:first-child {
+  flex-grow: 2;
+}
+
+.summary-cards .summary-card:nth-child(2) {
+  flex-grow: 1;
+}
 .product-item {
   display: flex;
   align-items: center;
@@ -156,4 +166,27 @@
   color: #888;
   margin-top: 2rem;
   min-height: 200px;
+}
+
+.product-split-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.product-split-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-split-item h5 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #555;
+  font-weight: 600;
+}
+
+.product-split-item .product-rates {
+    margin-bottom: 0;
 }

@@ -1,5 +1,5 @@
-import React from 'react';
-import './Modal.css';
+import React from "react";
+import "./Modal.css";
 
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) {
@@ -11,11 +11,11 @@ const Modal = ({ isOpen, onClose, title, children }) => {
       <div className="modal-container" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{title}</h2>
-          <button className="modal-close-btn" onClick={onClose}>&times;</button>
+          <button className="modal-close-btn" onClick={onClose}>
+            &times;
+          </button>
         </div>
-        <div className="modal-content">
-          {children}
-        </div>
+        <div className="modal-content">{children}</div>
       </div>
     </div>
   );

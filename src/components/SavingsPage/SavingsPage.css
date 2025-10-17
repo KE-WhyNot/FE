@@ -156,9 +156,9 @@
 }
 
 .rate-info {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .rate-max {
@@ -294,7 +294,6 @@
   margin: 0;
 }
 
-
 .amount-input-group span {
   font-size: 1rem;
   color: #555;
@@ -346,8 +345,16 @@
   justify-content: center;
 }
 
-.reset-button { background-color: #fff; color: #555; border-color: #ccc; }
-.apply-button { background-color: #5844d1; color: white; border-color: #5844d1; }
+.reset-button {
+  background-color: #fff;
+  color: #555;
+  border-color: #ccc;
+}
+.apply-button {
+  background-color: #5844d1;
+  color: white;
+  border-color: #5844d1;
+}
 
 /* SavingsPage.css 파일 하단에 아래 내용을 추가해주세요. */
 

@@ -36,9 +36,15 @@
   font-size: 1.5rem;
   color: white;
 }
-.icon-wrapper.trade { background-color: #42a5f5; }
-.icon-wrapper.dividend { background-color: #66bb6a; }
-.icon-wrapper.ranking { background-color: #ffa726; }
+.icon-wrapper.trade {
+  background-color: #42a5f5;
+}
+.icon-wrapper.dividend {
+  background-color: #66bb6a;
+}
+.icon-wrapper.ranking {
+  background-color: #ffa726;
+}
 
 .notification-content p {
   margin: 0 0 0.3rem 0;

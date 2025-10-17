@@ -52,7 +52,9 @@ const PolicyDetailPage = () => {
       <div className="policy-detail-layout">
         <Header />
         <main className="policy-detail-content">
-          <p style={{ color: "red" }}>{error || "정책 정보를 찾을 수 없습니다."}</p>
+          <p style={{ color: "red" }}>
+            {error || "정책 정보를 찾을 수 없습니다."}
+          </p>
         </main>
       </div>
     );
@@ -92,54 +94,54 @@ const PolicyDetailPage = () => {
         <Section
           title="정책 요약"
           data={{
-            "정책분야": summary?.category_full,
-            "사업운영기간": summary?.period_biz,
-            "신청기간": summary?.period_apply,
-            "정책설명": summary?.description_raw,
+            정책분야: summary?.category_full,
+            사업운영기간: summary?.period_biz,
+            신청기간: summary?.period_apply,
+            정책설명: summary?.description_raw,
           }}
         />
 
         <Section
           title="신청자격"
           data={{
-            "연령": eligibility?.age,
-            "거주지역": eligibility?.regions,
-            "소득": eligibility?.income,
-            "학력": eligibility?.education,
-            "전공": eligibility?.major,
-            "취업상태": eligibility?.job_status,
-            "특화분야": eligibility?.specialization,
-            "추가조건": eligibility?.eligibility_additional,
-            "참여제한": eligibility?.eligibility_restrictive,
+            연령: eligibility?.age,
+            거주지역: eligibility?.regions,
+            소득: eligibility?.income,
+            학력: eligibility?.education,
+            전공: eligibility?.major,
+            취업상태: eligibility?.job_status,
+            특화분야: eligibility?.specialization,
+            추가조건: eligibility?.eligibility_additional,
+            참여제한: eligibility?.eligibility_restrictive,
           }}
         />
 
         <Section
           title="신청방법"
           data={{
-            "신청절차": application?.application_process,
-            "신청사이트": application?.apply_url,
-            "제출서류": application?.required_documents,
+            신청절차: application?.application_process,
+            신청사이트: application?.apply_url,
+            제출서류: application?.required_documents,
           }}
         />
 
         <Section
           title="기타 정보"
           data={{
-            "주관기관": etc?.supervising_org,
-            "운영기관": etc?.operating_org,
-            "참고사이트1": etc?.ref_url_1,
-            "참고사이트2": etc?.ref_url_2,
+            주관기관: etc?.supervising_org,
+            운영기관: etc?.operating_org,
+            참고사이트1: etc?.ref_url_1,
+            참고사이트2: etc?.ref_url_2,
           }}
         />
 
         <Section
           title="메타정보"
           data={{
-            "출처": meta?.ext_source,
-            "조회수": meta?.views,
-            "등록일": meta?.first_external_created || meta?.created_at,
-            "수정일": meta?.last_external_modified || meta?.updated_at,
+            출처: meta?.ext_source,
+            조회수: meta?.views,
+            등록일: meta?.first_external_created || meta?.created_at,
+            수정일: meta?.last_external_modified || meta?.updated_at,
           }}
         />
       </main>
@@ -149,7 +151,9 @@ const PolicyDetailPage = () => {
 
 // ✅ Section 컴포넌트
 const Section = ({ title, data }) => {
-  const entries = Object.entries(data || {}).filter(([_, v]) => v && v !== "null");
+  const entries = Object.entries(data || {}).filter(
+    ([_, v]) => v && v !== "null"
+  );
 
   if (entries.length === 0) return null;
 

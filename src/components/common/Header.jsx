@@ -86,7 +86,10 @@ const Header = () => {
 
           {/* --- 알림 아이콘 --- */}
           <div className="notification-container">
-            <div className="notification-bell" onClick={toggleNotificationPanel}>
+            <div
+              className="notification-bell"
+              onClick={toggleNotificationPanel}
+            >
               <IoMdNotifications />
               {unreadCount > 0 && (
                 <span className="notification-badge">{unreadCount}</span>
@@ -101,19 +104,28 @@ const Header = () => {
                     headerNotifications.map((n) => (
                       <div
                         key={n.notificationId}
-                        className={`notification-item ${n.read ? "read" : "unread"}`}
-                        onClick={() => handleNotificationClick(n.notificationId)}
+                        className={`notification-item ${
+                          n.read ? "read" : "unread"
+                        }`}
+                        onClick={() =>
+                          handleNotificationClick(n.notificationId)
+                        }
                       >
                         {n.message}
                       </div>
                     ))
                   ) : (
-                    <div className="notification-item">새로운 알림이 없습니다.</div>
+                    <div className="notification-item">
+                      새로운 알림이 없습니다.
+                    </div>
                   )}
                 </div>
 
                 <div className="notification-footer">
-                  <button onClick={handleViewAllNotifications} className="view-all-btn">
+                  <button
+                    onClick={handleViewAllNotifications}
+                    className="view-all-btn"
+                  >
                     전체 알림 보기
                   </button>
                 </div>

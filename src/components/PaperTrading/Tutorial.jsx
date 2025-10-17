@@ -1,19 +1,23 @@
-import React, { useEffect, useState, useRef } from 'react';
-import './Tutorial.css';
+import React, { useEffect, useState, useRef } from "react";
+import "./Tutorial.css";
 
 const Tutorial = ({ steps, onFinish }) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [styles, setStyles] = useState({
     highlight: {},
-    tooltip: { opacity: 0 } // 처음에는 투명하게 시작
+    tooltip: { opacity: 0 }, // 처음에는 투명하게 시작
   });
   const tooltipRef = useRef(null);
 
   useEffect(() => {
     const targetElement = document.querySelector(steps[currentStep].target);
     if (targetElement) {
-      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
-      
+      targetElement.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
+
       const timer = setTimeout(() => {
         const rect = targetElement.getBoundingClientRect();
         const tooltipEl = tooltipRef.current;
@@ -33,24 +37,24 @@ const Tutorial = ({ steps, onFinish }) => {
         // 세로 위치 결정
         if (rect.bottom + tooltipHeight > window.innerHeight - 20) {
           newTooltipStyle.bottom = `${window.innerHeight - rect.top + 10}px`;
-          newTooltipStyle.top = 'auto';
+          newTooltipStyle.top = "auto";
         } else {
           newTooltipStyle.top = `${rect.bottom + 10}px`;
-          newTooltipStyle.bottom = 'auto';
+          newTooltipStyle.bottom = "auto";
         }
 
         // 가로 위치 결정
         if (rect.left + tooltipWidth > window.innerWidth - 20) {
           newTooltipStyle.right = `${window.innerWidth - rect.right}px`;
-          newTooltipStyle.left = 'auto';
+          newTooltipStyle.left = "auto";
         } else {
           newTooltipStyle.left = `${rect.left}px`;
-          newTooltipStyle.right = 'auto';
+          newTooltipStyle.right = "auto";
         }
 
         setStyles({
           highlight: newHighlightStyle,
-          tooltip: newTooltipStyle
+          tooltip: newTooltipStyle,
         });
       }, 300);
 
@@ -61,15 +65,14 @@ const Tutorial = ({ steps, onFinish }) => {
   // ✨ 말풍선 페이드아웃 후 다음 단계로 이동
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
-      setStyles(prev => ({
+      setStyles((prev) => ({
         ...prev,
-        tooltip: { ...prev.tooltip, opacity: 0 }
+        tooltip: { ...prev.tooltip, opacity: 0 },
       }));
 
       setTimeout(() => {
         setCurrentStep(currentStep + 1);
       }, 300);
-      
     } else {
       onFinish();
     }
@@ -81,9 +84,11 @@ const Tutorial = ({ steps, onFinish }) => {
       <div className="tooltip" ref={tooltipRef} style={styles.tooltip}>
         <p>{steps[currentStep].content}</p>
         <div className="tooltip-footer">
-          <span>{currentStep + 1} / {steps.length}</span>
+          <span>
+            {currentStep + 1} / {steps.length}
+          </span>
           <button onClick={handleNext}>
-            {currentStep === steps.length - 1 ? '완료' : '다음'}
+            {currentStep === steps.length - 1 ? "완료" : "다음"}
           </button>
         </div>
       </div>

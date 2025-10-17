@@ -1,37 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import './PortfolioPage.css';
-import Header from '../common/Header';
-import { ResponsivePie } from '@nivo/pie';
-import { FaLandmark, FaMicrochip } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
-import financeAxiosInstance from '../../api/financeAxiosInstance';
-import policyAxios from '../../api/policyAxiosInstance';
-import useAuthStore from '../../store/useAuthStore';
+import React, { useEffect, useState } from "react";
+import "./PortfolioPage.css";
+import Header from "../common/Header";
+import { ResponsivePie } from "@nivo/pie";
+import { FaLandmark, FaMicrochip } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import financeAxiosInstance from "../../api/financeAxiosInstance";
+import policyAxios from "../../api/policyAxiosInstance";
+import useAuthStore from "../../store/useAuthStore";
 
 // ✅ 양쪽 차트에서 함께 사용할 새로운 커스텀 라벨 컴포넌트
 const CustomArcLinkLabel = ({ datum, style }) => {
   return (
-    <g transform={style.transform} style={{ pointerEvents: 'none' }}>
-      {/* 첫 번째 줄: 퍼센트(%) 표시 */}
+    <g transform={style.transform} style={{ pointerEvents: "none" }}>
       <text
         textAnchor="middle"
         dominantBaseline="central"
         style={{
           fontSize: 16,
-          fontWeight: 'bold',
+          fontWeight: "bold",
           fill: style.textColor,
         }}
       >
         {datum.value}%
       </text>
-      {/* 두 번째 줄: 항목 이름(ID) 표시 */}
       <text
         textAnchor="middle"
         dominantBaseline="central"
         dy="18"
         style={{
           fontSize: 14,
-          fill: '#555',
+          fill: "#555",
         }}
       >
         {datum.id}
@@ -47,82 +45,74 @@ const PortfolioPage = () => {
   const [depositData, setDepositData] = useState(null);
   const [savingData, setSavingData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [selectedReason, setSelectedReason] = useState('');
+  const [selectedReason, setSelectedReason] = useState("");
 
   // ✅ 데이터 불러오기
   useEffect(() => {
     const fetchPortfolioData = async () => {
+      setLoading(true); // 항상 로딩 시작
       try {
         // 1️⃣ 포트폴리오 추천 정보
         const portfolioRes = await financeAxiosInstance.get(
-          '/api/user/portfolio-recommendation/my',
-          { headers: { 'X-User-Id': user?.userId } }
+          "/api/user/portfolio-recommendation/my",
+          { headers: { "X-User-Id": user?.userId } }
         );
         const result = portfolioRes.data?.result;
         setPortfolioData(result || null);
 
-        // 2️⃣ 투자 성향 정보 (availableAssets 포함)
+        // 2️⃣ 투자 성향 정보
         const profileRes = await financeAxiosInstance.get(
-          '/api/user/investment-profile/my',
-          { headers: { 'X-User-Id': user?.userId } }
+          "/api/user/investment-profile/my",
+          { headers: { "X-User-Id": user?.userId } }
         );
         const profileResult = profileRes.data?.result;
         setInvestmentProfile(profileResult || null);
 
         // 3️⃣ 예금 정보
-        const depositRes = await policyAxios.get('/api/finproduct/list', {
+        const depositRes = await policyAxios.get("/api/finproduct/list", {
           params: {
             page_num: 1,
             page_size: 1,
             product_type: 1,
-            interest_rate_sort: 'include_bonus',
+            interest_rate_sort: "include_bonus",
           },
         });
         const depositProduct = depositRes.data?.result?.finProductList?.[0];
         setDepositData(depositProduct || null);
 
         // 4️⃣ 적금 정보
-        const savingRes = await policyAxios.get('/api/finproduct/list', {
+        const savingRes = await policyAxios.get("/api/finproduct/list", {
           params: {
             page_num: 1,
             page_size: 1,
             product_type: 2,
-            interest_rate_sort: 'include_bonus',
+            interest_rate_sort: "include_bonus",
           },
         });
         const savingProduct = savingRes.data?.result?.finProductList?.[0];
         setSavingData(savingProduct || null);
       } catch (error) {
-        console.error('❌ 데이터 요청 실패:', error);
+        console.error("❌ 데이터 요청 실패:", error);
       } finally {
-        setLoading(false);
+        setLoading(false); // 항상 로딩 종료
       }
     };
 
     fetchPortfolioData();
   }, [user?.userId]);
 
-  // ✅ 로딩 중
-  if (loading) {
+  // ✅ 로딩 중 또는 데이터가 아직 도착하지 않은 경우
+  if (loading || !portfolioData || !investmentProfile) {
     return (
       <div className="portfolio-page-layout">
         <Header />
         <main className="portfolio-content">
           <div className="loading-overlay">
             <div className="loading-spinner"></div>
+            <p className="loading-message">
+              정보를 받아오는 중입니다. 잠시만 기다려 주세요...
+            </p>
           </div>
-        </main>
-      </div>
-    );
-  }
-
-  // ✅ 데이터 없는 경우
-  if (!portfolioData || !investmentProfile) {
-    return (
-      <div className="portfolio-page-layout">
-        <Header />
-        <main className="portfolio-content">
-          <p>포트폴리오 데이터를 불러올 수 없습니다.</p>
         </main>
       </div>
     );
@@ -139,20 +129,20 @@ const PortfolioPage = () => {
 
   // ✅ 차트용 데이터
   const donutChartData = [
-    { id: '예적금', value: allocationSavings, color: '#66DA26' },
-    { id: '주식', value: allocationStocks, color: '#FF6B6B' },
+    { id: "예적금", value: allocationSavings, color: "#66DA26" },
+    { id: "주식", value: allocationStocks, color: "#FF6B6B" },
   ];
 
   // ✅ 카드 데이터
   const portfolioDetails = [
     {
-      id: '예적금',
+      id: "예적금",
       percentage: allocationSavings,
       value: savingsAmount,
-      color: '#66DA26',
+      color: "#66DA26",
       products: [
         depositData && {
-          type: '예금',
+          type: "예금",
           icon: <FaLandmark />,
           name: depositData.bank_name,
           detail: depositData.product_name,
@@ -163,7 +153,7 @@ const PortfolioPage = () => {
           },
         },
         savingData && {
-          type: '적금',
+          type: "적금",
           icon: <FaLandmark />,
           name: savingData.bank_name,
           detail: savingData.product_name,
@@ -174,15 +164,15 @@ const PortfolioPage = () => {
           },
         },
       ].filter(Boolean),
-      linkText: '더 알아보기 >',
+      linkText: "더 알아보기 >",
     },
     {
-      id: '주식',
+      id: "주식",
       percentage: allocationStocks,
       value: stocksAmount,
-      color: '#FF6B6B',
+      color: "#FF6B6B",
       products: portfolioData.recommendedStocks || [],
-      linkText: '더보기 >',
+      linkText: "더보기 >",
     },
   ];
 
@@ -195,7 +185,7 @@ const PortfolioPage = () => {
       y={centerY}
       textAnchor="middle"
       dominantBaseline="central"
-      style={{ fontSize: '24px', fontWeight: 700, fill: '#333' }}
+      style={{ fontSize: "24px", fontWeight: 700, fill: "#333" }}
     >
       {formattedTotal}
     </text>
@@ -220,7 +210,7 @@ const PortfolioPage = () => {
 
   // ✅ LLM 분석 결과 + 예측 데이터 문장 생성
   const renderLLMOutput = () => {
-    if (!selectedReason) return '종목을 클릭하면 AI 분석 결과가 표시됩니다.';
+    if (!selectedReason) return "종목을 클릭하면 AI 분석 결과가 표시됩니다.";
     let analysisText = selectedReason;
     if (highestValue && lowestValue) {
       analysisText += `\n\n 또한, 최근 13주간 1,000만 원을 해당 포트폴리오에 투자했을 경우,\n예상 최고 가치는 약 ${highestValue}원, 최저 가치는 약 ${lowestValue}원으로 분석됩니다.`;
@@ -249,18 +239,18 @@ const PortfolioPage = () => {
                 padAngle={1.5}
                 cornerRadius={5}
                 margin={{ top: 40, right: 100, bottom: 40, left: 100 }}
-                colors={{ datum: 'data.color' }}
+                colors={{ datum: "data.color" }}
                 enableArcLabels={false}
                 enableArcLinkLabels={true}
                 arcLinkLabelsSkipAngle={10}
                 arcLinkLabelsTextColor="#555"
                 arcLinkLabelsThickness={2}
-                arcLinkLabelsColor={{ from: 'color' }}
+                arcLinkLabelsColor={{ from: "color" }}
                 arcLinkLabelsDiagonalLength={16}
                 arcLinkLabelsStraightLength={24}
                 arcLinkLabelsTextOffset={6}
                 arcLinkLabelsComponent={CustomArcLinkLabel}
-                layers={['arcs', 'arcLinkLabels', CenteredMetric]}
+                layers={["arcs", "arcLinkLabels", CenteredMetric]}
               />
             </div>
 
@@ -275,7 +265,7 @@ const PortfolioPage = () => {
                   </div>
                   <h4>{card.id}</h4>
 
-                  {card.id === '예적금' ? (
+                  {card.id === "예적금" ? (
                     <div className="product-split-container">
                       {card.products.map((product, index) => (
                         <div className="product-split-item" key={index}>
@@ -326,7 +316,7 @@ const PortfolioPage = () => {
                     </div>
                   )}
 
-                  {card.id === '주식' ? (
+                  {card.id === "주식" ? (
                     <Link to="/all-stocks" className="more-link">
                       {card.linkText}
                     </Link>
@@ -354,14 +344,14 @@ const PortfolioPage = () => {
                 cornerRadius={5}
                 activeOuterRadiusOffset={8}
                 borderWidth={1}
-                borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-                colors={{ scheme: 'set2' }}
+                borderColor={{ from: "color", modifiers: [["darker", 0.2]] }}
+                colors={{ scheme: "set2" }}
                 enableArcLabels={false}
                 enableArcLinkLabels={true}
                 arcLinkLabelsSkipAngle={15}
                 arcLinkLabelsTextColor="#555"
                 arcLinkLabelsThickness={2}
-                arcLinkLabelsColor={{ from: 'color' }}
+                arcLinkLabelsColor={{ from: "color" }}
                 arcLinkLabelsDiagonalLength={16}
                 arcLinkLabelsStraightLength={24}
                 arcLinkLabelsTextOffset={6}
@@ -371,7 +361,7 @@ const PortfolioPage = () => {
             </div>
 
             <div className="llm-placeholder">
-              <p className="reason-text" style={{ whiteSpace: 'pre-line' }}>
+              <p className="reason-text" style={{ whiteSpace: "pre-line" }}>
                 {renderLLMOutput()}
               </p>
             </div>

@@ -1,5 +1,11 @@
 // src/pages/AllStocks/AllStocksDetail.jsx
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import { useParams } from "react-router-dom";
 import * as echarts from "echarts";
 import "./AllStocks.css";
@@ -48,7 +54,9 @@ const AllStocksDetail = () => {
   useEffect(() => {
     const fetchStockInfo = async () => {
       try {
-        const res = await financeAxios.get(`/api/stock/list/${stockId}`, { headers });
+        const res = await financeAxios.get(`/api/stock/list/${stockId}`, {
+          headers,
+        });
         setStockInfo(res.data?.result);
       } catch (error) {
         console.error("❌ 종목 정보 불러오기 실패:", error);
@@ -82,7 +90,8 @@ const AllStocksDetail = () => {
   /** ✅ 실시간 등락률 계산 */
   useEffect(() => {
     if (livePrice > 0 && openingPrice > 0) {
-      const changePercentage = ((livePrice - openingPrice) / openingPrice) * 100;
+      const changePercentage =
+        ((livePrice - openingPrice) / openingPrice) * 100;
       setLiveChange(changePercentage);
     }
   }, [livePrice, openingPrice]);
@@ -92,7 +101,10 @@ const AllStocksDetail = () => {
     const fetchStockData = async () => {
       try {
         setLoading(true);
-        const res = await financeAxios.get(`/api/stock/chart/${stockId}/${period}`, { headers });
+        const res = await financeAxios.get(
+          `/api/stock/chart/${stockId}/${period}`,
+          { headers }
+        );
         const candles = res.data?.result?.candles || [];
         const parsed = candles.map((c) => ({
           date: c.date,
@@ -103,7 +115,9 @@ const AllStocksDetail = () => {
           high: Number(c.high),
           volume: Number(c.volume),
         }));
-        const sorted = [...parsed].sort((a, b) => new Date(a.date) - new Date(b.date));
+        const sorted = [...parsed].sort(
+          (a, b) => new Date(a.date) - new Date(b.date)
+        );
         setData(sorted);
       } catch (error) {
         console.error("❌ 차트 데이터 불러오기 실패:", error);
@@ -154,7 +168,11 @@ const AllStocksDetail = () => {
         setIsFavorite(false);
         alert("관심 종목에서 해제되었습니다.");
       } else {
-        await financeAxios.post("/api/user/interest-stocks", { stockId }, { headers });
+        await financeAxios.post(
+          "/api/user/interest-stocks",
+          { stockId },
+          { headers }
+        );
         setIsFavorite(true);
         alert("관심 종목에 추가되었습니다!");
       }
@@ -167,17 +185,24 @@ const AllStocksDetail = () => {
   /** ✅ SMA 계산 */
   const sma5 = useMemo(() => calculateSMA(data, 5), [data]);
   const sma20 = useMemo(() => calculateSMA(data, 20), [data]);
-  const dates = data.map((d) => (period === "minute" ? `${d.date} ${d.time}` : d.date));
+  const dates = data.map((d) =>
+    period === "minute" ? `${d.date} ${d.time}` : d.date
+  );
   const values = data.map((d) => [d.open, d.close, d.low, d.high]);
   const volumes = data.map((d) => d.volume);
 
   const latestData = data[data.length - 1];
   const prevData = data[data.length - 2] || latestData;
   const change = latestData ? latestData.close - prevData.close : 0;
-  const changePct = prevData?.close ? ((change / prevData.close) * 100).toFixed(2) : "0.00";
-  const colorClass = change > 0 ? "positive" : change < 0 ? "negative" : "neutral";
+  const changePct = prevData?.close
+    ? ((change / prevData.close) * 100).toFixed(2)
+    : "0.00";
+  const colorClass =
+    change > 0 ? "positive" : change < 0 ? "negative" : "neutral";
   const dayOfWeek = latestData
-    ? ["일", "월", "화", "수", "목", "금", "토"][new Date(latestData.date).getDay()]
+    ? ["일", "월", "화", "수", "목", "금", "토"][
+        new Date(latestData.date).getDay()
+      ]
     : "";
 
   /** ✅ 차트 렌더링 */
@@ -194,7 +219,12 @@ const AllStocksDetail = () => {
         { left: 40, right: 60, top: 290, height: 60 },
       ],
       xAxis: [
-        { type: "category", data: dates, boundaryGap: false, axisLine: { lineStyle: { color: "#ccc" } } },
+        {
+          type: "category",
+          data: dates,
+          boundaryGap: false,
+          axisLine: { lineStyle: { color: "#ccc" } },
+        },
         { type: "category", gridIndex: 1, data: dates, show: false },
       ],
       yAxis: [
@@ -202,8 +232,22 @@ const AllStocksDetail = () => {
         { gridIndex: 1, show: false },
       ],
       dataZoom: [
-        { type: "inside", xAxisIndex: [0, 1], start: 80, end: 100, filterMode: "weakFilter" },
-        { type: "slider", xAxisIndex: [0, 1], start: 80, end: 100, height: 20, bottom: 10, showDetail: false },
+        {
+          type: "inside",
+          xAxisIndex: [0, 1],
+          start: 80,
+          end: 100,
+          filterMode: "weakFilter",
+        },
+        {
+          type: "slider",
+          xAxisIndex: [0, 1],
+          start: 80,
+          end: 100,
+          height: 20,
+          bottom: 10,
+          showDetail: false,
+        },
       ],
       series: [
         {
@@ -265,9 +309,7 @@ const AllStocksDetail = () => {
   const handleOrder = async () => {
     if (!quantity || quantity <= 0) return alert("수량을 입력하세요.");
     const endpoint =
-      orderType === "buy"
-        ? "/api/user/trading/buy"
-        : "/api/user/trading/sell";
+      orderType === "buy" ? "/api/user/trading/buy" : "/api/user/trading/sell";
 
     try {
       const res = await financeAxios.post(
@@ -277,7 +319,9 @@ const AllStocksDetail = () => {
       );
 
       if (res.data?.code === "COMMON200") {
-        alert(`${orderType === "buy" ? "매수" : "매도"} 주문이 완료되었습니다.`);
+        alert(
+          `${orderType === "buy" ? "매수" : "매도"} 주문이 완료되었습니다.`
+        );
       } else {
         alert("요청은 완료되었지만 응답 코드가 예상과 다릅니다.");
       }

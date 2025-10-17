@@ -285,7 +285,7 @@
 .holdings-widget {
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.04);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
   padding: 16px 18px;
 }
 
@@ -403,7 +403,6 @@
   padding-right: 6px;
 }
 
-
 .transaction-item {
   display: flex;
   justify-content: space-between;
@@ -488,7 +487,6 @@
   color: #333;
 }
 
-
 /* Nivo 기본 툴팁 비활성화 (툴팁을 커스텀했으므로 필요할 수 있음) */
 .nivo-tooltip {
   display: none !important;
@@ -511,7 +509,6 @@
   border-bottom: 1px solid #f0f0f0;
   font-size: 0.95rem;
 }
-
 
 .holding-item .stock-name {
   font-weight: 600;
@@ -542,7 +539,6 @@
   text-align: right;
   font-weight: 600;
 }
-
 
 /* 수익 / 손실 색상 강조 */
 .holding-item .positive {

@@ -167,46 +167,47 @@ const PaperTrading = () => {
     fetchMarketData();
   }, [activeMarket, activePeriod]);
 
-  // ✅ 관심 종목 불러오기
-  const fetchWatchlist = async () => {
-    try {
-      const userId = user?.id ?? user?.userId ?? "guest";
+// ✅ 관심 종목 불러오기
+const fetchWatchlist = async () => {
+  try {
+    const userId = user?.id ?? user?.userId ?? "guest";
 
-      const res = await financeAxios.get("/api/user/interest-stocks", {
-        headers: { "X-User-Id": userId },
-      });
+    const res = await financeAxios.get("/api/user/interest-stocks", {
+      headers: { "X-User-Id": userId },
+    });
 
-      const baseList = res.data?.result || [];
+    const baseList = res.data?.result || [];
 
-      const enrichedList = await Promise.all(
-        baseList.map(async (item) => {
-          try {
-            const detailRes = await financeAxios.get(
-              `/api/stock/list/${item.stockId}`,
-              { headers: { "X-User-Id": userId } }
-            );
-            const detail = detailRes.data?.result;
-            return {
-              ...item,
-              stockImage: detail?.stockImage || null,
-            };
-          } catch (err) {
-            console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
-            return { ...item, stockImage: null };
-          }
-        })
-      );
+    const enrichedList = await Promise.all(
+      baseList.map(async (item) => {
+        try {
+          const detailRes = await financeAxios.get(
+            `https://finance.youth-fi.com/api/stock/list/${item.stockId}`,
+            { headers: { "X-User-Id": userId } }
+          );
+          const detail = detailRes.data?.result;
+          return {
+            ...item,
+            stockImage: detail?.stockImage || null,
+          };
+        } catch (err) {
+          console.warn(`⚠️ 종목 ${item.stockId} 이미지 로드 실패`, err);
+          return { ...item, stockImage: null };
+        }
+      })
+    );
 
-      const sorted = enrichedList.sort(
-        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-      );
+    const sorted = enrichedList.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
 
-      setWatchlist(sorted);
-      setWatchlistHasNext(sorted.length >= 10);
-    } catch (e) {
-      console.error("❌ 관심 종목 불러오기 실패:", e);
-    }
-  };
+    setWatchlist(sorted);
+    setWatchlistHasNext(sorted.length >= 10);
+  } catch (e) {
+    console.error("❌ 관심 종목 불러오기 실패:", e);
+  }
+};
+
 
   useEffect(() => {
     fetchWatchlist();
@@ -254,107 +255,106 @@ const fetchTransactions = async () => {
     fetchTransactions();
   }, []);
 
-  // ✅ 보유 종목 불러오기 (이미지 + 현재가 + 수익률 계산 포함)
+// ✅ 보유 종목 불러오기
 const fetchHoldings = async () => {
   try {
     const userId = user?.id ?? user?.userId ?? "guest";
+
+    // 1️⃣ 기본 보유 종목 목록
     const res = await financeAxios.get(
       "https://finance.youth-fi.com/api/user/holdings",
-      {
-        headers: { "X-User-Id": userId },
-      }
+      { headers: { "X-User-Id": userId } }
     );
     const list = res.data?.result || [];
 
-      // 2️⃣ 각 종목에 대해 이미지 + 현재가 + 수익률 계산
-      const enriched = await Promise.all(
-        list.map(async (h) => {
-          try {
-            // 🏦 현재가 불러오기
-            const priceRes = await financeAxios.post("/api/stock/current-price", {
-              marketCode: "J",
-              stockCode: h.stockId,
-            });
-            const current = Number(priceRes.data?.result?.stckPrpr || 0);
-            const change = current - h.avgPrice;
-            const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
+    // 2️⃣ 각 종목 데이터 상세 조회 (현재가 + 이미지 포함)
+    const enriched = await Promise.all(
+      list.map(async (h) => {
+        try {
+          // 현재가 요청
+          const priceRes = await financeAxios.post("/api/stock/current-price", {
+            marketCode: "J",
+            stockCode: h.stockId,
+          });
+          const current = Number(priceRes.data?.result?.stckPrpr || 0);
+          const change = current - h.avgPrice;
+          const rate = h.avgPrice ? (change / h.avgPrice) * 100 : 0;
 
-            // 🖼️ 종목 이미지 불러오기
-            const infoRes = await financeAxios.get(`/api/stock/list/${h.stockId}`);
-            const info = infoRes.data?.result;
+          // 종목 상세 요청
+          const infoRes = await financeAxios.get(
+            `https://finance.youth-fi.com/api/stock/list/${h.stockId}`,
+            { headers: { "X-User-Id": userId } }
+          );
+          const info = infoRes.data?.result;
 
-            return {
-              ...h,
-              currentPrice: current,
-              change,
-              rate,
-              stockImage: info?.stockImage || null,
-              sectorName: info?.sectorName || "",
-            };
-          } catch (err) {
-            console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
-            return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
-          }
-        })
+          return {
+            ...h,
+            currentPrice: current,
+            change,
+            rate,
+            stockImage: info?.stockImage || null,
+            sectorName: info?.sectorName || "",
+          };
+        } catch (err) {
+          console.warn(`⚠️ ${h.stockName} 데이터 불러오기 실패:`, err);
+          return { ...h, currentPrice: 0, change: 0, rate: 0, stockImage: null };
+        }
+      })
+    );
+
+    // 3️⃣ 자산 및 수익률 계산
+    const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
+    const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
+    const profit = value - cost;
+    const rate = cost ? (profit / cost) * 100 : 0;
+
+    setHoldings(enriched);
+    setTotalValue(value);
+    setTotalProfit(profit);
+    setTotalRate(rate);
+
+    // 4️⃣ 파이 차트 데이터 생성
+    const total = value;
+    if (total > 0) {
+      const sorted = [...enriched].sort(
+        (a, b) => b.currentPrice * b.holdingQuantity - a.currentPrice * a.holdingQuantity
       );
 
-      // 3️⃣ 총자산 / 총수익률 계산
-      const value = enriched.reduce((sum, h) => sum + h.currentPrice * h.holdingQuantity, 0);
-      const cost = enriched.reduce((sum, h) => sum + h.avgPrice * h.holdingQuantity, 0);
-      const profit = value - cost;
-      const rate = cost ? (profit / cost) * 100 : 0;
+      const top5 = sorted.slice(0, 5);
+      const others = sorted.slice(5);
+      const othersValue = others.reduce(
+        (sum, h) => sum + h.currentPrice * h.holdingQuantity,
+        0
+      );
 
-      setHoldings(enriched);
-      setTotalValue(value);
-      setTotalProfit(profit);
-      setTotalRate(rate);
+      const pieData = top5.map((h) => {
+        const val = h.currentPrice * h.holdingQuantity;
+        const percent = ((val / total) * 100).toFixed(1);
+        return {
+          id: h.stockName,
+          label: `${h.stockName} (${percent}%)`,
+          value: val,
+          percent,
+        };
+      });
 
-      // ✅ 파이 차트용 데이터 계산 (퍼센트 포함)
-      const total = value;
-      let finalPieData = [];
-
-      if (total > 0) {
-        const sorted = [...enriched].sort(
-          (a, b) => b.currentPrice * b.holdingQuantity - a.currentPrice * a.holdingQuantity
-        );
-
-        const top5 = sorted.slice(0, 5);
-        const others = sorted.slice(5);
-        const othersValue = others.reduce(
-          (sum, h) => sum + h.currentPrice * h.holdingQuantity,
-          0
-        );
-
-        const top5Data = top5.map((h) => {
-          const val = h.currentPrice * h.holdingQuantity;
-          const percent = ((val / total) * 100).toFixed(1);
-          return {
-            id: h.stockName,
-            label: `${h.stockName} (${percent}%)`,
-            value: val,
-            percent: percent, 
-          };
+      if (others.length > 0) {
+        const othersPercent = ((othersValue / total) * 100).toFixed(1);
+        pieData.push({
+          id: "기타",
+          label: `기타 (${othersPercent}%)`,
+          value: othersValue,
+          percent: othersPercent,
         });
-
-        if (others.length > 0) {
-          const othersPercent = ((othersValue / total) * 100).toFixed(1);
-          top5Data.push({
-            id: "기타",
-            label: `기타 (${othersPercent}%)`,
-            value: othersValue,
-            percent: othersPercent,
-          });
-        }
-
-        finalPieData = top5Data;
       }
 
-      setPieData(finalPieData);
-
-    } catch (e) {
-      console.error("❌ 보유 종목 불러오기 실패:", e);
+      setPieData(pieData);
     }
-  };
+  } catch (e) {
+    console.error("❌ 보유 종목 불러오기 실패:", e);
+  }
+};
+
 
   useEffect(() => {
     fetchHoldings();

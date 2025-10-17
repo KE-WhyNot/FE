@@ -17,7 +17,7 @@ import useAuthStore from "../../store/useAuthStore"; // ✅ 로그인 유저 불
 
 const MainPage = () => {
   const { user } = useAuthStore();
-  const userId = user?.id
+  const userId = user?.id;
 
   // ✅ 최신 정책 3개 불러오기
   const {
@@ -65,22 +65,22 @@ const MainPage = () => {
     },
   });
 
-  // ✅ 투자 포트폴리오 (finance API)
+  // ✅ 투자 포트폴리오 추천 데이터 불러오기
   const {
     data: portfolio,
     isLoading: isPortfolioLoading,
     isError: isPortfolioError,
   } = useQuery({
-    queryKey: ["investmentProfile", userId],
+    queryKey: ["portfolioRecommendation", userId],
     queryFn: async () => {
-      const res = await financeAxios.post(
-        // "/api/user/investment-profile/send-to-llm",
-        {},
-        { headers: { "X-User-Id": userId } }
+      const res = await financeAxios.get(
+        "/api/user/portfolio-recommendation/my",
+        {
+          headers: { "X-User-Id": userId },
+        }
       );
       return res.data?.result;
     },
-    enabled: !!userId, // ✅ userId가 있을 때만 실행
   });
 
   // ✅ 카테고리별 아이콘 매핑
@@ -92,7 +92,7 @@ const MainPage = () => {
     참여권리: <FaUsers />,
   };
 
-  // ✅ 포트폴리오 데이터 가공
+  // ✅ 포트폴리오 데이터 가공 (예적금 vs 주식 비율)
   const allocationSavings = portfolio?.allocationSavings ?? 0;
   const allocationStocks = 100 - allocationSavings;
   const totalAmount = portfolio?.highestValue ?? 0;

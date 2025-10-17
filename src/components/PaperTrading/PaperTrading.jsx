@@ -343,11 +343,7 @@ const PaperTrading = () => {
     } catch (e) {
       console.error("❌ 보유 종목 불러오기 실패:", e);
     }
-  } catch (e) {
-    console.error("❌ 보유 종목 불러오기 실패:", e);
-  }
-};
-
+  };
 
   // ✅ X축 포맷
   const formatXAxisDate = (dateStr) => {

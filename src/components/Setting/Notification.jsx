@@ -30,13 +30,8 @@ const Notification = () => {
   const { user, isAuthenticated } = useAuthStore();
   const userId = user?.id ?? user?.userId ?? null; // ✅ id/userId 모두 대응
 
-  const {
-    notifications,
-    totalPages,
-    loading,
-    fetchNotifications,
-    markAsRead,
-  } = useNotificationStore();
+  const { notifications, totalPages, loading, fetchNotifications, markAsRead } =
+    useNotificationStore();
 
   // ✅ 유저 정보가 준비된 뒤에만 요청 보내기
   useEffect(() => {

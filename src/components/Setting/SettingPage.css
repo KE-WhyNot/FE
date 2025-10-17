@@ -51,7 +51,7 @@
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 34px;
 }
 
@@ -63,7 +63,7 @@
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -77,30 +77,30 @@ input:checked + .slider:before {
 
 /* 저장/취소 버튼 */
 .form-actions {
-    max-width: 500px;
-    margin-top: 2rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.8rem;
+  max-width: 500px;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
 }
 
 .form-actions .cancel-button,
 .form-actions .save-button {
-    padding: 0.7rem 1.5rem;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1px solid #ddd;
+  padding: 0.7rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #ddd;
 }
 
 .form-actions .cancel-button {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 
 .form-actions .save-button {
-    background-color: #5844d1;
-    color: white;
-    border-color: #5844d1;
+  background-color: #5844d1;
+  color: white;
+  border-color: #5844d1;
 }
 
 /* 계정 설정 관련 스타일 */
@@ -158,13 +158,13 @@ input:checked + .slider:before {
 }
 
 .modal-actions .cancel-button {
-    background-color: #f8f9fa;
+  background-color: #f8f9fa;
 }
 
 .modal-actions .confirm-button {
-    background-color: #5844d1;
-    color: white;
-    border: none;
+  background-color: #5844d1;
+  color: white;
+  border: none;
 }
 
 .modal-actions .confirm-button.delete {

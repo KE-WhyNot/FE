@@ -8,12 +8,25 @@ const useAuthStore = create(
       user: null,
       isAuthenticated: false,
 
-      // ✅ 전역 user 수동 업데이트
-      setUser: (updatedUser) =>
+      // ✅ 전역 user 수동 업데이트 (id/userId 동기화)
+      setUser: (updatedUser) => {
+        if (!updatedUser) {
+          set({ user: null, isAuthenticated: false });
+          return;
+        }
+
+        // id 또는 userId 중 하나만 와도 통일
+        const normalizedUser = {
+          ...updatedUser,
+          id: updatedUser.id ?? updatedUser.userId,
+          userId: updatedUser.userId ?? updatedUser.id,
+        };
+
         set({
-          user: updatedUser,
-          isAuthenticated: !!updatedUser,
-        }),
+          user: normalizedUser,
+          isAuthenticated: !!normalizedUser,
+        });
+      },
 
       // ✅ 프로필 가져오기 (accessToken 존재할 때만)
       fetchProfile: async () => {
@@ -32,7 +45,23 @@ const useAuthStore = create(
           ] = `Bearer ${token}`;
 
           const res = await axiosInstance.get("/api/auth/profile");
-          set({ user: res.data.result, isAuthenticated: true });
+          const result = res.data?.result;
+
+          if (!result) {
+            console.warn("⚠️ 프로필 응답이 비어있습니다.");
+            set({ user: null, isAuthenticated: false });
+            return;
+          }
+
+          // ✅ id/userId 동기화 (PaperTrading 호환용)
+          const normalizedUser = {
+            ...result,
+            id: result.id ?? result.userId,
+            userId: result.userId ?? result.id,
+          };
+
+          set({ user: normalizedUser, isAuthenticated: true });
+          console.log("✅ 사용자 프로필 로드 완료:", normalizedUser);
         } catch (err) {
           if (err.response?.status === 401) {
             console.log("⛔ 인증 만료됨 → 상태 초기화");

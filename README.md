@@ -1,166 +1,132 @@
-# 💹 Youth-Fi Frontend
+# YouthFi Frontend
 
-> **청년 금융 통합 서비스 플랫폼**  
-> 투자 모의 체험부터 정책 추천, 예·적금 비교, 알림 서비스까지 —  
-> 실제 금융 흐름을 학습하고 실전 대비 역량을 높이는 웹 애플리케이션입니다.
+## 1. 프로젝트 개요
 
----
-
-## 🚀 프로젝트 개요
-
-**Youth-Fi**는 청년층을 위한 금융 교육 및 실습용 플랫폼입니다.  
-다양한 기능을 통해 **실제 투자 및 금융 환경을 체험**할 수 있도록 설계되었습니다.
-
-### 🎯 주요 목적
-- 📈 **모의투자(Paper Trading)** — 실제 주식 시장 데이터 기반의 투자 연습  
-- 👥 **회원 관리(Auth)** — 로그인, 회원가입, JWT 기반 인증  
-- 🏛️ **청년정책(Policy)** — 연령·소득·지역 맞춤형 정책 추천  
-- 💰 **예적금 비교(Savings)** — 다양한 금융 상품 비교  
-- 🔔 **알림(Notification)** — 가격 변동, 정책 업데이트, 포인트 적립 등 알림 기능 제공  
+- **프로젝트명:** YouthFi (청년 금융 서비스)
+- **담당 파트:** 프론트엔드 개발
+- **개발 기간:** 2025.09 ~ 2025.10
+- **주요 역할:**
+  - 전체 UI 화면 구현 및 반응형 디자인 적용
+  - API 연동 및 상태 관리 구조 설계
+  - 데이터 시각화 구현
+  - 협업 툴(Figma, Cursor MCP) 활용을 통한 개발 효율화
 
 ---
 
-## 🧱 기술 스택
+## 2. 협업 및 설계 도구
 
-| 구분 | 기술 | 설명 |
-|------|------|------|
-| **Frontend Framework** | [React 18](https://react.dev/) | UI 구축 |
-| **State Management** | [Zustand](https://github.com/pmndrs/zustand) | 경량 상태관리 |
-| **Routing** | [React Router DOM 7](https://reactrouter.com/en/main) | SPA 라우팅 |
-| **Chart / Data Visualization** | [ECharts 6](https://echarts.apache.org/), [Nivo](https://nivo.rocks/), [D3.js](https://d3js.org/) | 주가 차트, 데이터 시각화 |
-| **HTTP Client** | [Axios](https://axios-http.com/) | REST API 통신 |
-| **Testing / Mocking** | [React Testing Library](https://testing-library.com/), [MSW(Mock Service Worker)](https://mswjs.io/) | 컴포넌트 단위 테스트 및 API Mock 테스트 |
-| **Icons / UI** | [React Icons](https://react-icons.github.io/react-icons/) | 일관된 아이콘 시스템 |
-| **Build Tool** | [CRA 5 (react-scripts)](https://create-react-app.dev/) | 빌드 및 개발 서버 |
-| **Performance** | [Web Vitals](https://web.dev/vitals/) | 성능 모니터링 |
-| **Mock Server** | `msw` | 실제 API 통합 전 단계에서 통신 테스트용 가상 서버 구축 |
+- **Figma:**
+  - 디자인 시안 공유 및 컴포넌트 가이드라인 확인
+  - 반응형 UI 비율, 색상, 간격 기준 참고
+- **Cursor MCP:**
+  - 초기 코드 구조 생성 및 컴포넌트 자동 제안 활용
+  - 반복적인 코드 패턴 생성 효율화
 
 ---
 
-## 📂 폴더 구조
+## 3. 폴더 구조
 
-```bash
+```
 src/
- ├─ components/        # 공용 UI 컴포넌트
- ├─ pages/             # 주요 페이지 (예: Auth, Policy, PaperTrading 등)
- ├─ store/             # Zustand 전역 상태관리
- ├─ api/               # Axios 인스턴스 및 API 함수
- ├─ hooks/             # 커스텀 훅
- ├─ assets/            # 이미지, 스타일, 아이콘
- ├─ utils/             # 공통 유틸 함수
- └─ App.js             # 라우팅 및 전역 설정
+ ┣ api/                      # Axios 인스턴스 및 API 통신 로직
+ ┣ assets/                   # 이미지, 로고 등 정적 리소스
+ ┣ components/               # 주요 화면 구성 컴포넌트
+ ┃ ┣ Chatbot/                # 대화형 챗봇 UI
+ ┃ ┣ common/                 # Header, Footer 등 공용 UI 컴포넌트
+ ┃ ┣ InvestmentPropensityPage/
+ ┃ ┣ LoginPage/
+ ┃ ┣ MainPage/
+ ┃ ┣ PaperTrading/
+ ┃ ┣ PolicyPage / PolicyDetailPage/
+ ┃ ┣ PortfolioPage/
+ ┃ ┣ SavingsPage / SavingsDetailPage/
+ ┃ ┣ Setting/
+ ┃ ┣ SignupPage/
+ ┃ ┗ StockRecommendationPage/
+ ┣ hooks/                    # 커스텀 훅 (상태/로직 재사용)
+ ┣ mocks/                    # MSW(Mock Service Worker) 기반 테스트용 API Mock
+ ┣ store/                    # Zustand 상태 관리 스토어
+ ┣ tutorials/                # 개발 참고용 예시 코드
+ ┣ utils/                    # 포맷팅, 계산 등 유틸 함수
+ ┣ App.jsx / index.js        # 진입점 및 전역 라우팅
+ ┗ setupProxy.js             # API 프록시 설정
 ```
 
 ---
 
-## ⚙️ 실행 방법
+## 4. 주요 기술 스택
 
-### 1️⃣ 설치
-
-```bash
-npm install
-```
-
-### 2️⃣ 개발 서버 실행
-
-```bash
-npm start
-```
-- 개발 환경 URL: [http://localhost:3000](http://localhost:3000)  
-- 백엔드 프록시: `https://auth.youth-fi.com`
-
-### 3️⃣ 테스트 실행
-
-```bash
-npm test
-```
-- `MSW` 기반으로 실제 API 호출 없이 Mock 서버로 통합 테스트 가능  
-
-### 4️⃣ 프로덕션 빌드
-
-```bash
-npm run build
-```
-- 빌드 결과물은 `/build` 폴더에 생성됩니다.  
-- `nginx`, `Vercel`, `Netlify` 등에 배포 가능
+| 분류                      | 기술                     | 설명                             |
+| ------------------------- | ------------------------ | -------------------------------- |
+| **Frontend Framework**    | React 18                 | 컴포넌트 기반 SPA 개발           |
+| **Routing**               | React Router v7          | 페이지 간 라우팅 처리            |
+| **State Management**      | Zustand, React Query     | 전역 상태 관리 및 서버 상태 캐싱 |
+| **HTTP 통신**             | Axios                    | API 요청 및 interceptor 관리     |
+| **Mocking/Test**          | MSW, Testing Library     | Mock 서버 및 단위 테스트         |
+| **Chart / Visualization** | ECharts, Nivo, D3.js     | 금융 데이터 시각화               |
+| **UI / Icons**            | React Icons, CSS Modules | 스타일 구성 및 아이콘 사용       |
+| **Calendar**              | react-calendar           | 날짜 선택 기능 구현              |
+| **Proxy Middleware**      | http-proxy-middleware    | 개발 환경에서 API 프록시 설정    |
 
 ---
 
-## 🧩 주요 기능 상세
+## 5. 상태 관리 구조
 
-### 💹 **모의투자 (Paper Trading)**
-- ECharts 기반 캔들차트, 이동평균선, 거래량 시각화
-- 실시간 시세 변동 (랜덤 혹은 API 연동)
-- 매수/매도 시뮬레이션
-- 시가/종가/고가/저가 툴팁 및 SMA 라인 표시
-- 관심 종목 즐겨찾기 기능
-
-### 👥 **회원 인증 (Auth)**
-- JWT 기반 로그인/회원가입/로그아웃
-- 사용자 세션 유지 및 토큰 자동 재발급
-- 비밀번호 유효성 검증 및 회원 정보 수정
-
-### 🏛️ **청년 정책 추천 (Policy)**
-- 정부 및 지자체 청년정책 API 연동
-- 지역·나이·소득 조건 기반 필터링
-- 즐겨찾기 및 북마크 기능
-
-### 💰 **예적금 비교 (Deposit & Savings)**
-- 여러 금융기관 상품을 비교
-- 금리·기간별 정렬
-- 관심 상품 저장 및 추천
-
-### 🔔 **알림(Notification)**
-- 정책 업데이트, 가격 변동, 적금 만기 등의 알림 발송
-- 실시간 알림창 구현 (Polling/WebSocket 예정)
+- **Zustand:**  
+  사용자 로그인, 알림, 유저 정보 등 클라이언트 전역 상태 관리
+- **React Query:**  
+  서버 요청 결과 캐싱 및 비동기 데이터 관리
 
 ---
 
-## 🧪 테스트 및 품질 관리
+## 6. API 구조
 
-| 구분 | 설명 |
-|------|------|
-| **MSW(Mock Service Worker)** | 서버 없이 API 동작을 시뮬레이션, 테스트 환경 격리 |
-| **React Testing Library** | UI 컴포넌트 단위 테스트 및 사용자 인터랙션 검증 |
-| **Web Vitals** | 렌더링 속도 및 UX 품질 측정 |
+`src/api/` 내부에서 Axios 인스턴스를 도메인별로 분리하여 관리
 
----
-
-## 🌐 배포
-
-> **환경별 설정 분리**
-> - `.env.development` — 개발 환경  
-> - `.env.production` — 배포 환경  
-> - 백엔드 서버: `https://auth.youth-fi.com`  
-> - 정적 배포: `Vercel` 또는 `Netlify` 권장  
+- `authAxiosInstance.js` – 인증 및 로그인 관련
+- `financeAxiosInstance.js` – 금융 및 투자 데이터
+- `notifyAxiosInstance.js` – 알림 관련
+- `policyAxiosInstance.js`, `policyApi.js` – 정책 관련 API
 
 ---
 
-## 📈 향후 계획
+## 7. 주요 페이지 구성
 
-- [ ] 실시간 주가 WebSocket 반영  
-- [ ] 알림 푸시(Push Notification) 기능  
-- [ ] 모바일 UI 최적화  
-- [ ] 다크모드 및 사용자 설정 페이지  
-
----
-
-## 🧑‍💻 팀 정보
-
-| 역할 | 담당자 | 주요 업무 |
-|------|--------|-----------|
-| FE 리드 | Watchiiee | ECharts, UI/UX, 상태관리 |
-| BE 연동 | Backend Team | Auth / Policy / Trading API |
-| QA & Mock | FE Team | MSW 테스트, 컴포넌트 검증 |
+| 페이지                          | 기능 요약                           |
+| ------------------------------- | ----------------------------------- |
+| MainPage                        | 대시보드 요약, 추천 섹션 표시       |
+| LoginPage / SignupPage          | 사용자 로그인 및 회원가입           |
+| PolicyPage / PolicyDetailPage   | 청년 정책 목록 및 상세 정보         |
+| InvestmentPropensityPage        | 투자 성향 분석 및 결과 표시         |
+| PortfolioPage                   | 개인 포트폴리오 관리 및 수익률 계산 |
+| StockRecommendationPage         | AI 기반 종목 추천                   |
+| SavingsPage / SavingsDetailPage | 예적금 상품 비교 및 상세 조회       |
+| Setting                         | 사용자 설정 페이지                  |
+| Chatbot                         | 금융/정책 관련 대화형 기능 제공     |
 
 ---
 
-## 🪪 라이선스
+## 8. 데이터 시각화
 
-```text
-MIT License © 2025 Youth-Fi
-```
+- **ECharts / Nivo / D3.js** 활용
+  - 포트폴리오 수익률, 투자 성향 분석, 주식 변동 차트 등 구현
+  - 반응형 차트 및 커스터마이징 지원
 
 ---
 
-> ⚡ **"청년의 금융 독립을 위한 한 걸음, Youth-Fi"**
+## 9. 개발 및 배포
+
+- **개발 환경:** React Scripts 기반 (CRA)
+- **테스트:** Testing Library + Jest
+- **Mock 서버:** MSW (public 디렉터리 내 worker 설정)
+- **배포 환경:** Vercel (vercel.json 기반 자동 배포)
+
+---
+
+## 10. 프로젝트 특징 요약
+
+- 초기 설계 단계에서 **Figma + Cursor MCP**를 활용하여 UI 구조 및 코드 패턴 신속 정립
+- **Axios 인스턴스 분리**를 통한 API 모듈화 관리
+- **React Query + Zustand**로 서버/클라이언트 상태 통합 관리
+- **ECharts/Nivo** 기반의 시각화 구현으로 직관적인 사용자 경험 제공
+- **MSW Mock 서버**로 백엔드 의존도를 줄인 개발 환경 구성

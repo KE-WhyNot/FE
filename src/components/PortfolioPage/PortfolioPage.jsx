@@ -213,7 +213,7 @@ const PortfolioPage = () => {
     if (!selectedReason) return "종목을 클릭하면 AI 분석 결과가 표시됩니다.";
     let analysisText = selectedReason;
     if (highestValue && lowestValue) {
-      analysisText += `\n\n 또한, 최근 13주간 1,000만 원을 해당 포트폴리오에 투자했을 경우,\n예상 최고 가치는 약 ${highestValue}원, 최저 가치는 약 ${lowestValue}원으로 분석됩니다.`;
+      analysisText += `\n\n 또한, 최근 52주간 1,000만 원을 해당 포트폴리오에 투자했을 경우,\n예상 최고 가치는 약 ${highestValue}원, 최저 가치는 약 ${lowestValue}원으로 분석됩니다.`;
     }
     return analysisText;
   };

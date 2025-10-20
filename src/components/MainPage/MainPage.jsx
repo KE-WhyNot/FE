@@ -9,7 +9,7 @@ import {
   FaHeartbeat,
   FaUsers,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import policyAxios from "../../api/policyAxiosInstance";
 import financeAxios from "../../api/financeAxiosInstance";
@@ -18,6 +18,7 @@ import useAuthStore from "../../store/useAuthStore"; // ✅ 로그인 유저 불
 const MainPage = () => {
   const { user } = useAuthStore();
   const userId = user?.id;
+  const navigate = useNavigate(); 
 
   // ✅ 최신 정책 3개 불러오기
   const {
@@ -136,7 +137,9 @@ const MainPage = () => {
               <br />
               이곳에서의 연습이 당신을 자신감 있는 투자자로 만들어줍니다.
             </p>
-            <button>지금 바로 시작하세요!</button>
+            <button onClick={() => navigate("/papertrading")}>
+              지금 바로 시작하세요!
+            </button>
           </div>
         </section>
 
@@ -183,17 +186,17 @@ const MainPage = () => {
                           {policy.period_apply === "마감"
                             ? "마감"
                             : policy.period_apply.includes("~")
-                            ? `D-${Math.max(
+                              ? `D-${Math.max(
                                 0,
                                 Math.floor(
                                   (new Date(
                                     policy.period_apply.split("~")[1].trim()
                                   ) -
                                     new Date()) /
-                                    (1000 * 60 * 60 * 24)
+                                  (1000 * 60 * 60 * 24)
                                 )
                               )}`
-                            : "상시"}
+                              : "상시"}
                         </span>
                       </li>
                     );
